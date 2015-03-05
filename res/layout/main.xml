@@ -1,0 +1,180 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+
+    tools:context=".MainActivity"
+    android:background="#ffffff" >
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent" >
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" >
+
+            <TextView
+                android:id="@+id/tv_com"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="com:  "
+                android:textSize="20sp"
+                android:textColor="#000000"
+                android:minHeight="25dp" />
+
+            <Spinner
+                android:id="@+id/spinner1"
+                android:layout_width="98dp"
+                android:layout_height="40dp" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:id="@+id/content_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="#87d7ee" >
+            
+            <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" >
+
+	            <TextView
+	                android:id="@+id/tv_week"
+	                android:layout_width="wrap_content"
+	                android:layout_height="wrap_content"
+	                android:text="Week     "
+	                android:textSize="20sp"
+	                android:textColor="#003f74"
+	                
+	                android:minHeight="25dp" />
+	            <TextView
+	                android:id="@+id/tv_weeknum"
+	                android:layout_width="wrap_content"
+	                android:layout_height="wrap_content"
+	                android:text="3"
+	                android:textSize="20sp"
+	                android:textColor="#003f74"
+	                android:minHeight="25dp" />
+
+
+        	</LinearLayout>
+        	<LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" >
+
+	            <TextView
+	                android:id="@+id/tv_week2"
+	                android:layout_width="wrap_content"
+	                android:layout_height="wrap_content"
+	                android:text="Week     "
+	                android:textSize="20sp"
+	                android:textColor="#003f74"
+	                
+	                android:minHeight="25dp" />
+	            <TextView
+	                android:id="@+id/tv_weeknum2"
+	                android:layout_width="wrap_content"
+	                android:layout_height="wrap_content"
+	                android:text="3"
+	                android:textSize="20sp"
+	                android:textColor="#003f74"
+	                android:minHeight="25dp" />
+
+
+        	</LinearLayout>
+        	<LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" >
+
+	            <TextView
+	                android:id="@+id/tv_week2"
+	                android:layout_width="wrap_content"
+	                android:layout_height="wrap_content"
+	                android:text="Week     "
+	                android:textSize="20sp"
+	                android:textColor="#003f74"
+	                
+	                android:minHeight="25dp" />
+	            <TextView
+	                android:id="@+id/tv_weeknum2"
+	                android:layout_width="wrap_content"
+	                android:layout_height="wrap_content"
+	                android:text="3"
+	                android:textSize="20sp"
+	                android:textColor="#003f74"
+	                android:minHeight="25dp" />
+
+
+        	</LinearLayout>
+        	<LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" >
+
+	            <TextView
+	                android:id="@+id/tv_week2"
+	                android:layout_width="wrap_content"
+	                android:layout_height="wrap_content"
+	                android:text="Week     "
+	                android:textSize="20sp"
+	                android:textColor="#003f74"
+	                
+	                android:minHeight="25dp" />
+	            <TextView
+	                android:id="@+id/tv_weeknum2"
+	                android:layout_width="wrap_content"
+	                android:layout_height="wrap_content"
+	                android:text="3"
+	                android:textSize="20sp"
+	                android:textColor="#003f74"
+	                android:minHeight="25dp" />
+
+
+        	</LinearLayout>
+            
+            
+            
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" >
+
+        	 <ImageView
+        	     android:id="@+id/iv_menu"
+        	     android:layout_width="wrap_content"
+        	     android:layout_height="wrap_content"
+        	     android:src="@drawable/menu_sel" />
+
+        	 <ImageView
+        	     android:id="@+id/iv_time"
+        	     android:layout_width="wrap_content"
+        	     android:layout_height="wrap_content"
+        	     android:src="@drawable/time_sel" />
+
+        	 <ImageView
+        	     android:id="@+id/iv_close"
+        	     android:layout_width="wrap_content"
+        	     android:layout_height="wrap_content"
+        	     android:src="@drawable/close_sel" />
+
+        	 <ImageView
+        	     android:id="@+id/iv_up"
+        	     android:layout_width="wrap_content"
+        	     android:layout_height="wrap_content"
+        	     android:src="@drawable/up_sel" />
+
+        	 <ImageView
+        	     android:id="@+id/iv_down"
+        	     android:layout_width="wrap_content"
+        	     android:layout_height="wrap_content"
+        	     android:src="@drawable/down_sel" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</RelativeLayout>
