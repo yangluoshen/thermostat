@@ -62,9 +62,55 @@
 
 
         	</LinearLayout>
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" >
+
+                <ImageView
+                    android:id="@+id/imageView1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentRight="true"
+                    android:layout_alignParentTop="true"
+                    android:src="@drawable/temp" />
+
+                <TextView
+                    android:id="@+id/tv_temperature"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentTop="true"
+                    android:layout_toLeftOf="@+id/imageView1"
+                    android:minHeight="100dp"
+                    android:text="16.0"
+                    android:textColor="#003f74"
+                    android:textSize="80sp" />
+
+                <ImageView
+                    android:id="@+id/imageView2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_above="@+id/textView1"
+                    android:layout_alignParentLeft="true"
+                    android:layout_alignParentTop="true"
+                    android:src="@drawable/displaytemp" />
+
+                <TextView
+                    android:id="@+id/textView1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignBottom="@+id/imageView1"
+                    android:layout_alignRight="@+id/imageView2"
+                    android:minHeight="25dp"
+                    android:text="SET     "
+                    android:textColor="#003f74"
+                    android:textSize="20sp" />
+
+            </RelativeLayout>
+
         	<LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" >
+	            android:layout_width="match_parent"
+	            android:layout_height="wrap_content" >
 
 	            <TextView
 	                android:id="@+id/tv_week2"
@@ -73,46 +119,54 @@
 	                android:text="Week     "
 	                android:textSize="20sp"
 	                android:textColor="#003f74"
-	                
-	                android:minHeight="25dp" />
-	            <TextView
-	                android:id="@+id/tv_weeknum2"
-	                android:layout_width="wrap_content"
-	                android:layout_height="wrap_content"
-	                android:text="3"
-	                android:textSize="20sp"
-	                android:textColor="#003f74"
 	                android:minHeight="25dp" />
 
+	            <ImageView
+	                android:id="@+id/imageView3"
+	                android:layout_width="wrap_content"
+	                android:layout_height="wrap_content"
+	                android:src="@drawable/wind1" />
+
+	            <ImageView
+	                android:id="@+id/imageView4"
+	                android:layout_width="wrap_content"
+	                android:layout_height="wrap_content"
+	                android:src="@drawable/wind2" />
+
+	            <ImageView
+	                android:id="@+id/imageView5"
+	                android:layout_width="wrap_content"
+	                android:layout_height="wrap_content"
+	                android:src="@drawable/wind3" />
+
+	            <ImageView
+	                android:id="@+id/imageView6"
+	                android:layout_width="wrap_content"
+	                android:layout_height="wrap_content"
+	                android:src="@drawable/windauto" />
 
         	</LinearLayout>
         	<LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content" >
 
-	            <TextView
-	                android:id="@+id/tv_week2"
-	                android:layout_width="wrap_content"
-	                android:layout_height="wrap_content"
-	                android:text="Week     "
-	                android:textSize="20sp"
-	                android:textColor="#003f74"
-	                
-	                android:minHeight="25dp" />
-	            <TextView
-	                android:id="@+id/tv_weeknum2"
-	                android:layout_width="wrap_content"
-	                android:layout_height="wrap_content"
-	                android:text="3"
-	                android:textSize="20sp"
-	                android:textColor="#003f74"
-	                android:minHeight="25dp" />
+        		<ImageView
+        		    android:id="@+id/imageView7"
+        		    android:layout_width="wrap_content"
+        		    android:layout_height="wrap_content"
+        		    android:src="@drawable/cold" />
 
+        		<ImageView
+        		    android:id="@+id/imageView8"
+        		    android:layout_width="wrap_content"
+        		    android:layout_height="wrap_content"
+        		    android:src="@drawable/warm" />
 
-        	</LinearLayout>
-        	<LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" >
+        		<ImageView
+        		    android:id="@+id/imageView9"
+        		    android:layout_width="wrap_content"
+        		    android:layout_height="wrap_content"
+        		    android:src="@drawable/ventilate" />
 
 	            <TextView
 	                android:id="@+id/tv_week2"
@@ -122,14 +176,6 @@
 	                android:textSize="20sp"
 	                android:textColor="#003f74"
 	                
-	                android:minHeight="25dp" />
-	            <TextView
-	                android:id="@+id/tv_weeknum2"
-	                android:layout_width="wrap_content"
-	                android:layout_height="wrap_content"
-	                android:text="3"
-	                android:textSize="20sp"
-	                android:textColor="#003f74"
 	                android:minHeight="25dp" />
 
 
@@ -147,31 +193,36 @@
         	     android:id="@+id/iv_menu"
         	     android:layout_width="wrap_content"
         	     android:layout_height="wrap_content"
-        	     android:src="@drawable/menu_sel" />
+        	     android:src="@drawable/menu_sel"
+        	     android:layout_weight="1" />
 
         	 <ImageView
         	     android:id="@+id/iv_time"
         	     android:layout_width="wrap_content"
         	     android:layout_height="wrap_content"
-        	     android:src="@drawable/time_sel" />
+        	     android:src="@drawable/time_sel"
+        	     android:layout_weight="1" />
 
         	 <ImageView
         	     android:id="@+id/iv_close"
         	     android:layout_width="wrap_content"
         	     android:layout_height="wrap_content"
-        	     android:src="@drawable/close_sel" />
+        	     android:src="@drawable/close_sel" 
+        	     android:layout_weight="1"/>
 
         	 <ImageView
         	     android:id="@+id/iv_up"
         	     android:layout_width="wrap_content"
         	     android:layout_height="wrap_content"
-        	     android:src="@drawable/up_sel" />
+        	     android:src="@drawable/up_sel"
+        	     android:layout_weight="1" />
 
         	 <ImageView
         	     android:id="@+id/iv_down"
         	     android:layout_width="wrap_content"
         	     android:layout_height="wrap_content"
-        	     android:src="@drawable/down_sel" />
+        	     android:src="@drawable/down_sel"
+        	     android:layout_weight="1" />
 
         </LinearLayout>
 
