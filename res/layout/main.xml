@@ -68,39 +68,41 @@
                 android:layout_height="wrap_content" >
 
                 <ImageView
-                    android:id="@+id/imageView1"
+                    android:id="@+id/iv_degree"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignParentRight="true"
                     android:layout_alignParentTop="true"
+                    android:layout_toRightOf="@+id/tv_temperature"
                     android:src="@drawable/temp" />
+
+                <ImageView
+                    android:id="@+id/iv_mark"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:maxHeight="40dp"
+                    android:maxWidth="40dp"
+                    android:layout_alignParentLeft="true"
+                    android:src="@drawable/displaytemp" />
 
                 <TextView
                     android:id="@+id/tv_temperature"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignParentTop="true"
-                    android:layout_toLeftOf="@+id/imageView1"
-                    android:minHeight="100dp"
+                    android:layout_toRightOf="@+id/tv_set"
+                    android:minHeight="150dp"
                     android:text="16.0"
                     android:textColor="#003f74"
-                    android:textSize="80sp" />
-
-                <ImageView
-                    android:id="@+id/imageView2"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_above="@+id/textView1"
-                    android:layout_alignParentLeft="true"
-                    android:layout_alignParentTop="true"
-                    android:src="@drawable/displaytemp" />
+                    android:textSize="100sp" />
 
                 <TextView
-                    android:id="@+id/textView1"
+                    android:id="@+id/tv_set"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_alignBottom="@+id/imageView1"
-                    android:layout_alignRight="@+id/imageView2"
+                    android:layout_alignParentLeft="true"
+                    android:layout_alignRight="@+id/iv_mark"
+                    android:layout_centerVertical="true"
                     android:minHeight="25dp"
                     android:text="SET     "
                     android:textColor="#003f74"
@@ -108,123 +110,152 @@
 
             </RelativeLayout>
 
-        	<LinearLayout
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" >
+
+                <TextView
+                    android:id="@+id/tv_week2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:minHeight="25dp"
+                    android:text="          "
+                    android:textColor="#003f74"
+                    android:textSize="20sp" />
+
+                <ImageView
+                    android:id="@+id/iv_wind1"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:maxHeight="60dp"
+                    android:maxWidth="60dp"
+                    android:src="@drawable/wind1" />
+
+                <ImageView
+                    android:id="@+id/iv_wind2"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:maxHeight="60dp"
+                    android:maxWidth="60dp"
+                    android:src="@drawable/wind2" />
+
+                <ImageView
+                    android:id="@+id/iv_wind3"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:maxHeight="60dp"
+                    android:maxWidth="60dp"
+                    android:src="@drawable/wind3" />
+
+                <ImageView
+                    android:id="@+id/iv_wind_auto"
+                    android:layout_width="wrap_content"
+                    android:layout_height="50dp"
+                    android:maxHeight="60dp"
+                    android:maxWidth="60dp"
+                    
+                    android:src="@drawable/windauto" />
+            </LinearLayout>
+
+        	<RelativeLayout
 	            android:layout_width="match_parent"
 	            android:layout_height="wrap_content" >
 
-	            <TextView
-	                android:id="@+id/tv_week2"
-	                android:layout_width="wrap_content"
-	                android:layout_height="wrap_content"
-	                android:text="Week     "
-	                android:textSize="20sp"
-	                android:textColor="#003f74"
-	                android:minHeight="25dp" />
-
-	            <ImageView
-	                android:id="@+id/imageView3"
-	                android:layout_width="wrap_content"
-	                android:layout_height="wrap_content"
-	                android:src="@drawable/wind1" />
-
-	            <ImageView
-	                android:id="@+id/imageView4"
-	                android:layout_width="wrap_content"
-	                android:layout_height="wrap_content"
-	                android:src="@drawable/wind2" />
-
-	            <ImageView
-	                android:id="@+id/imageView5"
-	                android:layout_width="wrap_content"
-	                android:layout_height="wrap_content"
-	                android:src="@drawable/wind3" />
-
-	            <ImageView
-	                android:id="@+id/imageView6"
-	                android:layout_width="wrap_content"
-	                android:layout_height="wrap_content"
-	                android:src="@drawable/windauto" />
-
-        	</LinearLayout>
-        	<LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" >
-
         		<ImageView
-        		    android:id="@+id/imageView7"
-        		    android:layout_width="wrap_content"
-        		    android:layout_height="wrap_content"
+        		    android:id="@+id/iv_cold"
+        		    android:layout_width="50dp"
+        		    android:layout_height="50dp"
+        		    android:maxHeight="60dp"
+                    android:maxWidth="60dp"
         		    android:src="@drawable/cold" />
 
-        		<ImageView
-        		    android:id="@+id/imageView8"
+        		<TextView
+        		    android:id="@+id/tv_time"
         		    android:layout_width="wrap_content"
         		    android:layout_height="wrap_content"
+        		    android:layout_alignParentRight="true"
+        		    android:layout_centerVertical="true"
+        		    android:layout_marginRight="20dp"
+        		   
+        		    android:text="time"
+        		    android:textColor="#003f74"
+        		    android:textSize="20sp" />
+
+        		<ImageView
+        		    android:id="@+id/iv_warm"
+        		    android:layout_width="50dp"
+        		    android:layout_height="50dp"
+        		    android:layout_alignParentTop="true"
+        		    android:layout_toRightOf="@+id/iv_cold"
+        		    android:maxHeight="60dp"
+        		    android:maxWidth="60dp"
         		    android:src="@drawable/warm" />
 
         		<ImageView
-        		    android:id="@+id/imageView9"
-        		    android:layout_width="wrap_content"
-        		    android:layout_height="wrap_content"
+        		    android:id="@+id/iv_ventilate"
+        		    android:layout_width="50dp"
+        		    android:layout_height="50dp"
+        		    android:layout_alignParentTop="true"
+        		    android:layout_toRightOf="@+id/iv_warm"
+        		    android:maxHeight="60dp"
+        		    android:maxWidth="60dp"
         		    android:src="@drawable/ventilate" />
 
-	            <TextView
-	                android:id="@+id/tv_week2"
-	                android:layout_width="wrap_content"
-	                android:layout_height="wrap_content"
-	                android:text="Week     "
-	                android:textSize="20sp"
-	                android:textColor="#003f74"
-	                
-	                android:minHeight="25dp" />
-
-
-        	</LinearLayout>
+        	</RelativeLayout>
             
             
             
         </LinearLayout>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            
+            android:layout_height="40dp" >
+        </RelativeLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" >
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentTop="true" >
 
-        	 <ImageView
-        	     android:id="@+id/iv_menu"
-        	     android:layout_width="wrap_content"
-        	     android:layout_height="wrap_content"
-        	     android:src="@drawable/menu_sel"
-        	     android:layout_weight="1" />
+            <ImageView
+                android:id="@+id/iv_menu"
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
+                android:layout_weight="0.98"
+                android:src="@drawable/menu_sel" />
 
-        	 <ImageView
-        	     android:id="@+id/iv_time"
-        	     android:layout_width="wrap_content"
-        	     android:layout_height="wrap_content"
-        	     android:src="@drawable/time_sel"
-        	     android:layout_weight="1" />
+            <ImageView
+                android:id="@+id/iv_time"
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
+                android:layout_weight="0.98"
+                android:src="@drawable/time_sel" />
 
-        	 <ImageView
-        	     android:id="@+id/iv_close"
-        	     android:layout_width="wrap_content"
-        	     android:layout_height="wrap_content"
-        	     android:src="@drawable/close_sel" 
-        	     android:layout_weight="1"/>
+            <ImageView
+                android:id="@+id/iv_close"
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
+                android:layout_weight="1"
+                android:src="@drawable/close_sel" />
 
-        	 <ImageView
-        	     android:id="@+id/iv_up"
-        	     android:layout_width="wrap_content"
-        	     android:layout_height="wrap_content"
-        	     android:src="@drawable/up_sel"
-        	     android:layout_weight="1" />
+            <ImageView
+                android:id="@+id/iv_up"
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
+                android:layout_weight="1"
+                android:src="@drawable/up_sel" />
 
-        	 <ImageView
-        	     android:id="@+id/iv_down"
-        	     android:layout_width="wrap_content"
-        	     android:layout_height="wrap_content"
-        	     android:src="@drawable/down_sel"
-        	     android:layout_weight="1" />
-
+            <ImageView
+                android:id="@+id/iv_down"
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
+                android:layout_weight="1"
+                android:src="@drawable/down_sel" />
         </LinearLayout>
+
+        
 
     </LinearLayout>
 
