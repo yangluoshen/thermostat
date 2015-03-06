@@ -58,8 +58,8 @@ public final class R {
         public static final int iv_menu=0x7f080012;
         public static final int iv_time=0x7f080013;
         public static final int iv_up=0x7f080015;
-        public static final int iv_ventilate=0x7f080010;
-        public static final int iv_warm=0x7f080011;
+        public static final int iv_ventilate=0x7f080011;
+        public static final int iv_warm=0x7f080010;
         public static final int iv_wind1=0x7f08000a;
         public static final int iv_wind2=0x7f08000b;
         public static final int iv_wind3=0x7f08000c;

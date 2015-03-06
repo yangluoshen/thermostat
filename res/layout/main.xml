@@ -137,6 +137,7 @@
                     android:layout_height="50dp"
                     android:maxHeight="60dp"
                     android:maxWidth="60dp"
+                    android:visibility="invisible"
                     android:src="@drawable/wind2" />
 
                 <ImageView
@@ -145,6 +146,7 @@
                     android:layout_height="50dp"
                     android:maxHeight="60dp"
                     android:maxWidth="60dp"
+                    android:visibility="invisible"
                     android:src="@drawable/wind3" />
 
                 <ImageView
@@ -153,7 +155,7 @@
                     android:layout_height="50dp"
                     android:maxHeight="60dp"
                     android:maxWidth="60dp"
-                    
+                    android:visibility="invisible"
                     android:src="@drawable/windauto" />
             </LinearLayout>
 
@@ -189,6 +191,7 @@
         		    android:layout_toRightOf="@+id/iv_cold"
         		    android:maxHeight="60dp"
         		    android:maxWidth="60dp"
+        		    android:visibility="invisible"
         		    android:src="@drawable/warm" />
 
         		<ImageView
@@ -199,6 +202,7 @@
         		    android:layout_toRightOf="@+id/iv_warm"
         		    android:maxHeight="60dp"
         		    android:maxWidth="60dp"
+        		    android:visibility="invisible"
         		    android:src="@drawable/ventilate" />
 
         	</RelativeLayout>
