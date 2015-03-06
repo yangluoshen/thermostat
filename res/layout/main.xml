@@ -106,6 +106,7 @@
                     android:minHeight="25dp"
                     android:text="SET     "
                     android:textColor="#003f74"
+                    android:visibility="invisible"
                     android:textSize="20sp" />
 
             </RelativeLayout>

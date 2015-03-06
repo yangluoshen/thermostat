@@ -1,28 +1,54 @@
 package com.usr.thermostat;
 
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
+import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-public class MainActivity extends Activity implements Runnable {
+@SuppressLint("HandlerLeak") public class MainActivity extends Activity  {
 	ImageView iv_menu;
 	ImageView iv_wind;
 	ImageView[] windList = new ImageView[4];
 	ImageView[] menuList = new ImageView[3];
+	TextView tv_set;
+	ImageView iv_mark;
 	int currentMenu = 0;
 	int currentWind = 0;
 	double currentTemperature = 16.0;
-	int countDownTime = 2;
+	static final int countDownTime = 2;
 	int countDown = countDownTime;
 	double initTemperature = 20.5;
 	
 	TextView tv_temp ;
 	ImageView iv_up;
 	ImageView iv_down;
+	
+	Counter count;
+	static final int TIMEUP = 0;
+	static final int TIMEDOWN = 1;
+	Handler handler = new Handler(){
+
+		@Override
+		public void handleMessage(Message msg) {
+			// TODO Auto-generated method stub
+//			super.handleMessage(msg);
+			if (msg.what == TIMEUP){
+				SetTemperature(currentTemperature);
+				msg.what = TIMEDOWN;
+				
+				iv_mark.setVisibility(View.VISIBLE);
+				tv_set.setVisibility(View.INVISIBLE);
+			}
+		}
+		
+	};
 	
 	
 	Operations operation = new Operations();
@@ -33,8 +59,13 @@ public class MainActivity extends Activity implements Runnable {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
 		
+		
+		
 		initViews();
 		addEvents();
+		count = new Counter();
+		Thread t = new Thread(count);
+		t.start();
 		
 		
 	}
@@ -65,6 +96,7 @@ public class MainActivity extends Activity implements Runnable {
 			@Override
 			public void onClick(View arg0) {
 				// TODO Auto-generated method stub
+				Log.i("yangluo","-->"+countDown);
 				if (currentMenu >=2){
 					menuList[currentMenu].setVisibility(View.INVISIBLE);
 					currentMenu = 0;
@@ -88,6 +120,11 @@ public class MainActivity extends Activity implements Runnable {
 				initTemperature += 0.5;
 				tv_temp.setText(""+initTemperature);
 				
+				iv_mark.setVisibility(View.INVISIBLE);
+				tv_set.setVisibility(View.VISIBLE);
+				
+				operation.UpTemperature();
+				
 			}
 		});
 		iv_down.setOnClickListener(new OnClickListener() {
@@ -99,6 +136,10 @@ public class MainActivity extends Activity implements Runnable {
 				initTemperature -= 0.5;
 				tv_temp.setText(""+initTemperature);
 				
+				iv_mark.setVisibility(View.INVISIBLE);
+				tv_set.setVisibility(View.VISIBLE);
+				
+				operation.DownTemperature();
 			}
 		});
 		
@@ -121,6 +162,10 @@ public class MainActivity extends Activity implements Runnable {
 		iv_up   = (ImageView) findViewById(R.id.iv_up);
 		iv_down = (ImageView) findViewById(R.id.iv_down);
 		
+		tv_set  = (TextView) findViewById(R.id.tv_set);
+		iv_mark = (ImageView) findViewById(R.id.iv_mark);
+		
+		
 		
 	}
 
@@ -131,24 +176,40 @@ public class MainActivity extends Activity implements Runnable {
 		return true;
 	}
 
-	@Override
-	public void run() {
-		// TODO Auto-generated method stub
-		while (countDown >= 0){
+	
+	class Counter implements Runnable{
+
+		@Override
+		public void run() {
+			// TODO Auto-generated method stub
+			while (countDown >= 0){
+				
+				//Log.i("yangluo","->"+countDown);
+				
+				try {
+					Thread.sleep(1000);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				countDown--;
+				if (countDown == 0){
+					//SetTemperature(currentTemperature);
+					Message msg = new Message();
+					msg.what = TIMEUP;
+					handler.sendMessage(msg);
+					
+					countDown = countDownTime;
+					
+				}
+			}
 			
-			try {
-				Thread.sleep(1000);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			countDown--;
-			if (countDown == 0){
-				tv_temp.setText(""+currentTemperature);
-				countDown = countDownTime;
-			}
 		}
 		
+	}
+	
+	void  SetTemperature(double currentTemperature2){
+		tv_temp.setText(""+currentTemperature);
 	}
 
 }
