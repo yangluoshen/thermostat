@@ -1,10 +1,12 @@
 package com.usr.thermostat;
 
+
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.text.format.Time;
 import android.util.Log;
 import android.view.Menu;
 import android.view.View;
@@ -17,8 +19,14 @@ import android.widget.TextView;
 	ImageView iv_wind;
 	ImageView[] windList = new ImageView[4];
 	ImageView[] menuList = new ImageView[3];
-	TextView tv_set;
+	ImageView iv_up;
+	ImageView iv_down;
 	ImageView iv_mark;
+	
+	TextView tv_set;
+	TextView tv_time;
+	TextView tv_temp ;
+	TextView tv_dayofweek;
 	int currentMenu = 0;
 	int currentWind = 0;
 	double currentTemperature = 16.0;
@@ -26,14 +34,22 @@ import android.widget.TextView;
 	int countDown = countDownTime;
 	double initTemperature = 20.5;
 	
-	TextView tv_temp ;
-	ImageView iv_up;
-	ImageView iv_down;
+	int dayOfWeek;
+	int hour;
+	int minute;
 	
 	Counter count;
+	Timer timer;
 	static final int TIMEUP = 0;
 	static final int TIMEDOWN = 1;
-	Handler handler = new Handler(){
+	static final int TIMECHANGED = 2;
+	static final int WEEKDAYCHANGED =3;
+	
+	Operations operation = new Operations();
+	
+	Time time = new Time();
+	
+	Handler CounterHandler = new Handler(){
 
 		@Override
 		public void handleMessage(Message msg) {
@@ -49,9 +65,35 @@ import android.widget.TextView;
 		}
 		
 	};
+	Handler TimerHandler = new Handler(){
+		boolean flag = true;
+
+		@Override
+		public void handleMessage(Message msg) {
+			// TODO Auto-generated method stub
+			//super.handleMessage(msg);
+			
+			if (msg.what == TIMECHANGED){
+				if (flag){
+					tv_time.setText(""+hour+":"+minute);
+					flag = false;
+				}else{
+					tv_time.setText(""+hour+" "+minute);
+					flag = true;
+				}
+				
+			}
+		    if (msg.what == WEEKDAYCHANGED){
+				tv_dayofweek.setText(""+dayOfWeek);
+			}
+		}
+		
+	};
 	
 	
-	Operations operation = new Operations();
+	
+	
+	
 	
 
 	@Override
@@ -59,13 +101,17 @@ import android.widget.TextView;
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
 		
-		
+
 		
 		initViews();
 		addEvents();
 		count = new Counter();
-		Thread t = new Thread(count);
-		t.start();
+		Thread countThread = new Thread(count);
+		countThread.start();
+		
+		timer = new Timer();
+		Thread timeThread = new Thread(timer);
+		timeThread.start();
 		
 		
 	}
@@ -164,8 +210,11 @@ import android.widget.TextView;
 		
 		tv_set  = (TextView) findViewById(R.id.tv_set);
 		iv_mark = (ImageView) findViewById(R.id.iv_mark);
-		
-		
+		tv_time = (TextView) findViewById(R.id.tv_timeNow);
+		tv_dayofweek = (TextView) findViewById(R.id.tv_dayOfWeek);
+		time.setToNow();
+		dayOfWeek = time.weekDay;
+		tv_dayofweek.setText(""+time.weekDay);
 		
 	}
 
@@ -183,9 +232,6 @@ import android.widget.TextView;
 		public void run() {
 			// TODO Auto-generated method stub
 			while (countDown >= 0){
-				
-				//Log.i("yangluo","->"+countDown);
-				
 				try {
 					Thread.sleep(1000);
 				} catch (InterruptedException e) {
@@ -197,16 +243,46 @@ import android.widget.TextView;
 					//SetTemperature(currentTemperature);
 					Message msg = new Message();
 					msg.what = TIMEUP;
-					handler.sendMessage(msg);
+					CounterHandler.sendMessage(msg);
 					
 					countDown = countDownTime;
 					
 				}
 			}
-			
+		}
+	}
+	class Timer implements Runnable{
+
+		@Override
+		public void run() {
+			// TODO Auto-generated method stub
+			while (true){
+				time.setToNow();
+				//dayOfWeek = time.weekDay;
+				hour = time.hour;
+				minute = time.minute;
+				
+				try {
+					Thread.sleep(1000);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				Message msg = Message.obtain();
+				if (dayOfWeek != time.weekDay){
+					msg.what = WEEKDAYCHANGED;
+					dayOfWeek = time.weekDay;
+					TimerHandler.sendMessage(msg);
+				}
+				msg.what = TIMECHANGED;
+				TimerHandler.sendMessage(msg);
+				
+				
+			}
 		}
 		
 	}
+	
 	
 	void  SetTemperature(double currentTemperature2){
 		tv_temp.setText(""+currentTemperature);

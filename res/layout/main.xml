@@ -15,19 +15,50 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content" >
 
+            <EditText
+                android:id="@+id/et_ip"
+                android:layout_width="54dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.8"
+                android:hint="IP"
+                android:maxLines="1"
+                android:inputType="number"
+                android:digits="0123456789."
+                android:ems="10" >
+
+                <requestFocus />
+            </EditText>
             <TextView
-                android:id="@+id/tv_com"
+                android:id="@+id/tv_port"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="com:  "
-                android:textSize="20sp"
+                android:layout_weight="0"
+                android:minHeight="25dp"
+                android:text=":"
                 android:textColor="#000000"
-                android:minHeight="25dp" />
+                android:textSize="20sp" />
 
-            <Spinner
-                android:id="@+id/spinner1"
-                android:layout_width="98dp"
-                android:layout_height="40dp" />
+            <EditText
+                android:id="@+id/rt_port"
+                android:layout_width="54dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.2"
+                android:maxLength="6"
+                android:inputType="number"
+                android:hint="PORT"
+                android:maxLines="1"
+                
+                android:ems="10" >
+
+                
+            </EditText>
+
+            <Button
+                android:id="@+id/btn_connect"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="0"
+                android:text="connect" />
 
         </LinearLayout>
 
@@ -52,10 +83,10 @@
 	                
 	                android:minHeight="25dp" />
 	            <TextView
-	                android:id="@+id/tv_weeknum"
+	                android:id="@+id/tv_dayOfWeek"
 	                android:layout_width="wrap_content"
 	                android:layout_height="wrap_content"
-	                android:text="3"
+	                android:text="4"
 	                android:textSize="20sp"
 	                android:textColor="#003f74"
 	                android:minHeight="25dp" />
@@ -173,7 +204,7 @@
         		    android:src="@drawable/cold" />
 
         		<TextView
-        		    android:id="@+id/tv_time"
+        		    android:id="@+id/tv_timeNow"
         		    android:layout_width="wrap_content"
         		    android:layout_height="wrap_content"
         		    android:layout_alignParentRight="true"
@@ -182,7 +213,7 @@
         		   
         		    android:text="time"
         		    android:textColor="#003f74"
-        		    android:textSize="20sp" />
+        		    android:textSize="30sp" />
 
         		<ImageView
         		    android:id="@+id/iv_warm"
@@ -260,7 +291,6 @@
                 android:src="@drawable/down_sel" />
         </LinearLayout>
 
-        
 
     </LinearLayout>
 
