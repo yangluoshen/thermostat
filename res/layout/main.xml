@@ -24,7 +24,8 @@
                 android:maxLines="1"
                 android:inputType="number"
                 android:digits="0123456789."
-                android:ems="10" >
+                android:ems="10" 
+                android:text="222.20.57.137">
 
                 <requestFocus />
             </EditText>
@@ -39,7 +40,7 @@
                 android:textSize="20sp" />
 
             <EditText
-                android:id="@+id/rt_port"
+                android:id="@+id/et_port"
                 android:layout_width="54dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="0.2"
@@ -47,7 +48,7 @@
                 android:inputType="number"
                 android:hint="PORT"
                 android:maxLines="1"
-                
+                android:text="8888"
                 android:ems="10" >
 
                 

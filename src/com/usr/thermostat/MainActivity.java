@@ -11,10 +11,13 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 @SuppressLint("HandlerLeak") public class MainActivity extends Activity  {
+	
 	ImageView iv_menu;
 	ImageView iv_wind;
 	ImageView[] windList = new ImageView[4];
@@ -27,12 +30,18 @@ import android.widget.TextView;
 	TextView tv_time;
 	TextView tv_temp ;
 	TextView tv_dayofweek;
+	
+	EditText et_ip ;
+	EditText et_port;
+	Button btn_connect;
+	
 	int currentMenu = 0;
 	int currentWind = 0;
 	double currentTemperature = 16.0;
 	static final int countDownTime = 2;
 	int countDown = countDownTime;
 	double initTemperature = 20.5;
+	
 	
 	int dayOfWeek;
 	int hour;
@@ -45,7 +54,7 @@ import android.widget.TextView;
 	static final int TIMECHANGED = 2;
 	static final int WEEKDAYCHANGED =3;
 	
-	Operations operation = new Operations();
+	Operations operation;
 	
 	Time time = new Time();
 	
@@ -74,11 +83,17 @@ import android.widget.TextView;
 			//super.handleMessage(msg);
 			
 			if (msg.what == TIMECHANGED){
+				String str_minute;
+				if (minute<10){
+					str_minute = "0"+minute;
+				}else {
+					str_minute  = ""+minute;
+				}
 				if (flag){
-					tv_time.setText(""+hour+":"+minute);
+					tv_time.setText(""+hour+":"+str_minute);
 					flag = false;
 				}else{
-					tv_time.setText(""+hour+" "+minute);
+					tv_time.setText(""+hour+" "+str_minute);
 					flag = true;
 				}
 				
@@ -89,11 +104,21 @@ import android.widget.TextView;
 		}
 		
 	};
-	
-	
-	
-	
-	
+	Handler socketHandler = new Handler(){
+
+		@Override
+		public void handleMessage(Message msg) {
+			// TODO Auto-generated method stub
+			//super.handleMessage(msg);
+			if (msg.what == 1){
+				currentTemperature = (double)Integer.valueOf((String) msg.obj).intValue();
+				tv_temp.setText((String)msg.obj);
+				Log.i("yangluo","socketHandle "+msg.obj);
+			}
+			
+		}
+		
+	};
 	
 
 	@Override
@@ -105,6 +130,9 @@ import android.widget.TextView;
 		
 		initViews();
 		addEvents();
+		
+		operation = new Operations(socketHandler);
+		
 		count = new Counter();
 		Thread countThread = new Thread(count);
 		countThread.start();
@@ -115,7 +143,6 @@ import android.widget.TextView;
 		
 		
 	}
-
 	private void addEvents() {
 		// TODO Auto-generated method stub
 		iv_wind.setOnClickListener(new OnClickListener() {
@@ -133,7 +160,8 @@ import android.widget.TextView;
 					currentWind++;
 					windList[currentWind].setVisibility(View.VISIBLE);
 				}
-				operation.WindClicked();
+				operation.sendMenuData(currentMenu);
+//				operation.WindClicked();
 				
 			}
 		});
@@ -142,7 +170,7 @@ import android.widget.TextView;
 			@Override
 			public void onClick(View arg0) {
 				// TODO Auto-generated method stub
-				Log.i("yangluo","-->"+countDown);
+				//Log.i("yangluo","-->"+countDown);
 				if (currentMenu >=2){
 					menuList[currentMenu].setVisibility(View.INVISIBLE);
 					currentMenu = 0;
@@ -153,8 +181,8 @@ import android.widget.TextView;
 					currentMenu++;
 					menuList[currentMenu].setVisibility(View.VISIBLE);
 				}
-				
-				operation.MenuClicked();
+				operation.sendMenuData(currentMenu);
+//				operation.MenuClicked();
 			}
 		});
 		iv_up.setOnClickListener(new OnClickListener() {
@@ -169,7 +197,8 @@ import android.widget.TextView;
 				iv_mark.setVisibility(View.INVISIBLE);
 				tv_set.setVisibility(View.VISIBLE);
 				
-				operation.UpTemperature();
+				operation.sendUpTemperature(initTemperature);
+//				operation.UpTemperature();
 				
 			}
 		});
@@ -185,7 +214,19 @@ import android.widget.TextView;
 				iv_mark.setVisibility(View.INVISIBLE);
 				tv_set.setVisibility(View.VISIBLE);
 				
-				operation.DownTemperature();
+				operation.sendDownTemprature(initTemperature);
+//				operation.DownTemperature();
+			}
+		});
+		
+		btn_connect.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				// TODO Auto-generated method stub
+				operation.Connect(et_ip.getText().toString(), et_port.getText().toString());
+				//判断连接是否成功
+				v.setClickable(false);
 			}
 		});
 		
@@ -215,6 +256,11 @@ import android.widget.TextView;
 		time.setToNow();
 		dayOfWeek = time.weekDay;
 		tv_dayofweek.setText(""+time.weekDay);
+		
+		et_ip = (EditText) findViewById(R.id.et_ip);
+		et_port = (EditText) findViewById(R.id.et_port);
+		btn_connect = (Button) findViewById(R.id.btn_connect);
+		
 		
 	}
 

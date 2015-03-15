@@ -52,6 +52,7 @@ public final class R {
         public static final int btn_connect=0x7f080003;
         public static final int content_layout=0x7f080004;
         public static final int et_ip=0x7f080000;
+        public static final int et_port=0x7f080002;
         public static final int iv_close=0x7f080016;
         public static final int iv_cold=0x7f080010;
         public static final int iv_degree=0x7f080007;
@@ -66,7 +67,6 @@ public final class R {
         public static final int iv_wind2=0x7f08000d;
         public static final int iv_wind3=0x7f08000e;
         public static final int iv_wind_auto=0x7f08000f;
-        public static final int rt_port=0x7f080002;
         public static final int tv_dayOfWeek=0x7f080006;
         public static final int tv_port=0x7f080001;
         public static final int tv_set=0x7f08000a;
