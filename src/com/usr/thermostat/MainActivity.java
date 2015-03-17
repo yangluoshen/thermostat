@@ -160,9 +160,8 @@ import android.widget.TextView;
 					currentWind++;
 					windList[currentWind].setVisibility(View.VISIBLE);
 				}
-				operation.sendMenuData(currentMenu);
+				operation.sendWindData(currentWind);
 //				operation.WindClicked();
-				
 			}
 		});
 		iv_menu.setOnClickListener(new OnClickListener() {

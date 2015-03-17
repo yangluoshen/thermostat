@@ -25,7 +25,11 @@
                 android:inputType="number"
                 android:digits="0123456789."
                 android:ems="10" 
-                android:text="10.10.100.254">
+                android:text="10.10.100.254"
+                >
+               <!--  android:text="10.10.100.254" -->
+                
+                
 
                 <requestFocus />
             </EditText>

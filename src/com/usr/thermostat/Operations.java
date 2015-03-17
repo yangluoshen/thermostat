@@ -81,9 +81,9 @@ public class Operations {
 		dataPackage[0] = commands[0];
 		dataPackage[1] = 0x00;
 		dataPackage[2] = 0x00;
-		dataPackage[3] = 0x08;
+		dataPackage[3] = 0x18;  //data0
 		dataPackage[4] = 0x00;
-		dataPackage[5] = 0x2c;
+		dataPackage[5] = 0x2c;  //init temperature
 		dataPackage[6] = 0x00;
 		dataPackage[7] = 0x00;
 		CalcCheckSum();
@@ -210,7 +210,9 @@ public class Operations {
 	}
 	
 	void sendCloseSignal(){
-		
+		dataPackage[0] = commands[0];
+		dataPackage[3] &= switchResetByte;
+		PrintWrite(SETCLOSE);
 	}
 	
 	/**
@@ -233,7 +235,8 @@ public class Operations {
 	}
 	
 	void CalcCheckSum(){
-		for (int i=0; i<dataPackage.length-1;i++){
+		dataPackage[7] = 0x00;
+		for (int i=0; i<6;i++){
 			dataPackage[7]+= dataPackage[i];
 		}
 		dataPackage[7] = (byte) (dataPackage[7] & 0xff ^ 0xa5);
@@ -275,43 +278,53 @@ public class Operations {
 		CalcCheckSum();
 		try {
 			mPrintWriter.write(dataPackage);
+//			printStringResult(type);
+
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-//		mPrintWriter.flush();
-		
-//		switch(type){
-//		case SETCONNECT:
-//			mPrintWriter.print(Bytes2String(dataPackage)+" set connect\n ");
-//			mPrintWriter.flush();
-//			break;
-//		case SETWIND:
-//			mPrintWriter.print(Bytes2String(dataPackage)+" set wind\n ");
-//			mPrintWriter.flush();
-//			break;
-//		case SETMENU :
-//			mPrintWriter.print(Bytes2String(dataPackage)+" set function\n ");
-//			mPrintWriter.flush();
-//			break;
-//		case SETUPTEMP :
-//			mPrintWriter.print(Bytes2String(dataPackage)+" up temperature\n ");
-//			mPrintWriter.flush();
-//			break;
-//		case SETDOWNTEMP:
-//			mPrintWriter.print(Bytes2String(dataPackage)+" down temperature\n ");
-//			mPrintWriter.flush();
-//			break;
-//		case SETCLOSE:
-//			mPrintWriter.print(Bytes2String(dataPackage)+" close device\n ");
-//			mPrintWriter.flush();
-//			break;
-			
-//		}
 		
 //		mPrintWriter.print(Bytes2String(dataPackage));
 //		mPrintWriter.flush();
 		
+	}
+	
+	void printStringResult(int type){
+		try {
+			
+			switch(type){
+			case SETCONNECT:
+				mPrintWriter.writeChars(Bytes2String(dataPackage)+" set connect\n ");
+	//			mPrintWriter.flush();
+				break;
+			case SETWIND:
+				mPrintWriter.writeChars(Bytes2String(dataPackage)+" set wind\n ");
+	//			mPrintWriter.flush();
+				break;
+			case SETMENU :
+				mPrintWriter.writeChars(Bytes2String(dataPackage)+" set function\n ");
+	//			mPrintWriter.flush();
+				break;
+			case SETUPTEMP :
+				mPrintWriter.writeChars(Bytes2String(dataPackage)+" up temperature\n ");
+	//			mPrintWriter.flush();
+				break;
+			case SETDOWNTEMP:
+				mPrintWriter.writeChars(Bytes2String(dataPackage)+" down temperature\n ");
+	//			mPrintWriter.flush();
+				break;
+			case SETCLOSE:
+				mPrintWriter.writeChars(Bytes2String(dataPackage)+" close device\n ");
+	//			mPrintWriter.flush();
+				break;
+				
+			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
 	}
 	
 	//a thread that receive the message from server. 
