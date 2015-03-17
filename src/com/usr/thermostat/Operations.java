@@ -1,6 +1,7 @@
 package com.usr.thermostat;
 
 import java.io.BufferedReader;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
@@ -13,9 +14,17 @@ import android.util.Log;
 
 public class Operations {
 	
+	public static final int SETWIND = 0;
+	public static final int SETMENU = 1;
+	public static final int SETUPTEMP = 2;
+	public static final int SETDOWNTEMP = 3;
+	public static final int SETCLOSE = 4;
+	public static final int SETCONNECT = 5;
+	
 	public static Socket mSocket = null;
 	private BufferedReader mBufferedReader  = null;
-	private PrintWriter mPrintWriter = null;
+//	private PrintWriter mPrintWriter = null;
+	public DataOutputStream mPrintWriter = null;
 	
 	public static final int WIND_MODE_AUTO   = 0;	
 	public static final int WIND_MODE_LOW    = 1;
@@ -50,9 +59,9 @@ public class Operations {
 	*  dataPackage[7] is checkSum;
 	*/
 	byte[] dataPackage = new byte[8];
-	byte windResetByte = 0x3f;
-	byte switchResetByte = (byte) 0xf7;
-	byte menuResetByte = (byte) 0xf9;
+	byte windResetByte = (byte) 0xfc;
+	byte switchResetByte = (byte) 0xef;
+	byte menuResetByte = (byte) 0x9f;
 	
 	
 
@@ -72,24 +81,30 @@ public class Operations {
 		dataPackage[0] = commands[0];
 		dataPackage[1] = 0x00;
 		dataPackage[2] = 0x00;
-		dataPackage[3] = 0x00;
+		dataPackage[3] = 0x08;
 		dataPackage[4] = 0x00;
-		dataPackage[5] = 0x10;
+		dataPackage[5] = 0x2c;
 		dataPackage[6] = 0x00;
 		dataPackage[7] = 0x00;
 		CalcCheckSum();
 		
 	}
-	
 	public boolean Connect(String ip, String port){
 		
 		try {
+			Log.i("yangluo","connect1");
 			int int_port = Integer.valueOf(port).intValue(); 
 			mSocket = new Socket(ip, int_port);
 			mBufferedReader = new BufferedReader(new InputStreamReader(mSocket.getInputStream()));
-			mPrintWriter = new PrintWriter(mSocket.getOutputStream());
+			mPrintWriter = new DataOutputStream(mSocket.getOutputStream());
+//			
+			mPrintWriter.write(dataPackage);
+//			byte[] bytes = {1,2,3,4,5,6,7,8};
+//			mPrintWriter.write(bytes);
+//			mPrintWriter.flush();
 			
-			PrintWrite();
+			Log.i("yangluo","connect2");
+			//PrintWrite(SETCONNECT);
 			//********send init datapackage**********************
 //			CalcCheckSum();
 //			mPrintWriter.print(dataPackage);
@@ -123,17 +138,17 @@ public class Operations {
 //			mPrintWriter.flush();
 			break;
 		case MENU_MODE_WARM :
-			dataPackage[3] |= 0x02;
+			dataPackage[3] |= 0x20;
 //			mPrintWriter.print();
 //			mPrintWriter.flush();
 			break;
 		case MENU_MODE_VENTILATE :
-			dataPackage[3] |= 0x04;
+			dataPackage[3] |= 0x40;
 //			mPrintWriter.print("menu 3");
 //			mPrintWriter.flush();
 			break;
 		}
-		PrintWrite();
+		PrintWrite(SETMENU);
 //		CalcCheckSum();
 //		mPrintWriter.print(dataPackage);
 //		mPrintWriter.flush();
@@ -151,23 +166,23 @@ public class Operations {
 //			mPrintWriter.flush();
 			break;
 		case WIND_MODE_LOW :
-			dataPackage[3] |= 0xc0;
+			dataPackage[3] |= 0x03;
 //			mPrintWriter.print(" wind 1");
 //			mPrintWriter.flush();
 			break;
 		case WIND_MODE_MIDDLE :
-			dataPackage[3] |= 0x80;
+			dataPackage[3] |= 0x02;
 //			mPrintWriter.print(" wind 2");
 //			mPrintWriter.flush();
 			break;
 		case WIND_MODE_HIGH :
-			dataPackage[3] |= 0x40;
+			dataPackage[3] |= 0x01;
 //			mPrintWriter.print(" wind 4 ");
 //			mPrintWriter.flush();
 			break;
 		}
 		Log.i("yangluo","in send windata "+dataPackage.toString());
-		PrintWrite();
+		PrintWrite(SETWIND);
 //		CalcCheckSum();
 //		mPrintWriter.print(dataPackage);
 //		mPrintWriter.flush();
@@ -178,7 +193,7 @@ public class Operations {
 		int int_temperature = (int) (temperature * 2);
 		dataPackage[0] = commands[0];
 		dataPackage[5] = (byte)int_temperature;
-		PrintWrite();
+		PrintWrite(SETUPTEMP);
 //		CalcCheckSum();
 //		mPrintWriter.print(dataPackage);
 //		mPrintWriter.flush();
@@ -188,7 +203,7 @@ public class Operations {
 		int int_temperature = (int) (temperature * 2);
 		dataPackage[0] = commands[0];
 		dataPackage[5] = (byte)int_temperature;
-		PrintWrite();
+		PrintWrite(SETDOWNTEMP);
 //		CalcCheckSum();
 //		mPrintWriter.print(dataPackage);
 //		mPrintWriter.flush();
@@ -256,13 +271,46 @@ public class Operations {
 		return (char)(t-10+'A');
 	}
 	
-	void PrintWrite(){
+	void PrintWrite(int type){
 		CalcCheckSum();
-		mPrintWriter.print(dataPackage);
-		mPrintWriter.flush();
+		try {
+			mPrintWriter.write(dataPackage);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+//		mPrintWriter.flush();
 		
-		mPrintWriter.print(Bytes2String(dataPackage));
-		mPrintWriter.flush();
+//		switch(type){
+//		case SETCONNECT:
+//			mPrintWriter.print(Bytes2String(dataPackage)+" set connect\n ");
+//			mPrintWriter.flush();
+//			break;
+//		case SETWIND:
+//			mPrintWriter.print(Bytes2String(dataPackage)+" set wind\n ");
+//			mPrintWriter.flush();
+//			break;
+//		case SETMENU :
+//			mPrintWriter.print(Bytes2String(dataPackage)+" set function\n ");
+//			mPrintWriter.flush();
+//			break;
+//		case SETUPTEMP :
+//			mPrintWriter.print(Bytes2String(dataPackage)+" up temperature\n ");
+//			mPrintWriter.flush();
+//			break;
+//		case SETDOWNTEMP:
+//			mPrintWriter.print(Bytes2String(dataPackage)+" down temperature\n ");
+//			mPrintWriter.flush();
+//			break;
+//		case SETCLOSE:
+//			mPrintWriter.print(Bytes2String(dataPackage)+" close device\n ");
+//			mPrintWriter.flush();
+//			break;
+			
+//		}
+		
+//		mPrintWriter.print(Bytes2String(dataPackage));
+//		mPrintWriter.flush();
 		
 	}
 	
@@ -280,8 +328,8 @@ public class Operations {
 					msg.obj = temperature;
 					msg.what = 1;
 					handler.sendMessage(msg);
-					mPrintWriter.print(" get ");
-					mPrintWriter.flush();
+//					mPrintWriter.print(" get ");
+//					mPrintWriter.flush();
 					Log.i("yangluo","mRecvThread "+(String) msg.obj);
 				}
 			} catch (IOException e) {

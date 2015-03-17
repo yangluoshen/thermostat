@@ -40,7 +40,7 @@ import android.widget.TextView;
 	double currentTemperature = 16.0;
 	static final int countDownTime = 2;
 	int countDown = countDownTime;
-	double initTemperature = 20.5;
+	double initTemperature = 22.0;
 	
 	
 	int dayOfWeek;
