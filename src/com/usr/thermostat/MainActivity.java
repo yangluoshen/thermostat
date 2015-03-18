@@ -34,12 +34,12 @@ import android.widget.TextView;
 	TextView tv_temp ;       // text temprature
 	TextView tv_dayofweek;   // text day of week
 	TextView tv_week;        //the text "week"
-	TextView tv_divide;      //冒号
+//	TextView tv_divide;      //冒号
 	
-	
-	EditText et_ip ;
-	EditText et_port;
-	Button btn_connect;
+//	
+//	EditText et_ip ;
+//	EditText et_port;
+//	Button btn_connect;
 	
 	LinearLayout content_layout;
 	
@@ -115,6 +115,7 @@ import android.widget.TextView;
 		}
 		
 	};
+
 	Handler socketHandler = new Handler(){
 
 		@Override
@@ -142,7 +143,8 @@ import android.widget.TextView;
 		initViews();
 		addEvents();
 		
-		operation = new Operations(this,socketHandler);
+		operation = Operations.GetOperation();
+		operation.setHandler(socketHandler);
 		
 		count = new Counter();
 		Thread countThread = new Thread(count);
@@ -235,16 +237,16 @@ import android.widget.TextView;
 			}
 		});
 		
-		btn_connect.setOnClickListener(new OnClickListener() {
-			
-			@Override
-			public void onClick(View v) {
-				// TODO Auto-generated method stub
-				operation.Connect(et_ip.getText().toString(), et_port.getText().toString());
-				//判断连接是否成功
-//				v.setClickable(false);
-			}
-		});
+//		btn_connect.setOnClickListener(new OnClickListener() {
+//			
+//			@Override
+//			public void onClick(View v) {
+//				// TODO Auto-generated method stub
+//				operation.Connect(et_ip.getText().toString(), et_port.getText().toString());
+//				//判断连接是否成功
+////				v.setClickable(false);
+//			}
+//		});
 		iv_close.setOnClickListener(new OnClickListener() {
 			
 			@Override
@@ -264,8 +266,7 @@ import android.widget.TextView;
 		
 	}
 	void turnDownDevice(){
-//		iv_menu.setVisibility(View.INVISIBLE);
-//		iv_wind.setVisibility(View.INVISIBLE);
+
 		windList[currentWind].setVisibility(View.INVISIBLE);
 		menuList[currentMenu].setVisibility(View.INVISIBLE);
 		tv_temp.setVisibility(View.INVISIBLE);
@@ -277,10 +278,10 @@ import android.widget.TextView;
 		tv_week.setVisibility(View.INVISIBLE);
 		tv_dayofweek.setVisibility(View.INVISIBLE);
 		
-		et_ip.setVisibility(View.INVISIBLE);
-		et_port.setVisibility(View.INVISIBLE);
-		btn_connect.setVisibility(View.INVISIBLE);
-		tv_divide.setVisibility(View.INVISIBLE);
+//		et_ip.setVisibility(View.INVISIBLE);
+//		et_port.setVisibility(View.INVISIBLE);
+//		btn_connect.setVisibility(View.INVISIBLE);
+//		tv_divide.setVisibility(View.INVISIBLE);
 		
 		iv_menu.setClickable(false);
 		iv_wind.setClickable(false);
@@ -292,8 +293,7 @@ import android.widget.TextView;
 		
 	}
 	void turnOnDevice(){
-//		iv_menu.setVisibility(View.VISIBLE);
-//		iv_wind.setVisibility(View.VISIBLE);
+
 		windList[currentWind].setVisibility(View.VISIBLE);
 		menuList[currentMenu].setVisibility(View.VISIBLE);
 		tv_temp.setVisibility(View.VISIBLE);
@@ -305,10 +305,6 @@ import android.widget.TextView;
 		tv_week.setVisibility(View.VISIBLE);
 		tv_dayofweek.setVisibility(View.VISIBLE);
 		
-		et_ip.setVisibility(View.VISIBLE);
-		et_port.setVisibility(View.VISIBLE);
-		btn_connect.setVisibility(View.VISIBLE);
-		tv_divide.setVisibility(View.VISIBLE);
 		
 		iv_menu.setClickable(true);
 		iv_wind.setClickable(true);
@@ -344,12 +340,17 @@ import android.widget.TextView;
 		time.setToNow();
 		dayOfWeek = time.weekDay;
 		tv_dayofweek.setText(""+time.weekDay);
-		
-		et_ip = (EditText) findViewById(R.id.et_ip);
-		et_port = (EditText) findViewById(R.id.et_port);
-		btn_connect = (Button) findViewById(R.id.btn_connect);
-		
-		tv_divide = (TextView) findViewById(R.id.tv_divide);
+		minute = time.minute;
+		hour = time.hour;
+		//set current time
+		String str_minute;
+		if (minute<10){
+			str_minute = "0"+minute;
+		}else {
+			str_minute  = ""+minute;
+		}
+		tv_time.setText(""+hour+":"+str_minute);
+
 		
 		content_layout = (LinearLayout) findViewById(R.id.content_layout);
 		

@@ -1,6 +1,7 @@
 package com.usr.thermostat;
 
 import java.io.BufferedReader;
+import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -18,6 +19,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 public class Operations {
+	private static Operations operationInstance = null;
 	
 	public static final int SETWIND = 0;
 	public static final int SETMENU = 1;
@@ -26,14 +28,15 @@ public class Operations {
 	public static final int SETCLOSE = 4;
 	public static final int SETCONNECT = 5;
 	
-	private Context context;
+//	private Context context;
 	
 	public Socket mSocket = null;
 	public InetSocketAddress mISA = null;
 	public int socketTimeOut = 3000;
-	private BufferedReader mBufferedReader  = null;
+//	private BufferedReader mBufferedReader  = null;
 //	private PrintWriter mPrintWriter = null;
-	public DataOutputStream mPrintWriter = null;
+	private DataInputStream mDataInputeStream = null;
+	private DataOutputStream mPrintWriter = null;
 	
 	public static final int WIND_MODE_AUTO   = 0;	
 	public static final int WIND_MODE_LOW    = 1;
@@ -74,18 +77,27 @@ public class Operations {
 	
 	Time time = new Time();
 
-	public Operations(Context context, Handler handler) {
+	private Operations() {
 		// TODO Auto-generated constructor stub
-		this.handler = handler;
-		this.context = context;
+//		this.context = context;
 		recvThread = new Thread(mRecvThread);
-		initDataPackage();
-		
-		Log.i("yangluo",Bytes2Chars(dataPackage).toString());
-		
-		
-		
+		initDataPackage();		
 	}
+	/**
+	 * unique instance
+	 * @param ctx
+	 * @param han
+	 * @return
+	 */
+	public static Operations GetOperation(){
+		
+		if (operationInstance == null){
+			operationInstance = new Operations();
+		}
+		
+		return operationInstance;
+	}
+	
 	void initDataPackage(){
 		dataPackage[0] = commands[0];
 		dataPackage[1] = 0x00;
@@ -108,7 +120,7 @@ public class Operations {
 			mISA = new InetSocketAddress(ip, int_port);
 			mSocket.connect(mISA, socketTimeOut);
 			
-			mBufferedReader = new BufferedReader(new InputStreamReader(mSocket.getInputStream()));
+			mDataInputeStream = new DataInputStream(mSocket.getInputStream());
 			mPrintWriter = new DataOutputStream(mSocket.getOutputStream());
 			
 			//send the init data
@@ -116,19 +128,18 @@ public class Operations {
 			
 			sendInitTime();
 
-			Log.i("yangluo","connect2");
-
-			
 			//start the recv thread
 			//recvThread.start();
 		} catch (UnknownHostException e) {
 			// TODO Auto-generated catch block
-			Toast.makeText(this.context, "connect failed- unknow host", Toast.LENGTH_SHORT).show();
+//			Toast.makeText(this.context, "connect failed-- unknow host", Toast.LENGTH_SHORT).show();
 			e.printStackTrace();
+			return false;
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
-			Toast.makeText(this.context, "connect failed2", Toast.LENGTH_SHORT).show();
+//			Toast.makeText(this.context, "connect failed2", Toast.LENGTH_SHORT).show();
 			e.printStackTrace();
+			return false;
 		}
 		
 		return true;
@@ -370,16 +381,21 @@ public class Operations {
 		
 		public void run(){
 			Log.i("yangluo","in mRecvThread ");
-			String temperature;
+//			String temperature;
 			try {
-				while ( (temperature = mBufferedReader.readLine()) != null){
-					Message msg = new Message();
-					msg.obj = temperature;
-					msg.what = 1;
-					handler.sendMessage(msg);
-//					mPrintWriter.print(" get ");
-//					mPrintWriter.flush();
-					Log.i("yangluo","mRecvThread "+(String) msg.obj);
+				byte[] readBuffer = new byte[8];
+				while ( true){
+					if (mDataInputeStream.read(readBuffer) != -1){
+						
+						Message msg = new Message();
+						
+						msg.obj = "" + (int) readBuffer[6];
+						msg.what = 1;
+						handler.sendMessage(msg);
+						
+						Log.i("yangluo","mRecvThread "+(String) msg.obj);
+					}
+					
 				}
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
@@ -389,6 +405,13 @@ public class Operations {
 
 		}
 	};
+
+	public Handler getHandler() {
+		return handler;
+	}
+	public void setHandler(Handler handler) {
+		this.handler = handler;
+	}
 	
 	
 	
