@@ -25,7 +25,7 @@
                 android:inputType="number"
                 android:digits="0123456789."
                 android:ems="10" 
-                android:text="10.10.100.254"
+                android:text="222.20.57.137"
                 >
                <!--  android:text="10.10.100.254" -->
                 
@@ -34,7 +34,7 @@
                 <requestFocus />
             </EditText>
             <TextView
-                android:id="@+id/tv_port"
+                android:id="@+id/tv_divide"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="0"
@@ -72,7 +72,7 @@
             android:id="@+id/content_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="#87d7ee" >
+            android:background="@color/lightblue" >
             
             <LinearLayout
             android:layout_width="match_parent"
@@ -166,7 +166,8 @@
                     android:layout_height="50dp"
                     android:maxHeight="60dp"
                     android:maxWidth="60dp"
-                    android:src="@drawable/wind1" />
+                    android:src="@drawable/wind1"
+                    android:visibility="invisible" />
 
                 <ImageView
                     android:id="@+id/iv_wind2"
@@ -192,7 +193,6 @@
                     android:layout_height="50dp"
                     android:maxHeight="60dp"
                     android:maxWidth="60dp"
-                    android:visibility="invisible"
                     android:src="@drawable/windauto" />
             </LinearLayout>
 
@@ -216,7 +216,7 @@
         		    android:layout_centerVertical="true"
         		    android:layout_marginRight="20dp"
         		   
-        		    android:text="time"
+        		    android:text="    "
         		    android:textColor="#003f74"
         		    android:textSize="30sp" />
 

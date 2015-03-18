@@ -6,11 +6,16 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
+
+import android.content.Context;
 import android.os.Handler;
 import android.os.Message;
+import android.text.format.Time;
 import android.util.Log;
+import android.widget.Toast;
 
 public class Operations {
 	
@@ -21,7 +26,11 @@ public class Operations {
 	public static final int SETCLOSE = 4;
 	public static final int SETCONNECT = 5;
 	
-	public static Socket mSocket = null;
+	private Context context;
+	
+	public Socket mSocket = null;
+	public InetSocketAddress mISA = null;
+	public int socketTimeOut = 3000;
 	private BufferedReader mBufferedReader  = null;
 //	private PrintWriter mPrintWriter = null;
 	public DataOutputStream mPrintWriter = null;
@@ -58,17 +67,17 @@ public class Operations {
 	*  dataPackage[6] is data3;
 	*  dataPackage[7] is checkSum;
 	*/
-	byte[] dataPackage = new byte[8];
-	byte windResetByte = (byte) 0xfc;
+	byte[] dataPackage   = new byte[8];
+	byte windResetByte   = (byte) 0xfc;
 	byte switchResetByte = (byte) 0xef;
-	byte menuResetByte = (byte) 0x9f;
+	byte menuResetByte   = (byte) 0x9f;
 	
-	
+	Time time = new Time();
 
-
-	public Operations(Handler handler) {
+	public Operations(Context context, Handler handler) {
 		// TODO Auto-generated constructor stub
 		this.handler = handler;
+		this.context = context;
 		recvThread = new Thread(mRecvThread);
 		initDataPackage();
 		
@@ -86,7 +95,7 @@ public class Operations {
 		dataPackage[5] = 0x2c;  //init temperature
 		dataPackage[6] = 0x00;
 		dataPackage[7] = 0x00;
-		CalcCheckSum();
+		CalcCheckSum(dataPackage);
 		
 	}
 	public boolean Connect(String ip, String port){
@@ -94,38 +103,60 @@ public class Operations {
 		try {
 			Log.i("yangluo","connect1");
 			int int_port = Integer.valueOf(port).intValue(); 
-			mSocket = new Socket(ip, int_port);
+			
+			mSocket = new Socket();
+			mISA = new InetSocketAddress(ip, int_port);
+			mSocket.connect(mISA, socketTimeOut);
+			
 			mBufferedReader = new BufferedReader(new InputStreamReader(mSocket.getInputStream()));
 			mPrintWriter = new DataOutputStream(mSocket.getOutputStream());
-//			
-			mPrintWriter.write(dataPackage);
-//			byte[] bytes = {1,2,3,4,5,6,7,8};
-//			mPrintWriter.write(bytes);
-//			mPrintWriter.flush();
 			
+			//send the init data
+			mPrintWriter.write(dataPackage);
+			
+			sendInitTime();
+
 			Log.i("yangluo","connect2");
-			//PrintWrite(SETCONNECT);
-			//********send init datapackage**********************
-//			CalcCheckSum();
-//			mPrintWriter.print(dataPackage);
-//			mPrintWriter.flush();
-//			
-//			mPrintWriter.print(Bytes2Chars(dataPackage));
-//			mPrintWriter.flush();
+
 			
 			//start the recv thread
 			//recvThread.start();
 		} catch (UnknownHostException e) {
 			// TODO Auto-generated catch block
+			Toast.makeText(this.context, "connect failed- unknow host", Toast.LENGTH_SHORT).show();
 			e.printStackTrace();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
+			Toast.makeText(this.context, "connect failed2", Toast.LENGTH_SHORT).show();
 			e.printStackTrace();
 		}
 		
 		return true;
 	}
-	//this function called whenever the menu type changed
+	private void sendInitTime() {
+		// TODO Auto-generated method stub
+		time.setToNow();
+		byte[] bytes = new byte[8];
+		bytes[0] = (byte) 0xA8;
+		bytes[1] = 0x00;
+		bytes[2] = 0x00;
+		bytes[3] = (byte) time.second;
+		bytes[4] = (byte) time.minute;
+		bytes[5] = (byte) time.hour;
+		bytes[6] = (byte) (time.weekDay+1);
+		CalcCheckSum(bytes);
+		try {
+			mPrintWriter.write(bytes);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	}
+	/**
+	 * this function called whenever the menu type changed
+	 * @param mode
+	 */
 	void sendMenuData(int mode){
 		dataPackage[0] = commands[0];
 		dataPackage[3] &= menuResetByte;
@@ -149,12 +180,12 @@ public class Operations {
 			break;
 		}
 		PrintWrite(SETMENU);
-//		CalcCheckSum();
-//		mPrintWriter.print(dataPackage);
-//		mPrintWriter.flush();
 		
 	}
-	// this function called whenever the wind level changed
+	/**
+	 *  this function called whenever the wind level changed
+	 * @param mode
+	 */
 	void sendWindData(int mode){
 		dataPackage[0] = commands[0];
 		dataPackage[3] &= windResetByte;
@@ -194,9 +225,7 @@ public class Operations {
 		dataPackage[0] = commands[0];
 		dataPackage[5] = (byte)int_temperature;
 		PrintWrite(SETUPTEMP);
-//		CalcCheckSum();
-//		mPrintWriter.print(dataPackage);
-//		mPrintWriter.flush();
+
 	}
 	
 	void sendDownTemprature(double temperature){
@@ -204,14 +233,17 @@ public class Operations {
 		dataPackage[0] = commands[0];
 		dataPackage[5] = (byte)int_temperature;
 		PrintWrite(SETDOWNTEMP);
-//		CalcCheckSum();
-//		mPrintWriter.print(dataPackage);
-//		mPrintWriter.flush();
 	}
 	
-	void sendCloseSignal(){
+	void sendCloseSignal(int state){
 		dataPackage[0] = commands[0];
 		dataPackage[3] &= switchResetByte;
+		if (state == MainActivity.SWITCHON){
+			dataPackage[3] |= 0x10;
+		}
+		else if (state == MainActivity.SWITCHOFF){
+			dataPackage[3] |= 0x00;
+		}
 		PrintWrite(SETCLOSE);
 	}
 	
@@ -234,13 +266,18 @@ public class Operations {
 		return chars;
 	}
 	
-	void CalcCheckSum(){
-		dataPackage[7] = 0x00;
+	void CalcCheckSum(byte[] bytes){
+		bytes[7] = 0x00;
 		for (int i=0; i<6;i++){
-			dataPackage[7]+= dataPackage[i];
+			bytes[7]+= bytes[i];
 		}
-		dataPackage[7] = (byte) (dataPackage[7] & 0xff ^ 0xa5);
+		bytes[7] = (byte) (bytes[7] & 0xff ^ 0xa5);
 	}
+	/**
+	 * convert a byte[] to String
+	 * @param bytes
+	 * @return
+	 */
 	public StringBuffer Bytes2String(byte[] bytes){
 		byte maskHigh = (byte) 0xf0;
 		byte maskLow  = (byte) 0x0f;
@@ -275,7 +312,7 @@ public class Operations {
 	}
 	
 	void PrintWrite(int type){
-		CalcCheckSum();
+		CalcCheckSum(dataPackage);
 		try {
 			mPrintWriter.write(dataPackage);
 //			printStringResult(type);
@@ -284,35 +321,32 @@ public class Operations {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
-//		mPrintWriter.print(Bytes2String(dataPackage));
-//		mPrintWriter.flush();
+
 		
 	}
-	
+	/**
+	 * send the datapackage[] through String type
+	 * just  used when test
+	 * @param type
+	 */
 	void printStringResult(int type){
 		try {
 			
 			switch(type){
 			case SETCONNECT:
 				mPrintWriter.writeChars(Bytes2String(dataPackage)+" set connect\n ");
-	//			mPrintWriter.flush();
 				break;
 			case SETWIND:
 				mPrintWriter.writeChars(Bytes2String(dataPackage)+" set wind\n ");
-	//			mPrintWriter.flush();
 				break;
 			case SETMENU :
 				mPrintWriter.writeChars(Bytes2String(dataPackage)+" set function\n ");
-	//			mPrintWriter.flush();
 				break;
 			case SETUPTEMP :
 				mPrintWriter.writeChars(Bytes2String(dataPackage)+" up temperature\n ");
-	//			mPrintWriter.flush();
 				break;
 			case SETDOWNTEMP:
 				mPrintWriter.writeChars(Bytes2String(dataPackage)+" down temperature\n ");
-	//			mPrintWriter.flush();
 				break;
 			case SETCLOSE:
 				mPrintWriter.writeChars(Bytes2String(dataPackage)+" close device\n ");
@@ -327,9 +361,11 @@ public class Operations {
 
 	}
 	
-	//a thread that receive the message from server. 
-	//the message could only contents (double)temperature
-	//if necessary, you should convert the message to a double format (such as "22.5")
+	/**
+	 * a thread that receive the message from server. 
+	 * the message could only contents (double)temperature
+	 * if necessary, you should convert the message to a double format (such as "22.5")
+	 */
 	private Runnable mRecvThread = new Runnable(){
 		
 		public void run(){

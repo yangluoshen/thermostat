@@ -14,33 +14,42 @@ import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 @SuppressLint("HandlerLeak") public class MainActivity extends Activity  {
 	
 	ImageView iv_menu;
 	ImageView iv_wind;
-	ImageView[] windList = new ImageView[4];
-	ImageView[] menuList = new ImageView[3];
 	ImageView iv_up;
 	ImageView iv_down;
-	ImageView iv_mark;
+	ImageView iv_close;
 	
-	TextView tv_set;
-	TextView tv_time;
-	TextView tv_temp ;
-	TextView tv_dayofweek;
+	ImageView[] windList = new ImageView[4];
+	ImageView[] menuList = new ImageView[3];
+	ImageView iv_mark;       // image that mark the temperature
+	ImageView iv_degree;     // image "C"
+	TextView tv_set;         //the text "set"
+	TextView tv_time;        //text time
+	TextView tv_temp ;       // text temprature
+	TextView tv_dayofweek;   // text day of week
+	TextView tv_week;        //the text "week"
+	TextView tv_divide;      //冒号
+	
 	
 	EditText et_ip ;
 	EditText et_port;
 	Button btn_connect;
 	
+	LinearLayout content_layout;
+	
 	int currentMenu = 0;
-	int currentWind = 0;
+	int currentWind = 3;
 	double currentTemperature = 16.0;
 	static final int countDownTime = 2;
 	int countDown = countDownTime;
 	double initTemperature = 22.0;
+	int currentSwitchState = SWITCHON;
 	
 	
 	int dayOfWeek;
@@ -53,6 +62,8 @@ import android.widget.TextView;
 	static final int TIMEDOWN = 1;
 	static final int TIMECHANGED = 2;
 	static final int WEEKDAYCHANGED =3;
+	static final int SWITCHOFF = 0;
+	static final int SWITCHON = 1;
 	
 	Operations operation;
 	
@@ -64,7 +75,7 @@ import android.widget.TextView;
 		public void handleMessage(Message msg) {
 			// TODO Auto-generated method stub
 //			super.handleMessage(msg);
-			if (msg.what == TIMEUP){
+			if (msg.what == TIMEUP && currentSwitchState == SWITCHON){
 				SetTemperature(currentTemperature);
 				msg.what = TIMEDOWN;
 				
@@ -131,7 +142,7 @@ import android.widget.TextView;
 		initViews();
 		addEvents();
 		
-		operation = new Operations(socketHandler);
+		operation = new Operations(this,socketHandler);
 		
 		count = new Counter();
 		Thread countThread = new Thread(count);
@@ -191,6 +202,9 @@ import android.widget.TextView;
 				// TODO Auto-generated method stub
 				countDown = countDownTime;
 				initTemperature += 0.5;
+				if (initTemperature >= 30.0){
+					initTemperature = 30.0;
+				}
 				tv_temp.setText(""+initTemperature);
 				
 				iv_mark.setVisibility(View.INVISIBLE);
@@ -208,6 +222,9 @@ import android.widget.TextView;
 				// TODO Auto-generated method stub
 				countDown = countDownTime;
 				initTemperature -= 0.5;
+				if (initTemperature <= 10.0){
+					initTemperature = 10.0;
+				}
 				tv_temp.setText(""+initTemperature);
 				
 				iv_mark.setVisibility(View.INVISIBLE);
@@ -225,10 +242,79 @@ import android.widget.TextView;
 				// TODO Auto-generated method stub
 				operation.Connect(et_ip.getText().toString(), et_port.getText().toString());
 				//判断连接是否成功
-				v.setClickable(false);
+//				v.setClickable(false);
+			}
+		});
+		iv_close.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				// TODO Auto-generated method stub
+				operation.sendCloseSignal(currentSwitchState);
+				if (currentSwitchState == SWITCHON){
+					currentSwitchState = SWITCHOFF;
+					turnDownDevice();
+				}
+				else{
+					currentSwitchState = SWITCHON;
+					turnOnDevice();
+				}
 			}
 		});
 		
+	}
+	void turnDownDevice(){
+//		iv_menu.setVisibility(View.INVISIBLE);
+//		iv_wind.setVisibility(View.INVISIBLE);
+		windList[currentWind].setVisibility(View.INVISIBLE);
+		menuList[currentMenu].setVisibility(View.INVISIBLE);
+		tv_temp.setVisibility(View.INVISIBLE);
+		iv_mark.setVisibility(View.INVISIBLE);
+		iv_degree.setVisibility(View.INVISIBLE);
+		tv_set.setVisibility(View.INVISIBLE);
+		tv_time.setVisibility(View.INVISIBLE);
+		
+		tv_week.setVisibility(View.INVISIBLE);
+		tv_dayofweek.setVisibility(View.INVISIBLE);
+		
+		et_ip.setVisibility(View.INVISIBLE);
+		et_port.setVisibility(View.INVISIBLE);
+		btn_connect.setVisibility(View.INVISIBLE);
+		tv_divide.setVisibility(View.INVISIBLE);
+		
+		iv_menu.setClickable(false);
+		iv_wind.setClickable(false);
+		iv_up.setClickable(false);
+		iv_down.setClickable(false);
+		content_layout.setBackgroundColor(getResources().getColor(R.color.lightgray));
+		
+
+		
+	}
+	void turnOnDevice(){
+//		iv_menu.setVisibility(View.VISIBLE);
+//		iv_wind.setVisibility(View.VISIBLE);
+		windList[currentWind].setVisibility(View.VISIBLE);
+		menuList[currentMenu].setVisibility(View.VISIBLE);
+		tv_temp.setVisibility(View.VISIBLE);
+		iv_mark.setVisibility(View.VISIBLE);
+		iv_degree.setVisibility(View.VISIBLE);
+//		tv_set.setVisibility(View.VISIBLE);
+		tv_time.setVisibility(View.VISIBLE);
+		
+		tv_week.setVisibility(View.VISIBLE);
+		tv_dayofweek.setVisibility(View.VISIBLE);
+		
+		et_ip.setVisibility(View.VISIBLE);
+		et_port.setVisibility(View.VISIBLE);
+		btn_connect.setVisibility(View.VISIBLE);
+		tv_divide.setVisibility(View.VISIBLE);
+		
+		iv_menu.setClickable(true);
+		iv_wind.setClickable(true);
+		iv_up.setClickable(true);
+		iv_down.setClickable(true);
+		content_layout.setBackgroundColor(getResources().getColor(R.color.lightblue));
 	}
 
 	private void initViews() {
@@ -247,9 +333,12 @@ import android.widget.TextView;
 		tv_temp = (TextView) findViewById(R.id.tv_temperature);
 		iv_up   = (ImageView) findViewById(R.id.iv_up);
 		iv_down = (ImageView) findViewById(R.id.iv_down);
+		iv_close = (ImageView) findViewById(R.id.iv_close);
 		
 		tv_set  = (TextView) findViewById(R.id.tv_set);
+		tv_week = (TextView) findViewById(R.id.tv_week);
 		iv_mark = (ImageView) findViewById(R.id.iv_mark);
+		iv_degree = (ImageView) findViewById(R.id.iv_degree);
 		tv_time = (TextView) findViewById(R.id.tv_timeNow);
 		tv_dayofweek = (TextView) findViewById(R.id.tv_dayOfWeek);
 		time.setToNow();
@@ -259,6 +348,10 @@ import android.widget.TextView;
 		et_ip = (EditText) findViewById(R.id.et_ip);
 		et_port = (EditText) findViewById(R.id.et_port);
 		btn_connect = (Button) findViewById(R.id.btn_connect);
+		
+		tv_divide = (TextView) findViewById(R.id.tv_divide);
+		
+		content_layout = (LinearLayout) findViewById(R.id.content_layout);
 		
 		
 	}
