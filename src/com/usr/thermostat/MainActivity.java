@@ -44,7 +44,7 @@ import android.widget.TextView;
 	LinearLayout content_layout;
 	
 	int currentMenu = 0;
-	int currentWind = 3;
+	int currentWind = 0;
 	double currentTemperature = 16.0;
 	static final int countDownTime = 2;
 	int countDown = countDownTime;
@@ -236,29 +236,21 @@ import android.widget.TextView;
 //				operation.DownTemperature();
 			}
 		});
-		
-//		btn_connect.setOnClickListener(new OnClickListener() {
-//			
-//			@Override
-//			public void onClick(View v) {
-//				// TODO Auto-generated method stub
-//				operation.Connect(et_ip.getText().toString(), et_port.getText().toString());
-//				//判断连接是否成功
-////				v.setClickable(false);
-//			}
-//		});
+
 		iv_close.setOnClickListener(new OnClickListener() {
 			
 			@Override
 			public void onClick(View v) {
 				// TODO Auto-generated method stub
-				operation.sendCloseSignal(currentSwitchState);
+				
 				if (currentSwitchState == SWITCHON){
 					currentSwitchState = SWITCHOFF;
+					operation.sendCloseSignal(currentSwitchState);
 					turnDownDevice();
 				}
 				else{
 					currentSwitchState = SWITCHON;
+					operation.sendCloseSignal(currentSwitchState);
 					turnOnDevice();
 				}
 			}
@@ -277,11 +269,6 @@ import android.widget.TextView;
 		
 		tv_week.setVisibility(View.INVISIBLE);
 		tv_dayofweek.setVisibility(View.INVISIBLE);
-		
-//		et_ip.setVisibility(View.INVISIBLE);
-//		et_port.setVisibility(View.INVISIBLE);
-//		btn_connect.setVisibility(View.INVISIBLE);
-//		tv_divide.setVisibility(View.INVISIBLE);
 		
 		iv_menu.setClickable(false);
 		iv_wind.setClickable(false);
@@ -317,10 +304,10 @@ import android.widget.TextView;
 		// TODO Auto-generated method stub
 		iv_menu = (ImageView) findViewById(R.id.iv_menu);
 		iv_wind = (ImageView) findViewById(R.id.iv_time);
-		windList[0] = (ImageView) findViewById(R.id.iv_wind1);
-		windList[1] = (ImageView) findViewById(R.id.iv_wind2);
-		windList[2] = (ImageView) findViewById(R.id.iv_wind3);
-		windList[3] = (ImageView) findViewById(R.id.iv_wind_auto);
+		windList[0] = (ImageView) findViewById(R.id.iv_wind_auto);
+		windList[1] = (ImageView) findViewById(R.id.iv_wind1);
+		windList[2] = (ImageView) findViewById(R.id.iv_wind2);
+		windList[3] = (ImageView) findViewById(R.id.iv_wind3);
 		
 		menuList[0] = (ImageView) findViewById(R.id.iv_cold);
 		menuList[1] = (ImageView) findViewById(R.id.iv_warm);

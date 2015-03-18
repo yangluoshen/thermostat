@@ -1,6 +1,7 @@
 package com.usr.thermostat;
 
 import java.io.BufferedReader;
+
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -27,6 +28,7 @@ public class Operations {
 	public static final int SETDOWNTEMP = 3;
 	public static final int SETCLOSE = 4;
 	public static final int SETCONNECT = 5;
+	public static boolean isConnected = false;
 	
 //	private Context context;
 	
@@ -81,7 +83,7 @@ public class Operations {
 		// TODO Auto-generated constructor stub
 //		this.context = context;
 		recvThread = new Thread(mRecvThread);
-		initDataPackage();		
+		//initDataPackage();		
 	}
 	/**
 	 * unique instance
@@ -119,6 +121,7 @@ public class Operations {
 			mSocket = new Socket();
 			mISA = new InetSocketAddress(ip, int_port);
 			mSocket.connect(mISA, socketTimeOut);
+			initDataPackage();
 			
 			mDataInputeStream = new DataInputStream(mSocket.getInputStream());
 			mPrintWriter = new DataOutputStream(mSocket.getOutputStream());
@@ -139,22 +142,29 @@ public class Operations {
 			// TODO Auto-generated catch block
 //			Toast.makeText(this.context, "connect failed2", Toast.LENGTH_SHORT).show();
 			e.printStackTrace();
+			
 			return false;
 		}
-		
+		isConnected = true;
 		return true;
 	}
 	private void sendInitTime() {
 		// TODO Auto-generated method stub
 		time.setToNow();
-		byte[] bytes = new byte[8];
+		byte[] bytes = {0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00};
 		bytes[0] = (byte) 0xA8;
 		bytes[1] = 0x00;
 		bytes[2] = 0x00;
 		bytes[3] = (byte) time.second;
 		bytes[4] = (byte) time.minute;
 		bytes[5] = (byte) time.hour;
-		bytes[6] = (byte) (time.weekDay+1);
+		if (time.weekDay == 0){
+			bytes[6] = 0x00;
+		}
+		else{
+			bytes[6] = (byte) time.weekDay;
+		}
+		
 		CalcCheckSum(bytes);
 		try {
 			mPrintWriter.write(bytes);
@@ -279,7 +289,7 @@ public class Operations {
 	
 	void CalcCheckSum(byte[] bytes){
 		bytes[7] = 0x00;
-		for (int i=0; i<6;i++){
+		for (int i=0; i<7;i++){
 			bytes[7]+= bytes[i];
 		}
 		bytes[7] = (byte) (bytes[7] & 0xff ^ 0xa5);
@@ -403,6 +413,27 @@ public class Operations {
 			}
 			Log.i("yangluo","mRecvThread failed ");
 
+		}
+	};
+	private Runnable mGetTemperatureRequirst = new Runnable(){
+		
+		public void run(){
+			byte[] data = {(byte) 0xA0,0x10, 0x01, 0x00, 0x00, 0x00, 0x00,0x14};
+			while (isConnected){
+				try {
+					Thread.sleep(5000);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				try {
+					mPrintWriter.write(data);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				
+			}
 		}
 	};
 
