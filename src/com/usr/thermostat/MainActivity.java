@@ -19,6 +19,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 @SuppressLint("HandlerLeak") public class MainActivity extends Activity  {
 	
@@ -48,7 +49,7 @@ import android.widget.TextView;
 	
 	int currentMenu = 0;
 	int currentWind = 0;
-	static double currentTemperature = 0.0;
+	double currentTemperature = 0.0;
 	static final int countDownTime = 3;
 	int countDown = 0;
 	double initTemperature = 22.0;
@@ -67,6 +68,12 @@ import android.widget.TextView;
 	static final int WEEKDAYCHANGED =3;
 	static final int SWITCHOFF = 0;
 	static final int SWITCHON = 1;
+	
+	Thread countThread;
+	Thread timeThread;
+	Thread recvThread;
+	Thread getTemperatureRequest;
+	boolean threadRun = true;
 	
 	Operations operation;
 	
@@ -118,21 +125,47 @@ import android.widget.TextView;
 		
 	};
 
-	Handler socketHandler = new Handler(){
-
-		@Override
-		public void handleMessage(Message msg) {
-			// TODO Auto-generated method stub
-			//super.handleMessage(msg);
-			if (msg.what == 1){
-				currentTemperature = (double)Double.valueOf((String) msg.obj).doubleValue();
-				tv_temp.setText((String)msg.obj);
-				Log.i("yangluo","socketHandle "+msg.obj);
-			}
-			
+//	Handler socketHandler = new Handler(){
+//
+//		@Override
+//		public void handleMessage(Message msg) {
+//			// TODO Auto-generated method stub
+//			//super.handleMessage(msg);
+//			if (msg.what == 1){
+//				currentTemperature = (double)Double.valueOf((String) msg.obj).doubleValue();
+//				tv_temp.setText((String)msg.obj);
+//				Log.i("yangluo","socketHandle "+msg.obj);
+////				Toast.makeText(MainActivity.this,"data is ", Toast.LENGTH_LONG).show();
+//			}
+//			
+//		}
+//		
+//	};
+	public StringBuffer Bytes2String(byte[] bytes){
+		byte maskHigh = (byte) 0xf0;
+		byte maskLow  = (byte) 0x0f;
+		
+		StringBuffer buf = new StringBuffer();
+		buf.append("data above means: ");
+		for (byte b : bytes){
+			byte high, low;
+			high = (byte) ((b & maskHigh)>>4);
+			low  = (byte) ((b & maskLow));
+			buf.append(findHex(high));
+			buf.append(findHex(low));
+			buf.append(" ");
 		}
 		
-	};
+		return buf;
+	}
+	public  char findHex(byte b) {
+		int t = new Byte(b).intValue();
+		t = t < 0 ? t + 16 : t;
+		if ((0 <= t) &&(t <= 9)) {
+		return (char)(t + '0');
+		}
+		return (char)(t-10+'A');
+	}
 	
 
 	@Override
@@ -145,16 +178,26 @@ import android.widget.TextView;
 		initViews();
 		addEvents();
 		
-		operation = Operations.GetOperation();
+		operation = Operations.GetOperation(this);
 //		operation.setHandler(socketHandler);
 		
 		count = new Counter();
-		Thread countThread = new Thread(count);
+		countThread = new Thread(count);
 		countThread.start();
 		
 		timer = new Timer();
-		Thread timeThread = new Thread(timer);
+		timeThread = new Thread(timer);
 		timeThread.start();
+		
+
+		getTemperatureRequest = new Thread(mGetTemperatureRequest);
+		getTemperatureRequest.start();
+		
+		recvThread = new Thread(mRecvThread);
+		recvThread.start();
+		
+		
+		
 		
 		
 	}
@@ -359,7 +402,7 @@ import android.widget.TextView;
 		@Override
 		public void run() {
 			// TODO Auto-generated method stub
-			while (countDown >= 0){
+			while (threadRun){
 				if (countDown == 0){
 					//SetTemperature(currentTemperature);
 					Message msg = new Message();
@@ -385,7 +428,7 @@ import android.widget.TextView;
 		@Override
 		public void run() {
 			// TODO Auto-generated method stub
-			while (true){
+			while (threadRun){
 				time.setToNow();
 				//dayOfWeek = time.weekDay;
 				hour = time.hour;
@@ -413,8 +456,93 @@ import android.widget.TextView;
 	}
 	
 	
-	void  SetTemperature(double currentTemperature2){
-		tv_temp.setText(""+currentTemperature);
+	/**
+	 * a thread that receive the message from server. 
+	 * the message could only contents (double)temperature
+	 * if necessary, you should convert the message to a double format (such as "22.5")
+	 */
+	private Runnable mRecvThread = new Runnable(){
+		
+		public void run(){
+			Log.i("yangluo","in mRecvThread ");
+//			String temperature;
+			try {
+				byte[] readBuffer = new byte[8];
+				while ( threadRun){
+//					Toast.makeText(Operations.this.context.getApplicationContext(),"1 data is ", Toast.LENGTH_LONG).show();
+					if (operation.getmDataInputeStream().read(readBuffer) != -1){
+//						mDataInputeStream.readFully(readBuffer);
+//						Message msg = new Message();
+						int int_temp =(int) readBuffer[6]; 
+						double temp = (double) (int_temp*1.0/2.0);
+						currentTemperature = temp;
+//						String s  = Bytes2String(readBuffer).toString();
+//						Toast.makeText(Operations.this.context,"data is ", Toast.LENGTH_LONG).show();
+//						msg.obj = readBuffer;
+						
+//						msg.what = 1;
+						try {
+							Thread.sleep(500);
+						} catch (InterruptedException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+//						handler.sendMessage(msg);
+						
+//						Log.i("yangluo","mRecvThread "+(String) msg.obj);
+					}
+					
+				}
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			Log.i("yangluo","mRecvThread failed ");
+		}
+	};
+	
+	private Runnable mGetTemperatureRequest = new Runnable(){
+		
+		public void run(){
+			byte[] data = {(byte) 0xA0,0x10, 0x01, 0x00, 0x00, 0x00, 0x00,0x14};
+			while (threadRun){
+				try {
+					Thread.sleep(200);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				
+				try {
+					operation.getmPrintWriter().write(data);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				
+				try {
+					Thread.sleep(4800);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				
+				
+			}
+		}
+	};
+
+
+	
+	
+	void  SetTemperature(double temp){
+		if (temp>30.0){
+			temp = 30.0;
+		}
+		if (temp<0.0){
+			temp = 0.0;
+		}
+		tv_temp.setText(""+temp);
 	}
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
@@ -423,7 +551,14 @@ import android.widget.TextView;
 			try {
 				operation.mSocket.close();
 				operation.isConnected = false;
-				finish();
+				threadRun = false;
+				countThread.interrupt();
+				timeThread.interrupt();
+				getTemperatureRequest.interrupt();
+				recvThread.interrupt();
+				
+				
+//				finish();
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

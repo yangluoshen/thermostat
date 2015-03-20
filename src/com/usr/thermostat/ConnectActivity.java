@@ -21,7 +21,7 @@ public class ConnectActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.connect_layout);
 		
-		operation = Operations.GetOperation();
+		operation = Operations.GetOperation(this);
 		initView();
 		addEvent();
 		

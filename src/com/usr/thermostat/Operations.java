@@ -31,7 +31,7 @@ public class Operations {
 	public static boolean isConnected = false;
 	public boolean threadMarker = false;
 	
-//	private Context context;
+	private Context context;
 	
 	public Socket mSocket = null;
 	public InetSocketAddress mISA = null;
@@ -53,7 +53,7 @@ public class Operations {
 	
 	public double recvTemperature = 0.0;
 	public static Handler handler = null;
-	Thread recvThread;
+//	Thread recvThread;
 	Thread getTemperatureRequest = null;
 	byte[] commands = {(byte) 0xa1,(byte) 0xa0,(byte) 0xa8};
 	
@@ -81,11 +81,11 @@ public class Operations {
 	
 	Time time = new Time();
 
-	private Operations() {
+	private Operations(Context conetxt) {
 		// TODO Auto-generated constructor stub
-//		this.context = context;
-		recvThread = new Thread(mRecvThread);
-		getTemperatureRequest = new Thread(mGetTemperatureRequest);
+		this.context = context;
+//		recvThread = new Thread(mRecvThread);
+//		getTemperatureRequest = new Thread(mGetTemperatureRequest);
 		//initDataPackage();		
 	}
 	/**
@@ -94,10 +94,10 @@ public class Operations {
 	 * @param han
 	 * @return
 	 */
-	public static Operations GetOperation(){
+	public static Operations GetOperation(Context context){
 		
 		if (operationInstance == null){
-			operationInstance = new Operations();
+			operationInstance = new Operations(context);
 		}
 		
 		return operationInstance;
@@ -135,8 +135,8 @@ public class Operations {
 			sendInitTime();
 			//start the  thread
 			if (!threadMarker){
-				recvThread.start();
-				getTemperatureRequest.start();
+//				recvThread.start();
+//				getTemperatureRequest.start();
 				threadMarker =  true;
 			}
 			
@@ -397,72 +397,75 @@ public class Operations {
 	 * the message could only contents (double)temperature
 	 * if necessary, you should convert the message to a double format (such as "22.5")
 	 */
-	private Runnable mRecvThread = new Runnable(){
-		
-		public void run(){
-			Log.i("yangluo","in mRecvThread ");
-//			String temperature;
-			try {
-				byte[] readBuffer = new byte[8];
-				while ( true){
-					if (mDataInputeStream.read(readBuffer) != -1){
-						
-//						Message msg = new Message();
-						int int_temp =(int) readBuffer[6]; 
-						double temp = (double) (int_temp*1.0/2.0);
-						MainActivity.currentTemperature = temp;
-//						msg.obj = new String( "" + temp);
-						
-//						msg.what = 1;
-						try {
-							Thread.sleep(500);
-						} catch (InterruptedException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
-//						handler.sendMessage(msg);
-						
-//						Log.i("yangluo","mRecvThread "+(String) msg.obj);
-					}
-					
-				}
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			Log.i("yangluo","mRecvThread failed ");
-		}
-	};
-	private Runnable mGetTemperatureRequest = new Runnable(){
-		
-		public void run(){
-			byte[] data = {(byte) 0xA0,0x10, 0x01, 0x00, 0x00, 0x00, 0x00,0x14};
-			while (true){
-				try {
-					Thread.sleep(200);
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-				if (isConnected){
-					try {
-						mPrintWriter.write(data);
-					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-				}
-				try {
-					Thread.sleep(4800);
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-				
-				
-			}
-		}
-	};
+//	private Runnable mRecvThread = new Runnable(){
+//		
+//		public void run(){
+//			Log.i("yangluo","in mRecvThread ");
+////			String temperature;
+//			try {
+//				byte[] readBuffer = new byte[8];
+//				while ( true){
+////					Toast.makeText(Operations.this.context.getApplicationContext(),"1 data is ", Toast.LENGTH_LONG).show();
+//					if (mDataInputeStream.read(readBuffer) != -1){
+////						mDataInputeStream.readFully(readBuffer);
+////						Message msg = new Message();
+//						int int_temp =(int) readBuffer[6]; 
+//						double temp = (double) (int_temp*1.0/2.0);
+//						MainActivity.currentTemperature = temp;
+////						String s  = Bytes2String(readBuffer).toString();
+////						Toast.makeText(Operations.this.context,"data is ", Toast.LENGTH_LONG).show();
+////						msg.obj = readBuffer;
+//						
+////						msg.what = 1;
+//						try {
+//							Thread.sleep(500);
+//						} catch (InterruptedException e) {
+//							// TODO Auto-generated catch block
+//							e.printStackTrace();
+//						}
+////						handler.sendMessage(msg);
+//						
+////						Log.i("yangluo","mRecvThread "+(String) msg.obj);
+//					}
+//					
+//				}
+//			} catch (IOException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
+//			Log.i("yangluo","mRecvThread failed ");
+//		}
+//	};
+//	private Runnable mGetTemperatureRequest = new Runnable(){
+//		
+//		public void run(){
+//			byte[] data = {(byte) 0xA0,0x10, 0x01, 0x00, 0x00, 0x00, 0x00,0x14};
+//			while (true){
+//				try {
+//					Thread.sleep(200);
+//				} catch (InterruptedException e) {
+//					// TODO Auto-generated catch block
+//					e.printStackTrace();
+//				}
+//				if (isConnected){
+//					try {
+//						mPrintWriter.write(data);
+//					} catch (IOException e) {
+//						// TODO Auto-generated catch block
+//						e.printStackTrace();
+//					}
+//				}
+//				try {
+//					Thread.sleep(4800);
+//				} catch (InterruptedException e) {
+//					// TODO Auto-generated catch block
+//					e.printStackTrace();
+//				}
+//				
+//				
+//			}
+//		}
+//	};
 
 	public Handler getHandler() {
 		return handler;
@@ -470,6 +473,20 @@ public class Operations {
 	public void setHandler(Handler handler) {
 		this.handler = handler;
 	}
+	public DataInputStream getmDataInputeStream() {
+		return mDataInputeStream;
+	}
+	public void setmDataInputeStream(DataInputStream mDataInputeStream) {
+		this.mDataInputeStream = mDataInputeStream;
+	}
+	public DataOutputStream getmPrintWriter() {
+		return mPrintWriter;
+	}
+	public void setmPrintWriter(DataOutputStream mPrintWriter) {
+		this.mPrintWriter = mPrintWriter;
+	}
+	
+	
 	
 	
 	
