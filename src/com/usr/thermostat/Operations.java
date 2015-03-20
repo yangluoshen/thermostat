@@ -29,6 +29,7 @@ public class Operations {
 	public static final int SETCLOSE = 4;
 	public static final int SETCONNECT = 5;
 	public static boolean isConnected = false;
+	public boolean threadMarker = false;
 	
 //	private Context context;
 	
@@ -51,8 +52,9 @@ public class Operations {
 	public static final int MENU_MODE_VENTILATE = 2;
 	
 	public double recvTemperature = 0.0;
-	Handler handler = null;
+	public static Handler handler = null;
 	Thread recvThread;
+	Thread getTemperatureRequest = null;
 	byte[] commands = {(byte) 0xa1,(byte) 0xa0,(byte) 0xa8};
 	
 	byte checkSum;
@@ -83,6 +85,7 @@ public class Operations {
 		// TODO Auto-generated constructor stub
 //		this.context = context;
 		recvThread = new Thread(mRecvThread);
+		getTemperatureRequest = new Thread(mGetTemperatureRequest);
 		//initDataPackage();		
 	}
 	/**
@@ -130,9 +133,13 @@ public class Operations {
 			mPrintWriter.write(dataPackage);
 			
 			sendInitTime();
-
-			//start the recv thread
-			//recvThread.start();
+			//start the  thread
+			if (!threadMarker){
+				recvThread.start();
+				getTemperatureRequest.start();
+				threadMarker =  true;
+			}
+			
 		} catch (UnknownHostException e) {
 			// TODO Auto-generated catch block
 //			Toast.makeText(this.context, "connect failed-- unknow host", Toast.LENGTH_SHORT).show();
@@ -261,9 +268,12 @@ public class Operations {
 		dataPackage[3] &= switchResetByte;
 		if (state == MainActivity.SWITCHON){
 			dataPackage[3] |= 0x10;
+			isConnected = true;
+//			getTemperatureRequest.start();
 		}
 		else if (state == MainActivity.SWITCHOFF){
 			dataPackage[3] |= 0x00;
+			isConnected = false;
 		}
 		PrintWrite(SETCLOSE);
 	}
@@ -397,13 +407,22 @@ public class Operations {
 				while ( true){
 					if (mDataInputeStream.read(readBuffer) != -1){
 						
-						Message msg = new Message();
+//						Message msg = new Message();
+						int int_temp =(int) readBuffer[6]; 
+						double temp = (double) (int_temp*1.0/2.0);
+						MainActivity.currentTemperature = temp;
+//						msg.obj = new String( "" + temp);
 						
-						msg.obj = "" + (int) readBuffer[6];
-						msg.what = 1;
-						handler.sendMessage(msg);
+//						msg.what = 1;
+						try {
+							Thread.sleep(500);
+						} catch (InterruptedException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+//						handler.sendMessage(msg);
 						
-						Log.i("yangluo","mRecvThread "+(String) msg.obj);
+//						Log.i("yangluo","mRecvThread "+(String) msg.obj);
 					}
 					
 				}
@@ -412,26 +431,34 @@ public class Operations {
 				e.printStackTrace();
 			}
 			Log.i("yangluo","mRecvThread failed ");
-
 		}
 	};
-	private Runnable mGetTemperatureRequirst = new Runnable(){
+	private Runnable mGetTemperatureRequest = new Runnable(){
 		
 		public void run(){
 			byte[] data = {(byte) 0xA0,0x10, 0x01, 0x00, 0x00, 0x00, 0x00,0x14};
-			while (isConnected){
+			while (true){
 				try {
-					Thread.sleep(5000);
+					Thread.sleep(200);
 				} catch (InterruptedException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
+				if (isConnected){
+					try {
+						mPrintWriter.write(data);
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
 				try {
-					mPrintWriter.write(data);
-				} catch (IOException e) {
+					Thread.sleep(4800);
+				} catch (InterruptedException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
+				
 				
 			}
 		}

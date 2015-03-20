@@ -73,7 +73,7 @@
                     android:layout_alignParentTop="true"
                     android:layout_toRightOf="@+id/tv_set"
                     android:minHeight="150dp"
-                    android:text="16.0"
+                    android:text="      "
                     android:textColor="#003f74"
                     android:textSize="100sp" />
 

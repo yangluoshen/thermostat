@@ -20,10 +20,11 @@ public class ConnectActivity extends Activity {
 		// TODO Auto-generated method stub
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.connect_layout);
-		operation = Operations.GetOperation();
 		
+		operation = Operations.GetOperation();
 		initView();
 		addEvent();
+		
 		
 	}
 
@@ -38,6 +39,7 @@ public class ConnectActivity extends Activity {
 			if (operation.Connect(et_ip.getText().toString(), et_port.getText().toString())){
 				Intent _intent  = new Intent(ConnectActivity.this,MainActivity.class);
 				ConnectActivity.this.startActivity(_intent);
+//				finish();
 			}else {
 				Toast.makeText(ConnectActivity.this, "connect failed !", Toast.LENGTH_SHORT).show();
 			}

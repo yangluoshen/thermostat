@@ -1,6 +1,8 @@
 package com.usr.thermostat;
 
 
+import java.io.IOException;
+
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -8,6 +10,7 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.text.format.Time;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -31,7 +34,7 @@ import android.widget.TextView;
 	ImageView iv_degree;     // image "C"
 	TextView tv_set;         //the text "set"
 	TextView tv_time;        //text time
-	TextView tv_temp ;       // text temprature
+	static TextView tv_temp ;       // text temprature
 	TextView tv_dayofweek;   // text day of week
 	TextView tv_week;        //the text "week"
 //	TextView tv_divide;      //Ã°ºÅ
@@ -45,9 +48,9 @@ import android.widget.TextView;
 	
 	int currentMenu = 0;
 	int currentWind = 0;
-	double currentTemperature = 16.0;
-	static final int countDownTime = 2;
-	int countDown = countDownTime;
+	static double currentTemperature = 0.0;
+	static final int countDownTime = 3;
+	int countDown = 0;
 	double initTemperature = 22.0;
 	int currentSwitchState = SWITCHON;
 	
@@ -74,7 +77,7 @@ import android.widget.TextView;
 		@Override
 		public void handleMessage(Message msg) {
 			// TODO Auto-generated method stub
-//			super.handleMessage(msg);
+			super.handleMessage(msg);
 			if (msg.what == TIMEUP && currentSwitchState == SWITCHON){
 				SetTemperature(currentTemperature);
 				msg.what = TIMEDOWN;
@@ -83,7 +86,6 @@ import android.widget.TextView;
 				tv_set.setVisibility(View.INVISIBLE);
 			}
 		}
-		
 	};
 	Handler TimerHandler = new Handler(){
 		boolean flag = true;
@@ -123,7 +125,7 @@ import android.widget.TextView;
 			// TODO Auto-generated method stub
 			//super.handleMessage(msg);
 			if (msg.what == 1){
-				currentTemperature = (double)Integer.valueOf((String) msg.obj).intValue();
+				currentTemperature = (double)Double.valueOf((String) msg.obj).doubleValue();
 				tv_temp.setText((String)msg.obj);
 				Log.i("yangluo","socketHandle "+msg.obj);
 			}
@@ -144,7 +146,7 @@ import android.widget.TextView;
 		addEvents();
 		
 		operation = Operations.GetOperation();
-		operation.setHandler(socketHandler);
+//		operation.setHandler(socketHandler);
 		
 		count = new Counter();
 		Thread countThread = new Thread(count);
@@ -358,13 +360,6 @@ import android.widget.TextView;
 		public void run() {
 			// TODO Auto-generated method stub
 			while (countDown >= 0){
-				try {
-					Thread.sleep(1000);
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-				countDown--;
 				if (countDown == 0){
 					//SetTemperature(currentTemperature);
 					Message msg = new Message();
@@ -374,6 +369,14 @@ import android.widget.TextView;
 					countDown = countDownTime;
 					
 				}
+				try {
+					Thread.sleep(1000);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				countDown--;
+				
 			}
 		}
 	}
@@ -413,5 +416,24 @@ import android.widget.TextView;
 	void  SetTemperature(double currentTemperature2){
 		tv_temp.setText(""+currentTemperature);
 	}
+	@Override
+	public boolean onKeyDown(int keyCode, KeyEvent event) {
+		// TODO Auto-generated method stub
+		if (keyCode == event.KEYCODE_BACK && event.getRepeatCount() == 0){
+			try {
+				operation.mSocket.close();
+				operation.isConnected = false;
+				finish();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+		}
+		
+		return super.onKeyDown(keyCode, event);
+	}
+	
+	
 
 }
