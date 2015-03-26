@@ -61,42 +61,44 @@ public final class R {
     public static final class id {
         public static final int RelativeLayout1=0x7f090000;
         public static final int TableLayout1=0x7f090001;
-        public static final int action_settings=0x7f090020;
+        public static final int action_settings=0x7f090021;
         public static final int btn_connect=0x7f09000a;
-        public static final int content_layout=0x7f09000b;
+        public static final int content_layout=0x7f09000c;
         public static final int et_ip=0x7f090005;
         public static final int et_port=0x7f090006;
-        public static final int iv_close=0x7f09001d;
-        public static final int iv_cold=0x7f090017;
-        public static final int iv_degree=0x7f09000e;
-        public static final int iv_down=0x7f09001f;
-        public static final int iv_mark=0x7f090010;
-        public static final int iv_menu=0x7f09001b;
-        public static final int iv_time=0x7f09001c;
-        public static final int iv_up=0x7f09001e;
+        public static final int iv_close=0x7f09001e;
+        public static final int iv_cold=0x7f090018;
+        public static final int iv_degree=0x7f09000f;
+        public static final int iv_down=0x7f090020;
+        public static final int iv_mark=0x7f090011;
+        public static final int iv_menu=0x7f09001c;
+        public static final int iv_time=0x7f09001d;
+        public static final int iv_up=0x7f09001f;
         public static final int iv_ventilate=0x7f09001a;
         public static final int iv_warm=0x7f090019;
-        public static final int iv_wind1=0x7f090013;
-        public static final int iv_wind2=0x7f090014;
-        public static final int iv_wind3=0x7f090015;
-        public static final int iv_wind_auto=0x7f090016;
+        public static final int iv_wind1=0x7f090014;
+        public static final int iv_wind2=0x7f090015;
+        public static final int iv_wind3=0x7f090016;
+        public static final int iv_wind_auto=0x7f090017;
+        public static final int lv_time=0x7f09001b;
         public static final int tableRow1=0x7f090004;
         public static final int tableRow2=0x7f090007;
         public static final int tableRow3=0x7f090008;
         public static final int tableRow4=0x7f090009;
         public static final int tableRow5=0x7f090002;
         public static final int textView1=0x7f090003;
-        public static final int tv_dayOfWeek=0x7f09000d;
-        public static final int tv_set=0x7f090011;
-        public static final int tv_temperature=0x7f09000f;
-        public static final int tv_timeNow=0x7f090018;
-        public static final int tv_week=0x7f09000c;
-        public static final int tv_week2=0x7f090012;
+        public static final int tv_dayOfWeek=0x7f09000e;
+        public static final int tv_set=0x7f090012;
+        public static final int tv_temperature=0x7f090010;
+        public static final int tv_timeNow=0x7f09000b;
+        public static final int tv_week=0x7f09000d;
+        public static final int tv_week2=0x7f090013;
     }
     public static final class layout {
         public static final int connect_layout=0x7f030000;
-        public static final int main=0x7f030001;
-        public static final int testcolort=0x7f030002;
+        public static final int ledview=0x7f030001;
+        public static final int main=0x7f030002;
+        public static final int testcolort=0x7f030003;
     }
     public static final class menu {
         public static final int main=0x7f080000;
@@ -104,6 +106,7 @@ public final class R {
     public static final class string {
         public static final int action_settings=0x7f060001;
         public static final int app_name=0x7f060000;
+        public static final int default_time=0x7f060003;
         public static final int hello_world=0x7f060002;
     }
     public static final class style {

@@ -4,5 +4,6 @@
     <string name="app_name">Thermostat</string>
     <string name="action_settings">Settings</string>
     <string name="hello_world">Hello world!</string>
+    <string name="default_time">88:88:88</string>
 
 </resources>

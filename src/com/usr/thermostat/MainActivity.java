@@ -1,6 +1,7 @@
 package com.usr.thermostat;
 
 
+import java.io.File;
 import java.io.IOException;
 
 import android.os.Bundle;
@@ -8,6 +9,8 @@ import android.os.Handler;
 import android.os.Message;
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.res.AssetManager;
+import android.graphics.Typeface;
 import android.text.format.Time;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -23,6 +26,7 @@ import android.widget.Toast;
 
 @SuppressLint("HandlerLeak") public class MainActivity extends Activity  {
 	
+	private static final String FONT_DIGITAL_7 = "fonts" + File.separator + "digital.ttf";
 	ImageView iv_menu;
 	ImageView iv_wind;
 	ImageView iv_up;
@@ -34,7 +38,7 @@ import android.widget.Toast;
 	ImageView iv_mark;       // image that mark the temperature
 	ImageView iv_degree;     // image "C"
 	TextView tv_set;         //the text "set"
-	TextView tv_time;        //text time
+	LEDTimeView lv_time;        //text time
 	static TextView tv_temp ;       // text temprature
 	TextView tv_dayofweek;   // text day of week
 	TextView tv_week;        //the text "week"
@@ -61,7 +65,7 @@ import android.widget.Toast;
 	int minute;
 	
 	Counter count;
-	Timer timer;
+//	Timer timer;
 	static final int TIMEUP = 0;
 	static final int TIMEDOWN = 1;
 	static final int TIMECHANGED = 2;
@@ -70,7 +74,7 @@ import android.widget.Toast;
 	static final int SWITCHON = 1;
 	
 	Thread countThread;
-	Thread timeThread;
+//	Thread timeThread;
 	Thread recvThread;
 	Thread getTemperatureRequest;
 	boolean threadRun = true;
@@ -94,36 +98,36 @@ import android.widget.Toast;
 			}
 		}
 	};
-	Handler TimerHandler = new Handler(){
-		boolean flag = true;
-
-		@Override
-		public void handleMessage(Message msg) {
-			// TODO Auto-generated method stub
-			//super.handleMessage(msg);
-			
-			if (msg.what == TIMECHANGED){
-				String str_minute;
-				if (minute<10){
-					str_minute = "0"+minute;
-				}else {
-					str_minute  = ""+minute;
-				}
-				if (flag){
-					tv_time.setText(""+hour+":"+str_minute);
-					flag = false;
-				}else{
-					tv_time.setText(""+hour+" "+str_minute);
-					flag = true;
-				}
-				
-			}
-		    if (msg.what == WEEKDAYCHANGED){
-				tv_dayofweek.setText(""+dayOfWeek);
-			}
-		}
-		
-	};
+//	Handler TimerHandler = new Handler(){
+//		boolean flag = true;
+//
+//		@Override
+//		public void handleMessage(Message msg) {
+//			// TODO Auto-generated method stub
+//			//super.handleMessage(msg);
+//			
+//			if (msg.what == TIMECHANGED){
+//				String str_minute;
+//				if (minute<10){
+//					str_minute = "0"+minute;
+//				}else {
+//					str_minute  = ""+minute;
+//				}
+//				if (flag){
+//					tv_time.setText(""+hour+":"+str_minute);
+//					flag = false;
+//				}else{
+//					tv_time.setText(""+hour+" "+str_minute);
+//					flag = true;
+//				}
+//				
+//			}
+//		    if (msg.what == WEEKDAYCHANGED){
+//				tv_dayofweek.setText(""+dayOfWeek);
+//			}
+//		}
+//		
+//	};
 
 //	Handler socketHandler = new Handler(){
 //
@@ -185,9 +189,9 @@ import android.widget.Toast;
 		countThread = new Thread(count);
 		countThread.start();
 		
-		timer = new Timer();
-		timeThread = new Thread(timer);
-		timeThread.start();
+//		timer = new Timer();
+//		timeThread = new Thread(timer);
+//		timeThread.start();
 		
 
 		getTemperatureRequest = new Thread(mGetTemperatureRequest);
@@ -196,6 +200,7 @@ import android.widget.Toast;
 		recvThread = new Thread(mRecvThread);
 		recvThread.start();
 		
+		lv_time.start();
 		
 		
 		
@@ -310,7 +315,7 @@ import android.widget.Toast;
 		iv_mark.setVisibility(View.INVISIBLE);
 		iv_degree.setVisibility(View.INVISIBLE);
 		tv_set.setVisibility(View.INVISIBLE);
-		tv_time.setVisibility(View.INVISIBLE);
+		lv_time.setVisibility(View.INVISIBLE);
 		
 		tv_week.setVisibility(View.INVISIBLE);
 		tv_dayofweek.setVisibility(View.INVISIBLE);
@@ -332,7 +337,7 @@ import android.widget.Toast;
 		iv_mark.setVisibility(View.VISIBLE);
 		iv_degree.setVisibility(View.VISIBLE);
 //		tv_set.setVisibility(View.VISIBLE);
-		tv_time.setVisibility(View.VISIBLE);
+		lv_time.setVisibility(View.VISIBLE);
 		
 		tv_week.setVisibility(View.VISIBLE);
 		tv_dayofweek.setVisibility(View.VISIBLE);
@@ -367,21 +372,29 @@ import android.widget.Toast;
 		tv_week = (TextView) findViewById(R.id.tv_week);
 		iv_mark = (ImageView) findViewById(R.id.iv_mark);
 		iv_degree = (ImageView) findViewById(R.id.iv_degree);
-		tv_time = (TextView) findViewById(R.id.tv_timeNow);
+		lv_time = (LEDTimeView) findViewById(R.id.lv_time);
 		tv_dayofweek = (TextView) findViewById(R.id.tv_dayOfWeek);
 		time.setToNow();
 		dayOfWeek = time.weekDay;
 		tv_dayofweek.setText(""+time.weekDay);
 		minute = time.minute;
 		hour = time.hour;
+		
+		//set font
+		AssetManager assets = getAssets();
+		final Typeface font = Typeface.createFromAsset(assets, FONT_DIGITAL_7);
+		tv_temp.setTypeface(font);
+		tv_dayofweek.setTypeface(font);
+
+		
 		//set current time
-		String str_minute;
-		if (minute<10){
-			str_minute = "0"+minute;
-		}else {
-			str_minute  = ""+minute;
-		}
-		tv_time.setText(""+hour+":"+str_minute);
+//		String str_minute;
+//		if (minute<10){
+//			str_minute = "0"+minute;
+//		}else {
+//			str_minute  = ""+minute;
+//		}
+//		lv_time.setText(""+hour+":"+str_minute);
 
 		
 		content_layout = (LinearLayout) findViewById(R.id.content_layout);
@@ -423,37 +436,37 @@ import android.widget.Toast;
 			}
 		}
 	}
-	class Timer implements Runnable{
-
-		@Override
-		public void run() {
-			// TODO Auto-generated method stub
-			while (threadRun){
-				time.setToNow();
-				//dayOfWeek = time.weekDay;
-				hour = time.hour;
-				minute = time.minute;
-				
-				try {
-					Thread.sleep(1000);
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-				Message msg = Message.obtain();
-				if (dayOfWeek != time.weekDay){
-					msg.what = WEEKDAYCHANGED;
-					dayOfWeek = time.weekDay;
-					TimerHandler.sendMessage(msg);
-				}
-				msg.what = TIMECHANGED;
-				TimerHandler.sendMessage(msg);
-				
-				
-			}
-		}
-		
-	}
+//	class Timer implements Runnable{
+//
+//		@Override
+//		public void run() {
+//			// TODO Auto-generated method stub
+//			while (threadRun){
+//				time.setToNow();
+//				//dayOfWeek = time.weekDay;
+//				hour = time.hour;
+//				minute = time.minute;
+//				
+//				try {
+//					Thread.sleep(1000);
+//				} catch (InterruptedException e) {
+//					// TODO Auto-generated catch block
+//					e.printStackTrace();
+//				}
+//				Message msg = Message.obtain();
+//				if (dayOfWeek != time.weekDay){
+//					msg.what = WEEKDAYCHANGED;
+//					dayOfWeek = time.weekDay;
+//					TimerHandler.sendMessage(msg);
+//				}
+//				msg.what = TIMECHANGED;
+//				TimerHandler.sendMessage(msg);
+//				
+//				
+//			}
+//		}
+//		
+//	}
 	
 	
 	/**
@@ -553,7 +566,7 @@ import android.widget.Toast;
 				operation.isConnected = false;
 				threadRun = false;
 				countThread.interrupt();
-				timeThread.interrupt();
+//				timeThread.interrupt();
 				getTemperatureRequest.interrupt();
 				recvThread.interrupt();
 				
