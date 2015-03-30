@@ -42,7 +42,7 @@
                 android:maxLines="1"
                 android:inputType="number"
                 android:digits="0123456789."
-                android:text="10.10.100.254"
+                android:text="192.168.191.1"
                 android:ems="10"
                 android:hint="IP"
                 android:textColor="@color/skyblue" >

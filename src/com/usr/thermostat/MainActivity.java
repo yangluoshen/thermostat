@@ -40,7 +40,9 @@ import android.widget.Toast;
 	TextView tv_set;         //the text "set"
 	LEDTimeView lv_time;        //text time
 	static TextView tv_temp ;       // text temprature
-	TextView tv_dayofweek;   // text day of week
+	TextView[] tv_dayofweek = new TextView[7];   // text day of week
+	int[] dayofweekID = {R.id.tv_monday,R.id.tv_tuesday,R.id.tv_wednesday,
+			  			 R.id.tv_thursday,R.id.tv_friday,R.id.tv_saturday,R.id.tv_sunday};
 	TextView tv_week;        //the text "week"
 //	TextView tv_divide;      //Ã°ºÅ
 	
@@ -318,7 +320,7 @@ import android.widget.Toast;
 		lv_time.setVisibility(View.INVISIBLE);
 		
 		tv_week.setVisibility(View.INVISIBLE);
-		tv_dayofweek.setVisibility(View.INVISIBLE);
+		tv_dayofweek[dayOfWeek].setVisibility(View.INVISIBLE);
 		
 		iv_menu.setClickable(false);
 		iv_wind.setClickable(false);
@@ -340,7 +342,7 @@ import android.widget.Toast;
 		lv_time.setVisibility(View.VISIBLE);
 		
 		tv_week.setVisibility(View.VISIBLE);
-		tv_dayofweek.setVisibility(View.VISIBLE);
+		tv_dayofweek[dayOfWeek].setVisibility(View.VISIBLE);
 		
 		
 		iv_menu.setClickable(true);
@@ -373,18 +375,24 @@ import android.widget.Toast;
 		iv_mark = (ImageView) findViewById(R.id.iv_mark);
 		iv_degree = (ImageView) findViewById(R.id.iv_degree);
 		lv_time = (LEDTimeView) findViewById(R.id.lv_time);
-		tv_dayofweek = (TextView) findViewById(R.id.tv_dayOfWeek);
-		time.setToNow();
-		dayOfWeek = time.weekDay;
-		tv_dayofweek.setText(""+time.weekDay);
-		minute = time.minute;
-		hour = time.hour;
+//		tv_dayofweek = (TextView) findViewById(R.id.tv_dayOfWeek);
+		
 		
 		//set font
 		AssetManager assets = getAssets();
 		final Typeface font = Typeface.createFromAsset(assets, FONT_DIGITAL_7);
 		tv_temp.setTypeface(font);
-		tv_dayofweek.setTypeface(font);
+		
+		for (int i=0; i<dayofweekID.length;i++){
+			tv_dayofweek[i] = (TextView) findViewById(dayofweekID[i]);
+			tv_dayofweek[i].setTypeface(font);
+		}
+		time.setToNow();
+		dayOfWeek = time.weekDay-1;
+		minute = time.minute;
+		hour = time.hour;
+		tv_dayofweek[dayOfWeek].setText(""+time.weekDay);
+		tv_dayofweek[dayOfWeek].setVisibility(View.VISIBLE);
 
 		
 		//set current time
@@ -549,8 +557,8 @@ import android.widget.Toast;
 	
 	
 	void  SetTemperature(double temp){
-		if (temp>30.0){
-			temp = 30.0;
+		if (temp>50.0){
+			temp = 50.0;
 		}
 		if (temp<0.0){
 			temp = 0.0;
