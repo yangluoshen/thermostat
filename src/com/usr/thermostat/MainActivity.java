@@ -3,6 +3,8 @@ package com.usr.thermostat;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import android.os.Bundle;
 import android.os.Handler;
@@ -17,10 +19,13 @@ import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.widget.Button;
-import android.widget.EditText;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.Spinner;
+import android.widget.SpinnerAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -38,18 +43,19 @@ import android.widget.Toast;
 	ImageView iv_mark;       // image that mark the temperature
 	ImageView iv_degree;     // image "C"
 	TextView tv_set;         //the text "set"
-	LEDTimeView lv_time;        //text time
+	TextView tv_time;        //text time
 	static TextView tv_temp ;       // text temprature
 	TextView[] tv_dayofweek = new TextView[7];   // text day of week
 	int[] dayofweekID = {R.id.tv_monday,R.id.tv_tuesday,R.id.tv_wednesday,
 			  			 R.id.tv_thursday,R.id.tv_friday,R.id.tv_saturday,R.id.tv_sunday};
 	TextView tv_week;        //the text "week"
-//	TextView tv_divide;      //Ã°ºÅ
+	Spinner spinner_num;
+	int currentSpinnerSelected = 1;
+	int mID1 = 1;
 	
-//	
-//	EditText et_ip ;
-//	EditText et_port;
-//	Button btn_connect;
+	private List<String> spinnerDataList = new ArrayList<String>();
+	private ArrayAdapter<String> spinnerAdapter;
+
 	
 	LinearLayout content_layout;
 	
@@ -67,7 +73,7 @@ import android.widget.Toast;
 	int minute;
 	
 	Counter count;
-//	Timer timer;
+	Timer timer;
 	static final int TIMEUP = 0;
 	static final int TIMEDOWN = 1;
 	static final int TIMECHANGED = 2;
@@ -76,7 +82,7 @@ import android.widget.Toast;
 	static final int SWITCHON = 1;
 	
 	Thread countThread;
-//	Thread timeThread;
+	Thread timeThread;
 	Thread recvThread;
 	Thread getTemperatureRequest;
 	boolean threadRun = true;
@@ -100,53 +106,38 @@ import android.widget.Toast;
 			}
 		}
 	};
-//	Handler TimerHandler = new Handler(){
-//		boolean flag = true;
-//
-//		@Override
-//		public void handleMessage(Message msg) {
-//			// TODO Auto-generated method stub
-//			//super.handleMessage(msg);
-//			
-//			if (msg.what == TIMECHANGED){
-//				String str_minute;
-//				if (minute<10){
-//					str_minute = "0"+minute;
-//				}else {
-//					str_minute  = ""+minute;
-//				}
-//				if (flag){
-//					tv_time.setText(""+hour+":"+str_minute);
-//					flag = false;
-//				}else{
-//					tv_time.setText(""+hour+" "+str_minute);
-//					flag = true;
-//				}
-//				
-//			}
-//		    if (msg.what == WEEKDAYCHANGED){
-//				tv_dayofweek.setText(""+dayOfWeek);
-//			}
-//		}
-//		
-//	};
+	Handler TimerHandler = new Handler(){
+		boolean flag = true;
 
-//	Handler socketHandler = new Handler(){
-//
-//		@Override
-//		public void handleMessage(Message msg) {
-//			// TODO Auto-generated method stub
-//			//super.handleMessage(msg);
-//			if (msg.what == 1){
-//				currentTemperature = (double)Double.valueOf((String) msg.obj).doubleValue();
-//				tv_temp.setText((String)msg.obj);
-//				Log.i("yangluo","socketHandle "+msg.obj);
-////				Toast.makeText(MainActivity.this,"data is ", Toast.LENGTH_LONG).show();
-//			}
-//			
-//		}
-//		
-//	};
+		@Override
+		public void handleMessage(Message msg) {
+			// TODO Auto-generated method stub
+			//super.handleMessage(msg);
+			
+			if (msg.what == TIMECHANGED){
+				String str_minute;
+				if (minute<10){
+					str_minute = "0"+minute;
+				}else {
+					str_minute  = ""+minute;
+				}
+				if (flag){
+					tv_time.setText(""+hour+":"+str_minute);
+					flag = false;
+				}else{
+					tv_time.setText(""+hour+" "+str_minute);
+					flag = true;
+				}
+				
+			}
+		    if (msg.what == WEEKDAYCHANGED){
+//				tv_dayofweek.setText(""+dayOfWeek);
+			}
+		}
+		
+	};
+
+
 	public StringBuffer Bytes2String(byte[] bytes){
 		byte maskHigh = (byte) 0xf0;
 		byte maskLow  = (byte) 0x0f;
@@ -191,9 +182,9 @@ import android.widget.Toast;
 		countThread = new Thread(count);
 		countThread.start();
 		
-//		timer = new Timer();
-//		timeThread = new Thread(timer);
-//		timeThread.start();
+		timer = new Timer();
+		timeThread = new Thread(timer);
+		timeThread.start();
 		
 
 		getTemperatureRequest = new Thread(mGetTemperatureRequest);
@@ -201,11 +192,7 @@ import android.widget.Toast;
 		
 		recvThread = new Thread(mRecvThread);
 		recvThread.start();
-		
-		lv_time.start();
-		
-		
-		
+
 		
 	}
 	private void addEvents() {
@@ -308,6 +295,30 @@ import android.widget.Toast;
 			}
 		});
 		
+		spinner_num.setOnItemSelectedListener(new Spinner.OnItemSelectedListener() {
+
+			@Override
+			public void onItemSelected(AdapterView<?> arg0, View arg1,
+					int position, long arg3) {
+				// TODO Auto-generated method stub
+//				Toast.makeText(MainActivity.this, ""+spinnerAdapter.getItem(position), Toast.LENGTH_SHORT).show();
+				currentSpinnerSelected = position;
+				if (currentSpinnerSelected == 0){
+					mID1 = 0;
+				}else{
+					mID1 = 1;
+				}
+			}
+
+			@Override
+			public void onNothingSelected(AdapterView<?> arg0) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			
+		});
+		
 	}
 	void turnDownDevice(){
 
@@ -317,7 +328,7 @@ import android.widget.Toast;
 		iv_mark.setVisibility(View.INVISIBLE);
 		iv_degree.setVisibility(View.INVISIBLE);
 		tv_set.setVisibility(View.INVISIBLE);
-		lv_time.setVisibility(View.INVISIBLE);
+		tv_time.setVisibility(View.INVISIBLE);
 		
 		tv_week.setVisibility(View.INVISIBLE);
 		tv_dayofweek[dayOfWeek].setVisibility(View.INVISIBLE);
@@ -327,6 +338,7 @@ import android.widget.Toast;
 		iv_up.setClickable(false);
 		iv_down.setClickable(false);
 		content_layout.setBackgroundColor(getResources().getColor(R.color.lightgray));
+		spinner_num.setVisibility(View.INVISIBLE);
 		
 
 		
@@ -339,10 +351,11 @@ import android.widget.Toast;
 		iv_mark.setVisibility(View.VISIBLE);
 		iv_degree.setVisibility(View.VISIBLE);
 //		tv_set.setVisibility(View.VISIBLE);
-		lv_time.setVisibility(View.VISIBLE);
+		tv_time.setVisibility(View.VISIBLE);
 		
 		tv_week.setVisibility(View.VISIBLE);
 		tv_dayofweek[dayOfWeek].setVisibility(View.VISIBLE);
+		spinner_num.setVisibility(View.VISIBLE);
 		
 		
 		iv_menu.setClickable(true);
@@ -354,6 +367,10 @@ import android.widget.Toast;
 
 	private void initViews() {
 		// TODO Auto-generated method stub
+		//set font
+		AssetManager assets = getAssets();
+		final Typeface font = Typeface.createFromAsset(assets, FONT_DIGITAL_7);
+		
 		iv_menu = (ImageView) findViewById(R.id.iv_menu);
 		iv_wind = (ImageView) findViewById(R.id.iv_time);
 		windList[0] = (ImageView) findViewById(R.id.iv_wind_auto);
@@ -374,14 +391,11 @@ import android.widget.Toast;
 		tv_week = (TextView) findViewById(R.id.tv_week);
 		iv_mark = (ImageView) findViewById(R.id.iv_mark);
 		iv_degree = (ImageView) findViewById(R.id.iv_degree);
-		lv_time = (LEDTimeView) findViewById(R.id.lv_time);
-//		tv_dayofweek = (TextView) findViewById(R.id.tv_dayOfWeek);
-		
-		
-		//set font
-		AssetManager assets = getAssets();
-		final Typeface font = Typeface.createFromAsset(assets, FONT_DIGITAL_7);
+		tv_time = (TextView) findViewById(R.id.tv_time);
+		spinner_num = (Spinner) findViewById(R.id.spinner_num);
+
 		tv_temp.setTypeface(font);
+		tv_time.setTypeface(font);
 		
 		for (int i=0; i<dayofweekID.length;i++){
 			tv_dayofweek[i] = (TextView) findViewById(dayofweekID[i]);
@@ -394,18 +408,19 @@ import android.widget.Toast;
 		tv_dayofweek[dayOfWeek].setText(""+time.weekDay);
 		tv_dayofweek[dayOfWeek].setVisibility(View.VISIBLE);
 
-		
-		//set current time
-//		String str_minute;
-//		if (minute<10){
-//			str_minute = "0"+minute;
-//		}else {
-//			str_minute  = ""+minute;
-//		}
-//		lv_time.setText(""+hour+":"+str_minute);
-
-		
 		content_layout = (LinearLayout) findViewById(R.id.content_layout);
+		
+		//spinner num
+		for (int i=0;i<10; i++){
+			spinnerDataList.add("0"+i);
+		}
+		spinnerDataList.add("10");
+		spinnerAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item,spinnerDataList);
+		spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+		spinner_num.setAdapter(spinnerAdapter);
+		spinner_num.setSelection(1);
+		
+		
 		
 		
 	}
@@ -444,37 +459,37 @@ import android.widget.Toast;
 			}
 		}
 	}
-//	class Timer implements Runnable{
-//
-//		@Override
-//		public void run() {
-//			// TODO Auto-generated method stub
-//			while (threadRun){
-//				time.setToNow();
-//				//dayOfWeek = time.weekDay;
-//				hour = time.hour;
-//				minute = time.minute;
-//				
-//				try {
-//					Thread.sleep(1000);
-//				} catch (InterruptedException e) {
-//					// TODO Auto-generated catch block
-//					e.printStackTrace();
-//				}
-//				Message msg = Message.obtain();
+	class Timer implements Runnable{
+
+		@Override
+		public void run() {
+			// TODO Auto-generated method stub
+			while (threadRun){
+				time.setToNow();
+				//dayOfWeek = time.weekDay;
+				hour = time.hour;
+				minute = time.minute;
+				
+				try {
+					Thread.sleep(1000);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				Message msg = Message.obtain();
 //				if (dayOfWeek != time.weekDay){
 //					msg.what = WEEKDAYCHANGED;
 //					dayOfWeek = time.weekDay;
 //					TimerHandler.sendMessage(msg);
 //				}
-//				msg.what = TIMECHANGED;
-//				TimerHandler.sendMessage(msg);
-//				
-//				
-//			}
-//		}
-//		
-//	}
+				msg.what = TIMECHANGED;
+				TimerHandler.sendMessage(msg);
+				
+				
+			}
+		}
+		
+	}
 	
 	
 	/**
@@ -483,50 +498,59 @@ import android.widget.Toast;
 	 * if necessary, you should convert the message to a double format (such as "22.5")
 	 */
 	private Runnable mRecvThread = new Runnable(){
-		
+//		boolean isFirstLoop = true;
 		public void run(){
 			Log.i("yangluo","in mRecvThread ");
 //			String temperature;
 			try {
 				byte[] readBuffer = new byte[8];
-				while ( threadRun){
+				while ( threadRun ){
 //					Toast.makeText(Operations.this.context.getApplicationContext(),"1 data is ", Toast.LENGTH_LONG).show();
 					if (operation.getmDataInputeStream().read(readBuffer) != -1){
 //						mDataInputeStream.readFully(readBuffer);
 //						Message msg = new Message();
-						int int_temp =(int) readBuffer[6]; 
-						double temp = (double) (int_temp*1.0/2.0);
-						currentTemperature = temp;
-//						String s  = Bytes2String(readBuffer).toString();
-//						Toast.makeText(Operations.this.context,"data is ", Toast.LENGTH_LONG).show();
-//						msg.obj = readBuffer;
-						
-//						msg.what = 1;
-						try {
-							Thread.sleep(500);
-						} catch (InterruptedException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
+						byte responseCheckSum = readBuffer[7];
+						Operations.CalcCheckSum(readBuffer);
+						if (responseCheckSum == readBuffer[7]){
+							int int_temp =(int) readBuffer[6]; 
+							double temp = (double) (int_temp*1.0/2.0);
+							currentTemperature = temp;
+							try {
+								Thread.sleep(500);
+							} catch (InterruptedException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+								
+							}
 						}
-//						handler.sendMessage(msg);
-						
-//						Log.i("yangluo","mRecvThread "+(String) msg.obj);
 					}
+//					if (isFirstLoop){
+//						isFirstLoop = false;
+//						readBuffer[0] = (byte) 0xa1;
+//						readBuffer[1] = 0x10;
+//						readBuffer[2] = 0x01;
+//						readBuffer[3] |= 0x08;
+//						Operations.CalcCheckSum(readBuffer);
+//						operation.getmPrintWriter().write(readBuffer);
+//						
+//					}
+					
 					
 				}
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			Log.i("yangluo","mRecvThread failed ");
 		}
 	};
 	
 	private Runnable mGetTemperatureRequest = new Runnable(){
 		
 		public void run(){
-			byte[] data = {(byte) 0xA0,0x10, 0x01, 0x00, 0x00, 0x00, 0x00,0x14};
+		
 			while (threadRun){
+				byte[] data = {(byte) 0xA0,(byte)currentSpinnerSelected, (byte) mID1, 0x00, 0x00, 0x00, 0x00,0x00};
+				Operations.CalcCheckSum(data);
 				try {
 					Thread.sleep(200);
 				} catch (InterruptedException e) {
@@ -574,7 +598,7 @@ import android.widget.Toast;
 				operation.isConnected = false;
 				threadRun = false;
 				countThread.interrupt();
-//				timeThread.interrupt();
+				timeThread.interrupt();
 				getTemperatureRequest.interrupt();
 				recvThread.interrupt();
 				

@@ -59,8 +59,8 @@ public class Operations {
 	
 	byte checkSum;
 	byte command;
-	byte ID0 = 0x00;
-	byte ID1 = 0x00;
+	byte ID0 = 0x10;
+	byte ID1 = 0x01;
 	byte Data0;
 	byte Data1;
 	byte Data2;
@@ -297,7 +297,7 @@ public class Operations {
 		return chars;
 	}
 	
-	void CalcCheckSum(byte[] bytes){
+	static void CalcCheckSum(byte[] bytes){
 		bytes[7] = 0x00;
 		for (int i=0; i<7;i++){
 			bytes[7]+= bytes[i];
@@ -392,81 +392,6 @@ public class Operations {
 
 	}
 	
-	/**
-	 * a thread that receive the message from server. 
-	 * the message could only contents (double)temperature
-	 * if necessary, you should convert the message to a double format (such as "22.5")
-	 */
-//	private Runnable mRecvThread = new Runnable(){
-//		
-//		public void run(){
-//			Log.i("yangluo","in mRecvThread ");
-////			String temperature;
-//			try {
-//				byte[] readBuffer = new byte[8];
-//				while ( true){
-////					Toast.makeText(Operations.this.context.getApplicationContext(),"1 data is ", Toast.LENGTH_LONG).show();
-//					if (mDataInputeStream.read(readBuffer) != -1){
-////						mDataInputeStream.readFully(readBuffer);
-////						Message msg = new Message();
-//						int int_temp =(int) readBuffer[6]; 
-//						double temp = (double) (int_temp*1.0/2.0);
-//						MainActivity.currentTemperature = temp;
-////						String s  = Bytes2String(readBuffer).toString();
-////						Toast.makeText(Operations.this.context,"data is ", Toast.LENGTH_LONG).show();
-////						msg.obj = readBuffer;
-//						
-////						msg.what = 1;
-//						try {
-//							Thread.sleep(500);
-//						} catch (InterruptedException e) {
-//							// TODO Auto-generated catch block
-//							e.printStackTrace();
-//						}
-////						handler.sendMessage(msg);
-//						
-////						Log.i("yangluo","mRecvThread "+(String) msg.obj);
-//					}
-//					
-//				}
-//			} catch (IOException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//			}
-//			Log.i("yangluo","mRecvThread failed ");
-//		}
-//	};
-//	private Runnable mGetTemperatureRequest = new Runnable(){
-//		
-//		public void run(){
-//			byte[] data = {(byte) 0xA0,0x10, 0x01, 0x00, 0x00, 0x00, 0x00,0x14};
-//			while (true){
-//				try {
-//					Thread.sleep(200);
-//				} catch (InterruptedException e) {
-//					// TODO Auto-generated catch block
-//					e.printStackTrace();
-//				}
-//				if (isConnected){
-//					try {
-//						mPrintWriter.write(data);
-//					} catch (IOException e) {
-//						// TODO Auto-generated catch block
-//						e.printStackTrace();
-//					}
-//				}
-//				try {
-//					Thread.sleep(4800);
-//				} catch (InterruptedException e) {
-//					// TODO Auto-generated catch block
-//					e.printStackTrace();
-//				}
-//				
-//				
-//			}
-//		}
-//	};
-
 	public Handler getHandler() {
 		return handler;
 	}

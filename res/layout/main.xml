@@ -14,6 +14,14 @@
             android:layout_width="match_parent"
             
             android:layout_height="40dp" >
+
+            <Spinner
+                android:id="@+id/spinner_num"
+                android:layout_width="100dp"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:layout_alignParentTop="true"/>
+
         </RelativeLayout>
 
         
@@ -234,14 +242,26 @@
         		    android:maxWidth="60dp"
         		    android:visibility="invisible"
         		    android:src="@drawable/ventilate" />
+        		
 
-        		<com.usr.thermostat.LEDTimeView
+        		<!-- <com.usr.thermostat.LEDTimeView
         		    android:id="@+id/lv_time"
         		    android:layout_width="wrap_content"
         		    android:layout_height="wrap_content"
         		    android:layout_alignParentRight="true"
         		    android:layout_centerVertical="true" >
-        		</com.usr.thermostat.LEDTimeView>
+        		</com.usr.thermostat.LEDTimeView> -->
+
+        		<TextView
+        		    android:id="@+id/tv_time"
+        		    android:layout_width="wrap_content"
+        		    android:layout_height="wrap_content"
+        		    android:layout_alignParentRight="true"
+        		    android:layout_centerVertical="true"
+        		    android:layout_marginRight="32dp"
+        		    android:text=""
+        		    android:textColor="#003f74"
+        		    android:textSize="30sp" />
 
         	</RelativeLayout>
             
