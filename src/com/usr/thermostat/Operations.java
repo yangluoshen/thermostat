@@ -411,6 +411,11 @@ public class Operations {
 		this.mPrintWriter = mPrintWriter;
 	}
 	
+	public void setDataPackgeID0AndID1(int id0,int id1){
+		dataPackage[1] = (byte) id0;
+		dataPackage[2] = (byte) id1;
+	}
+	
 	
 	
 	

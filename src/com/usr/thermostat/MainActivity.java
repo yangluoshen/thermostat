@@ -212,6 +212,7 @@ import android.widget.Toast;
 					currentWind++;
 					windList[currentWind].setVisibility(View.VISIBLE);
 				}
+				operation.setDataPackgeID0AndID1(currentSpinnerSelected, mID1);
 				operation.sendWindData(currentWind);
 //				operation.WindClicked();
 			}
@@ -232,6 +233,7 @@ import android.widget.Toast;
 					currentMenu++;
 					menuList[currentMenu].setVisibility(View.VISIBLE);
 				}
+				operation.setDataPackgeID0AndID1(currentSpinnerSelected, mID1);
 				operation.sendMenuData(currentMenu);
 //				operation.MenuClicked();
 			}
@@ -251,6 +253,7 @@ import android.widget.Toast;
 				iv_mark.setVisibility(View.INVISIBLE);
 				tv_set.setVisibility(View.VISIBLE);
 				
+				operation.setDataPackgeID0AndID1(currentSpinnerSelected, mID1);
 				operation.sendUpTemperature(initTemperature);
 //				operation.UpTemperature();
 				
@@ -271,6 +274,7 @@ import android.widget.Toast;
 				iv_mark.setVisibility(View.INVISIBLE);
 				tv_set.setVisibility(View.VISIBLE);
 				
+				operation.setDataPackgeID0AndID1(currentSpinnerSelected, mID1);
 				operation.sendDownTemprature(initTemperature);
 //				operation.DownTemperature();
 			}
@@ -281,9 +285,10 @@ import android.widget.Toast;
 			@Override
 			public void onClick(View v) {
 				// TODO Auto-generated method stub
-				
+				operation.setDataPackgeID0AndID1(currentSpinnerSelected, mID1);
 				if (currentSwitchState == SWITCHON){
 					currentSwitchState = SWITCHOFF;
+					
 					operation.sendCloseSignal(currentSwitchState);
 					turnDownDevice();
 				}
@@ -308,6 +313,9 @@ import android.widget.Toast;
 				}else{
 					mID1 = 1;
 				}
+				
+				tv_temp.setText("00.0");
+				currentTemperature = 0.0;
 			}
 
 			@Override
