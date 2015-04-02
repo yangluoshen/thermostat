@@ -86,6 +86,7 @@ import android.widget.Toast;
 	Thread recvThread;
 	Thread getTemperatureRequest;
 	boolean threadRun = true;
+	boolean isSwitchDevice = false;
 	
 	Operations operation;
 	
@@ -316,6 +317,17 @@ import android.widget.Toast;
 				
 				tv_temp.setText("00.0");
 				currentTemperature = 0.0;
+				isSwitchDevice = true;
+				
+				byte[] data = {(byte) 0xA0,(byte)currentSpinnerSelected, (byte) mID1, 0x00, 0x00, 0x00, 0x00,0x00};
+				Operations.CalcCheckSum(data);
+				try {
+					operation.getmPrintWriter().write(data);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				
 			}
 
 			@Override
@@ -515,22 +527,26 @@ import android.widget.Toast;
 				while ( threadRun ){
 //					Toast.makeText(Operations.this.context.getApplicationContext(),"1 data is ", Toast.LENGTH_LONG).show();
 					if (operation.getmDataInputeStream().read(readBuffer) != -1){
-//						mDataInputeStream.readFully(readBuffer);
-//						Message msg = new Message();
-						byte responseCheckSum = readBuffer[7];
-						Operations.CalcCheckSum(readBuffer);
-						if (responseCheckSum == readBuffer[7]){
-							int int_temp =(int) readBuffer[6]; 
-							double temp = (double) (int_temp*1.0/2.0);
-							currentTemperature = temp;
-							try {
-								Thread.sleep(500);
-							} catch (InterruptedException e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-								
+						
+						if (!isSwitchDevice){
+							byte responseCheckSum = readBuffer[7];
+							Operations.CalcCheckSum(readBuffer);
+							if (responseCheckSum == readBuffer[7]){
+								int int_temp =(int) readBuffer[6]; 
+								double temp = (double) (int_temp*1.0/2.0);
+								currentTemperature = temp;
+								try {
+									Thread.sleep(500);
+								} catch (InterruptedException e) {
+									// TODO Auto-generated catch block
+									e.printStackTrace();
+									
+								}
 							}
+							
 						}
+						isSwitchDevice = false;
+						
 					}
 //					if (isFirstLoop){
 //						isFirstLoop = false;
@@ -559,34 +575,23 @@ import android.widget.Toast;
 			while (threadRun){
 				byte[] data = {(byte) 0xA0,(byte)currentSpinnerSelected, (byte) mID1, 0x00, 0x00, 0x00, 0x00,0x00};
 				Operations.CalcCheckSum(data);
+				
 				try {
 					Thread.sleep(200);
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-				
-				try {
 					operation.getmPrintWriter().write(data);
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-				
-				try {
 					Thread.sleep(4800);
+					
 				} catch (InterruptedException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
-				}
-				
-				
+				}catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}	
 			}
 		}
 	};
 
-
-	
 	
 	void  SetTemperature(double temp){
 		if (temp>50.0){
@@ -595,7 +600,13 @@ import android.widget.Toast;
 		if (temp<0.0){
 			temp = 0.0;
 		}
-		tv_temp.setText(""+temp);
+		if (temp<10.0){
+			tv_temp.setText("0"+temp);
+		}
+		else{
+			tv_temp.setText(""+temp);
+		}
+		
 	}
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {

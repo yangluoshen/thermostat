@@ -42,7 +42,7 @@
                 android:maxLines="1"
                 android:inputType="number"
                 android:digits="0123456789."
-                android:text="192.168.191.1"
+                android:text="d2d.usr.cn"
                 android:ems="10"
                 android:hint="IP"
                 android:textColor="@color/skyblue" >
@@ -57,9 +57,22 @@
                 android:layout_weight="5"
                 android:ems="10"
                 android:hint="port"
+                android:text="25565"
                 android:maxLength="6"
                 android:maxLines="1"
-                android:text="8899"
+                
+                android:inputType="number"
+                android:textColor="@color/skyblue" />
+            <EditText
+                android:id="@+id/et_registID"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="5"
+                android:ems="10"
+                android:hint="ID"
+                android:maxLength="6"
+                android:maxLines="1"
+ 				android:text="4054"
                 android:inputType="number"
                 android:textColor="@color/skyblue" />
         </TableRow>

@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
@@ -115,11 +116,15 @@ public class Operations {
 		CalcCheckSum(dataPackage);
 		
 	}
-	public boolean Connect(String ip, String port){
+	public boolean Connect(String ip, String port, String registID){
 		
 		try {
 			Log.i("yangluo","connect1");
 			int int_port = Integer.valueOf(port).intValue(); 
+			//parse as ip
+			InetAddress inetHost;
+			inetHost = InetAddress.getByName(ip);
+			ip = inetHost.getHostAddress();
 			
 			mSocket = new Socket();
 			mISA = new InetSocketAddress(ip, int_port);
@@ -129,8 +134,11 @@ public class Operations {
 			mDataInputeStream = new DataInputStream(mSocket.getInputStream());
 			mPrintWriter = new DataOutputStream(mSocket.getOutputStream());
 			
+			int int_registID = Integer.valueOf(registID).intValue(); 
+			sendRegist(int_registID);
 			//send the init data
 			mPrintWriter.write(dataPackage);
+			
 			
 			sendInitTime();
 			//start the  thread
@@ -414,6 +422,23 @@ public class Operations {
 	public void setDataPackgeID0AndID1(int id0,int id1){
 		dataPackage[1] = (byte) id0;
 		dataPackage[2] = (byte) id1;
+	}
+	public void sendRegist(int registID){
+		long id = registID*65536 +65535 - registID;
+		
+		byte[] data = new byte[4];
+		data[3] = (byte) (id%256);
+		data[2] = (byte) ((id>>8)%256);
+		data[1] = (byte) ((id>>16)%256);
+		data[0] = (byte) ((id>>24)%256);
+		
+		try {
+			mPrintWriter.write(data);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 	}
 	
 	
