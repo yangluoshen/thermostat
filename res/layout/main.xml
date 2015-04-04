@@ -17,10 +17,11 @@
 
             <Spinner
                 android:id="@+id/spinner_num"
-                android:layout_width="100dp"
-                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
                 android:layout_alignParentRight="true"
-                android:layout_alignParentTop="true"/>
+                android:layout_alignParentTop="true"
+                />
 
         </RelativeLayout>
 
@@ -132,7 +133,8 @@
                     android:maxHeight="40dp"
                     android:maxWidth="40dp"
                     android:layout_alignParentLeft="true"
-                    android:src="@drawable/displaytemp" />
+                    android:src="@drawable/displaytemp"
+                    />
 
                 <TextView
                     android:id="@+id/tv_temperature"

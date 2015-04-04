@@ -29,7 +29,8 @@ import android.widget.SpinnerAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
-@SuppressLint("HandlerLeak") public class MainActivity extends Activity  {
+public class MainActivity extends Activity  {
+	private int time_chip = 300;
 	
 	private static final String FONT_DIGITAL_7 = "fonts" + File.separator + "digital.ttf";
 	ImageView iv_menu;
@@ -60,7 +61,7 @@ import android.widget.Toast;
 	LinearLayout content_layout;
 	
 	int currentMenu = 0;
-	int currentWind = 0;
+	int currentWind = Operations.WIND_MODE_AUTO;
 	double currentTemperature = 0.0;
 	static final int countDownTime = 3;
 	int countDown = 0;
@@ -81,12 +82,18 @@ import android.widget.Toast;
 	static final int SWITCHOFF = 0;
 	static final int SWITCHON = 1;
 	
+	static final int UPDATEALL = 4;
+	static final int UPDATE_INIT_TEMPERATURE = 5;
+	static final int UPDATE_CURRENT_TEMPERATURE = 6;
+	
 	Thread countThread;
 	Thread timeThread;
 	Thread recvThread;
 	Thread getTemperatureRequest;
 	boolean threadRun = true;
 	boolean isSwitchDevice = false;
+	boolean isRecvResponse = true;
+	boolean isSetTime = false;
 	
 	Operations operation;
 	
@@ -203,19 +210,39 @@ import android.widget.Toast;
 			@Override
 			public void onClick(View v) {
 				// TODO Auto-generated method stub
-				if (currentWind >= 3){
-					windList[currentWind].setVisibility(View.INVISIBLE);
-					currentWind = 0;
-					windList[0].setVisibility(View.VISIBLE);
+				
+				if (isRecvResponse){
+					if (currentWind == Operations.WIND_MODE_AUTO){
+						operation.setDataPackgeID0AndID1(currentSpinnerSelected, mID1);
+						operation.sendWindData(Operations.WIND_MODE_LOW);
+					}else if(currentWind == Operations.WIND_MODE_LOW){
+						operation.setDataPackgeID0AndID1(currentSpinnerSelected, mID1);
+						operation.sendWindData(Operations.WIND_MODE_MIDDLE);
+					}else if(currentWind == Operations.WIND_MODE_MIDDLE){
+						operation.setDataPackgeID0AndID1(currentSpinnerSelected, mID1);
+						operation.sendWindData(Operations.WIND_MODE_HIGH);
+					}else if (currentWind == Operations.WIND_MODE_HIGH){
+						operation.setDataPackgeID0AndID1(currentSpinnerSelected, mID1);
+						operation.sendWindData(Operations.WIND_MODE_AUTO);
+					}
+					
+//					if (currentWind == Operations.WIND_MODE_HIGH){
+//						nextWind = Operations.WIND_MODE_AUTO;
+////						windList[currentWind].setVisibility(View.INVISIBLE);
+////						currentWind = 0;
+////						windList[0].setVisibility(View.VISIBLE);
+//					}
+//					else{
+//						nextWind = currentWind+1;
+////						windList[currentWind].setVisibility(View.INVISIBLE);
+////						currentWind++;
+////						windList[currentWind].setVisibility(View.VISIBLE);
+//					}
+////					operation.setDataPackgeID0AndID1(currentSpinnerSelected, mID1);
+//////					operation.sendWindData(currentWind);
+////					operation.sendWindData(nextWind);
 				}
-				else{
-					windList[currentWind].setVisibility(View.INVISIBLE);
-					currentWind++;
-					windList[currentWind].setVisibility(View.VISIBLE);
-				}
-				operation.setDataPackgeID0AndID1(currentSpinnerSelected, mID1);
-				operation.sendWindData(currentWind);
-//				operation.WindClicked();
+				
 			}
 		});
 		iv_menu.setOnClickListener(new OnClickListener() {
@@ -223,20 +250,27 @@ import android.widget.Toast;
 			@Override
 			public void onClick(View arg0) {
 				// TODO Auto-generated method stub
-				//Log.i("yangluo","-->"+countDown);
-				if (currentMenu >=2){
-					menuList[currentMenu].setVisibility(View.INVISIBLE);
-					currentMenu = 0;
-					menuList[0].setVisibility(View.VISIBLE);
+				if (isRecvResponse){
+					int nextMenu = 0;
+					if (currentMenu >=2){
+						nextMenu = 0;
+//						menuList[currentMenu].setVisibility(View.INVISIBLE);
+//						currentMenu = 0;
+//						menuList[0].setVisibility(View.VISIBLE);
+					}
+					else{
+						nextMenu = currentMenu+1;
+//						menuList[currentMenu].setVisibility(View.INVISIBLE);
+//						currentMenu++;
+//						menuList[currentMenu].setVisibility(View.VISIBLE);
+					}
+					operation.setDataPackgeID0AndID1(currentSpinnerSelected, mID1);
+//					operation.sendMenuData(currentMenu);
+					operation.sendMenuData(nextMenu);
+					
 				}
-				else{
-					menuList[currentMenu].setVisibility(View.INVISIBLE);
-					currentMenu++;
-					menuList[currentMenu].setVisibility(View.VISIBLE);
-				}
-				operation.setDataPackgeID0AndID1(currentSpinnerSelected, mID1);
-				operation.sendMenuData(currentMenu);
-//				operation.MenuClicked();
+				
+				
 			}
 		});
 		iv_up.setOnClickListener(new OnClickListener() {
@@ -244,20 +278,32 @@ import android.widget.Toast;
 			@Override
 			public void onClick(View arg0) {
 				// TODO Auto-generated method stub
-				countDown = countDownTime;
-				initTemperature += 0.5;
-				if (initTemperature >= 30.0){
-					initTemperature = 30.0;
+				if (isRecvResponse){
+					countDown = countDownTime;
+					isSetTime = true;
+					double nextInitTemperature = initTemperature;
+					
+					nextInitTemperature += 0.5;
+					if (nextInitTemperature >= 30.0){
+						nextInitTemperature = 30.0;
+					}
+					operation.setDataPackgeID0AndID1(currentSpinnerSelected, mID1);
+					operation.sendUpTemperature(nextInitTemperature);
+
+					
+//					initTemperature += 0.5;
+//					if (initTemperature >= 30.0){
+//						initTemperature = 30.0;
+//					}
+//					tv_temp.setText(""+initTemperature);
+//					iv_mark.setVisibility(View.INVISIBLE);
+//					tv_set.setVisibility(View.VISIBLE);
+					
+//					operation.setDataPackgeID0AndID1(currentSpinnerSelected, mID1);
+//					operation.sendUpTemperature(initTemperature);
+	
 				}
-				tv_temp.setText(""+initTemperature);
-				
-				iv_mark.setVisibility(View.INVISIBLE);
-				tv_set.setVisibility(View.VISIBLE);
-				
-				operation.setDataPackgeID0AndID1(currentSpinnerSelected, mID1);
-				operation.sendUpTemperature(initTemperature);
-//				operation.UpTemperature();
-				
+								
 			}
 		});
 		iv_down.setOnClickListener(new OnClickListener() {
@@ -265,19 +311,29 @@ import android.widget.Toast;
 			@Override
 			public void onClick(View arg0) {
 				// TODO Auto-generated method stub
-				countDown = countDownTime;
-				initTemperature -= 0.5;
-				if (initTemperature <= 10.0){
-					initTemperature = 10.0;
+				if (isRecvResponse){
+					countDown = countDownTime;
+					isSetTime = true;
+					double nextInitTemperature = initTemperature;
+					nextInitTemperature -= 0.5;
+					if (nextInitTemperature <= 10.0){
+						nextInitTemperature = 10.0;
+					}
+					operation.setDataPackgeID0AndID1(currentSpinnerSelected, mID1);
+					operation.sendDownTemprature(nextInitTemperature);
+					
+//					initTemperature -= 0.5;
+//					if (initTemperature <= 10.0){
+//						initTemperature = 10.0;
+//					}
+//					tv_temp.setText(""+initTemperature);
+//					iv_mark.setVisibility(View.INVISIBLE);
+//					tv_set.setVisibility(View.VISIBLE);
+					
+//					operation.setDataPackgeID0AndID1(currentSpinnerSelected, mID1);
+//					operation.sendDownTemprature(initTemperature);	
 				}
-				tv_temp.setText(""+initTemperature);
 				
-				iv_mark.setVisibility(View.INVISIBLE);
-				tv_set.setVisibility(View.VISIBLE);
-				
-				operation.setDataPackgeID0AndID1(currentSpinnerSelected, mID1);
-				operation.sendDownTemprature(initTemperature);
-//				operation.DownTemperature();
 			}
 		});
 
@@ -286,18 +342,21 @@ import android.widget.Toast;
 			@Override
 			public void onClick(View v) {
 				// TODO Auto-generated method stub
-				operation.setDataPackgeID0AndID1(currentSpinnerSelected, mID1);
-				if (currentSwitchState == SWITCHON){
-					currentSwitchState = SWITCHOFF;
+				if (isRecvResponse){
+					operation.setDataPackgeID0AndID1(currentSpinnerSelected, mID1);
+					if (currentSwitchState == SWITCHON){
+//						currentSwitchState = SWITCHOFF;
+						operation.sendCloseSignal(SWITCHOFF);
+//						turnDownDevice();
+					}
+					else{
+//						currentSwitchState = SWITCHON;
+						operation.sendCloseSignal(SWITCHON);
+//						turnOnDevice();
+					}
+				}
 					
-					operation.sendCloseSignal(currentSwitchState);
-					turnDownDevice();
-				}
-				else{
-					currentSwitchState = SWITCHON;
-					operation.sendCloseSignal(currentSwitchState);
-					turnOnDevice();
-				}
+				
 			}
 		});
 		
@@ -368,7 +427,7 @@ import android.widget.Toast;
 		windList[currentWind].setVisibility(View.VISIBLE);
 		menuList[currentMenu].setVisibility(View.VISIBLE);
 		tv_temp.setVisibility(View.VISIBLE);
-		iv_mark.setVisibility(View.VISIBLE);
+//		iv_mark.setVisibility(View.VISIBLE);
 		iv_degree.setVisibility(View.VISIBLE);
 //		tv_set.setVisibility(View.VISIBLE);
 		tv_time.setVisibility(View.VISIBLE);
@@ -423,10 +482,17 @@ import android.widget.Toast;
 		}
 		time.setToNow();
 		dayOfWeek = time.weekDay-1;
+		if (dayOfWeek == -1){
+			dayOfWeek = 6;
+			tv_dayofweek[dayOfWeek].setText("7");
+			tv_dayofweek[dayOfWeek].setVisibility(View.VISIBLE);
+		}else{
+			tv_dayofweek[dayOfWeek].setText(""+time.weekDay);
+			tv_dayofweek[dayOfWeek].setVisibility(View.VISIBLE);
+		}
 		minute = time.minute;
 		hour = time.hour;
-		tv_dayofweek[dayOfWeek].setText(""+time.weekDay);
-		tv_dayofweek[dayOfWeek].setVisibility(View.VISIBLE);
+		
 
 		content_layout = (LinearLayout) findViewById(R.id.content_layout);
 		
@@ -469,7 +535,7 @@ import android.widget.Toast;
 					
 				}
 				try {
-					Thread.sleep(1000);
+					Thread.sleep(2000);
 				} catch (InterruptedException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -520,8 +586,6 @@ import android.widget.Toast;
 	private Runnable mRecvThread = new Runnable(){
 //		boolean isFirstLoop = true;
 		public void run(){
-			Log.i("yangluo","in mRecvThread ");
-//			String temperature;
 			try {
 				byte[] readBuffer = new byte[8];
 				while ( threadRun ){
@@ -532,34 +596,27 @@ import android.widget.Toast;
 							byte responseCheckSum = readBuffer[7];
 							Operations.CalcCheckSum(readBuffer);
 							if (responseCheckSum == readBuffer[7]){
-								int int_temp =(int) readBuffer[6]; 
-								double temp = (double) (int_temp*1.0/2.0);
-								currentTemperature = temp;
-								try {
-									Thread.sleep(500);
-								} catch (InterruptedException e) {
-									// TODO Auto-generated catch block
-									e.printStackTrace();
-									
-								}
+								Message msg = new Message();
+								msg.what = UPDATEALL;
+								msg.obj = readBuffer;
+								updateHandle.sendMessage(msg);
+								
+//								int int_temp =(int) readBuffer[6]; 
+//								double temp = (double) (int_temp*1.0/2.0);
+//								currentTemperature = temp;
+//								try {
+//									Thread.sleep(500);
+//								} catch (InterruptedException e) {
+//									// TODO Auto-generated catch block
+//									e.printStackTrace();
+//									
+//								}
 							}
 							
 						}
 						isSwitchDevice = false;
-						
 					}
-//					if (isFirstLoop){
-//						isFirstLoop = false;
-//						readBuffer[0] = (byte) 0xa1;
-//						readBuffer[1] = 0x10;
-//						readBuffer[2] = 0x01;
-//						readBuffer[3] |= 0x08;
-//						Operations.CalcCheckSum(readBuffer);
-//						operation.getmPrintWriter().write(readBuffer);
-//						
-//					}
-					
-					
+					isRecvResponse = true;
 				}
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
@@ -573,24 +630,109 @@ import android.widget.Toast;
 		public void run(){
 		
 			while (threadRun){
-				byte[] data = {(byte) 0xA0,(byte)currentSpinnerSelected, (byte) mID1, 0x00, 0x00, 0x00, 0x00,0x00};
-				Operations.CalcCheckSum(data);
 				
-				try {
-					Thread.sleep(200);
-					operation.getmPrintWriter().write(data);
-					Thread.sleep(4800);
+				if (isRecvResponse){
+					byte[] data = {(byte) 0xA0,(byte)currentSpinnerSelected, (byte) mID1, 0x00, 0x00, 0x00, 0x00,0x00};
+					Operations.CalcCheckSum(data);
 					
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}	
+					try {
+						Thread.sleep(time_chip);
+						operation.getmPrintWriter().write(data);
+//						Thread.sleep(time_chip-200);
+						
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}	
+				}
+				
 			}
 		}
 	};
+	
+	void parseRecvData(byte[] results){
+		
+		byte ctrlInfo = results[3];
+		int  initTempInfo = (int) results[5];
+		int  currentTempInfo = (int )results[6];
+		
+		byte wind = (byte) (ctrlInfo & 0x03);
+		byte state = (byte) (ctrlInfo & 0x10);
+		byte menu = (byte) (ctrlInfo & 0x60);
+		
+		//parse wind state
+//		int lastWind = currentWind;
+		switch(wind){
+		case 0x00:
+			windList[currentWind].setVisibility(View.INVISIBLE);
+			currentWind = Operations.WIND_MODE_AUTO;
+			windList[currentWind].setVisibility(View.VISIBLE);
+			break;
+		case 0x01:
+			windList[currentWind].setVisibility(View.INVISIBLE);
+			currentWind = Operations.WIND_MODE_HIGH;
+			windList[currentWind].setVisibility(View.VISIBLE);
+			break;
+		case 0x02:
+			windList[currentWind].setVisibility(View.INVISIBLE);
+			currentWind = Operations.WIND_MODE_MIDDLE;
+			windList[currentWind].setVisibility(View.VISIBLE);
+			break;
+		case 0x03:
+			windList[currentWind].setVisibility(View.INVISIBLE);
+			currentWind = Operations.WIND_MODE_LOW;
+			windList[currentWind].setVisibility(View.VISIBLE);
+			break;
+		}
+//		windList[lastWind].setVisibility(View.INVISIBLE);
+//		windList[currentWind].setVisibility(View.VISIBLE);
+		
+		//menu state
+		int lastMenu = currentMenu;
+		switch (menu){
+		case 0x00:
+			currentMenu = Operations.MENU_MODE_COLD;
+			break;
+		case 0x20:
+			currentMenu = Operations.MENU_MODE_WARM;
+			break;
+		case 0x40:
+			currentMenu = Operations.MENU_MODE_VENTILATE;
+			break;
+		}
+		menuList[lastMenu].setVisibility(View.INVISIBLE);
+		menuList[currentMenu].setVisibility(View.VISIBLE);
+		
+		//switch state
+		switch (state){
+		case 0x00:
+			currentSwitchState = SWITCHOFF;
+			turnDownDevice();
+			break;
+		case 0x10:
+			currentSwitchState = SWITCHON;
+			turnOnDevice();
+			break;
+		}
+		
+		//set temperature 
+		initTemperature = (double) (initTempInfo*1.0/2.0);
+		if (isSetTime){
+			Message msg = new Message();
+			msg.what = UPDATE_INIT_TEMPERATURE;
+			updateHandle.sendMessage(msg);
+			isSetTime = false;
+		}
+		
+		//current temperature
+		currentTemperature = (double)(currentTempInfo*1.0/2.0);
+
+		
+	}
+	
 
 	
 	void  SetTemperature(double temp){
@@ -608,6 +750,32 @@ import android.widget.Toast;
 		}
 		
 	}
+	
+	Handler updateHandle = new Handler(){
+
+		@Override
+		public void handleMessage(Message msg) {
+			// TODO Auto-generated method stub
+			if(msg.what == UPDATEALL){
+				parseRecvData((byte[]) msg.obj);
+			}
+			if (msg.what == UPDATE_INIT_TEMPERATURE){
+				SetTemperature(initTemperature);
+
+				iv_mark.setVisibility(View.INVISIBLE);
+				tv_set.setVisibility(View.VISIBLE);
+			}
+			if (msg.what == UPDATE_CURRENT_TEMPERATURE){
+//				SetTemperature(currentTemperature);
+//
+//				iv_mark.setVisibility(View.VISIBLE);
+//				tv_set.setVisibility(View.INVISIBLE);
+			}
+//			super.handleMessage(msg);
+		}
+		
+	};
+
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 		// TODO Auto-generated method stub

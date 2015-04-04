@@ -33,6 +33,8 @@ public class Operations {
 	public boolean threadMarker = false;
 	
 	private Context context;
+	private String serverIp = "d2d.usr.cn";
+	private int serverPort = 25565;
 	
 	public Socket mSocket = null;
 	public InetSocketAddress mISA = null;
@@ -116,18 +118,19 @@ public class Operations {
 		CalcCheckSum(dataPackage);
 		
 	}
-	public boolean Connect(String ip, String port, String registID){
+	public boolean Connect( String registID){
 		
 		try {
-			Log.i("yangluo","connect1");
-			int int_port = Integer.valueOf(port).intValue(); 
+//			Log.i("yangluo","connect1");
+//			int int_port = Integer.valueOf(port).intValue(); 
+			
 			//parse as ip
 			InetAddress inetHost;
-			inetHost = InetAddress.getByName(ip);
-			ip = inetHost.getHostAddress();
+			inetHost = InetAddress.getByName(serverIp);
+			String ip = inetHost.getHostAddress();
 			
 			mSocket = new Socket();
-			mISA = new InetSocketAddress(ip, int_port);
+			mISA = new InetSocketAddress(ip, serverPort);
 			mSocket.connect(mISA, socketTimeOut);
 			initDataPackage();
 			

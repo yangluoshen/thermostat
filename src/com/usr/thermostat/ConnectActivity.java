@@ -10,8 +10,8 @@ import android.widget.ImageButton;
 import android.widget.Toast;
 
 public class ConnectActivity extends Activity {
-	EditText et_ip;
-	EditText et_port;
+//	EditText et_ip;
+//	EditText et_port;
 	EditText et_registID;
 	ImageButton ibtn_connect;
 	Operations operation;
@@ -37,7 +37,7 @@ public class ConnectActivity extends Activity {
 		@Override
 		public void onClick(View v) {
 			// TODO Auto-generated method stub
-			if (operation.Connect(et_ip.getText().toString(), et_port.getText().toString(),et_registID.getText().toString())){
+			if (operation.Connect(et_registID.getText().toString())){
 				Intent _intent  = new Intent(ConnectActivity.this,MainActivity.class);
 				ConnectActivity.this.startActivity(_intent);
 //				finish();
@@ -53,8 +53,8 @@ public class ConnectActivity extends Activity {
 
 	private void initView() {
 		// TODO Auto-generated method stub
-		et_ip = (EditText) findViewById(R.id.et_ip);
-		et_port = (EditText) findViewById(R.id.et_port);
+//		et_ip = (EditText) findViewById(R.id.et_ip);
+//		et_port = (EditText) findViewById(R.id.et_port);
 		ibtn_connect = (ImageButton) findViewById(R.id.btn_connect);
 		et_registID = (EditText) findViewById(R.id.et_registID);
 	}
