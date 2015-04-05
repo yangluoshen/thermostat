@@ -37,7 +37,10 @@ public class ConnectActivity extends Activity {
 		@Override
 		public void onClick(View v) {
 			// TODO Auto-generated method stub
-			if (operation.Connect(et_registID.getText().toString())){
+			if ("".equals(et_registID.getText().toString())){
+				
+			}
+			else if (operation.Connect(et_registID.getText().toString())){
 				Intent _intent  = new Intent(ConnectActivity.this,MainActivity.class);
 				ConnectActivity.this.startActivity(_intent);
 //				finish();

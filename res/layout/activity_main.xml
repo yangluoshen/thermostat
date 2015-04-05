@@ -1,0 +1,374 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity"
+    android:background="@drawable/mainbg" >
+
+    <RelativeLayout
+        android:id="@+id/relativeLayout1"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+         >
+
+        <TextView
+            android:id="@+id/tv_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentTop="true"
+            android:text="18:00"
+            android:textSize="30sp"
+            android:textColor="#000000" />
+
+        <Spinner
+            android:id="@+id/spinner_num"
+            android:layout_width="100dp"
+            android:layout_height="20dp"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:background="@drawable/spinnerbg" />
+
+    </RelativeLayout>
+
+    <LinearLayout
+        android:id="@+id/linearLayout1"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/relativeLayout2"
+        >
+
+        <LinearLayout
+            android:layout_width="214dp"
+            android:layout_height="242dp"
+            android:background="@drawable/contentbg"
+            android:orientation="vertical" >
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" 
+                android:layout_weight="1"
+                >
+
+                <TextView
+                    android:id="@+id/tv_time"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentTop="true"
+                    android:layout_centerHorizontal="true"
+                    android:textSize="30sp"
+                    android:text="" />
+
+            </RelativeLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="20" 
+                
+                android:orientation="vertical">
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" 
+                    android:layout_weight="1"
+                    >
+
+                    <TextView
+                        android:id="@+id/tv_set"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentLeft="true"
+                        android:layout_centerVertical="true"
+                        android:layout_marginLeft="24dp"
+                        android:text="SET"
+                        android:textSize="20sp"
+                        android:textColor="#000000" />
+
+                    <ImageView
+                        android:id="@+id/iv_mark"
+                        android:layout_width="30dp"
+                        android:layout_height="30dp"
+                        android:layout_alignParentTop="true"
+                        android:layout_toRightOf="@+id/tv_set"
+                        android:src="@drawable/displaytemp" />
+
+                </RelativeLayout>
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="2" 
+                   >
+
+                    <TextView
+                        android:id="@+id/tv_temperature"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentLeft="true"
+                        android:layout_centerVertical="true"
+                        android:layout_marginLeft="26dp"
+                        android:text="25.5"
+                        android:textSize="50sp"
+                        android:textColor="#000000" />
+
+                    <ImageView
+                        android:id="@+id/iv_degree"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:layout_centerVertical="true"
+                        android:layout_marginLeft="24dp"
+                        android:layout_toRightOf="@+id/tv_temperature"
+                        android:src="@drawable/temp" />
+
+                </RelativeLayout>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1" 
+                    
+                    android:paddingLeft="40dp"
+                    android:paddingRight="80dp">
+
+                    <TextView
+                        android:id="@+id/tv_week"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:layout_weight="0.89"
+                        android:text="Week"
+                        android:textSize="20sp" 
+                        android:textColor="#000000"/>
+
+                    <TextView
+                        android:id="@+id/tv_dayofweek"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_gravity="center_vertical"
+                        android:text="1"
+                        android:textSize="20sp"
+                        android:textColor="#000000" />
+                    
+                    
+
+                </LinearLayout>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="3" 
+                    android:paddingRight="40dp"
+                    >
+
+                    <ImageView
+                        android:id="@+id/iv_cold"
+                        android:layout_width="30dp"
+                        android:layout_height="30dp"
+                        android:layout_gravity="center_vertical"
+                        android:layout_weight="1"
+                        android:src="@drawable/cold" />
+
+                    <ImageView
+                        android:id="@+id/iv_warm"
+                        android:layout_width="30dp"
+                        android:layout_height="30dp"
+                        android:layout_gravity="center_vertical"
+                        android:layout_weight="1"
+                        android:visibility="invisible"
+                        android:src="@drawable/warm" />
+
+                    <ImageView
+                        android:id="@+id/iv_ventilate"
+                        android:layout_width="30dp"
+                        android:layout_height="30dp"
+                        android:layout_gravity="center_vertical"
+                        android:layout_weight="1"
+                        android:visibility="invisible"
+                        android:src="@drawable/ventilate" />
+                    
+
+                </LinearLayout>
+                <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" 
+                android:layout_weight="1"
+                >
+
+                <TextView
+                    android:id="@+id/textview2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentTop="true"
+                    android:layout_centerHorizontal="true"
+                    android:textSize="30sp"
+                    android:text="" />
+
+            </RelativeLayout>
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="7.47"
+            android:orientation="vertical" 
+            android:background="@drawable/huxian">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingLeft="10dp"
+                android:layout_weight="1"
+                android:paddingBottom="10dp" >
+
+                <ImageView
+                    android:id="@+id/iv_wind_auto"
+                    android:layout_width="60dp"
+                    android:layout_height="60dp"
+                    android:src="@drawable/windauto" />
+
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingLeft="30dp"
+                android:layout_weight="1"
+                android:paddingBottom="10dp" >
+
+                <ImageView
+                    android:id="@+id/iv_wind3"
+                    android:layout_width="60dp"
+                    android:layout_height="60dp"
+                    android:visibility="invisible"
+                    android:src="@drawable/wind3" />
+
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingLeft="40dp"
+                android:layout_weight="1"
+                android:paddingBottom="10dp" >
+
+                <ImageView
+                    android:id="@+id/iv_wind2"
+                    android:layout_width="60dp"
+                    android:layout_height="60dp"
+                    android:visibility="invisible"
+                    android:src="@drawable/wind2" />
+
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingLeft="20dp"
+                android:layout_weight="1">
+                <ImageView
+                    android:id="@+id/iv_wind1"
+                    android:layout_width="60dp"
+                    android:layout_height="60dp"
+                    android:visibility="invisible"
+                    android:src="@drawable/wind1" />
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/relativeLayout2"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+		android:orientation="vertical"
+		android:paddingTop="20dp"
+        android:layout_above="@+id/bottom_buttons_layout" >
+        
+        <RelativeLayout
+            android:layout_width="fill_parent"
+            android:layout_height="50dp"
+            android:layout_alignParentLeft="true"
+            android:layout_centerVertical="true" >
+
+            <ImageView
+                android:id="@+id/iv_up"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_alignParentBottom="true"
+                android:layout_alignParentRight="true"
+                android:src="@drawable/up_sel" />
+
+	        <SeekBar
+	            android:id="@+id/skb_temp"
+	            android:layout_width="match_parent"
+	            android:layout_height="60dp"
+	            android:layout_alignParentBottom="true"
+	            android:layout_toLeftOf="@+id/iv_up"
+	            android:layout_toRightOf="@+id/iv_down"
+	            android:max="60"
+	            android:progress="25"
+	            android:progressDrawable="@null"
+	            android:thumb="@drawable/seekthumb" />
+
+            <ImageView
+                android:id="@+id/iv_down"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_alignParentBottom="true"
+                android:layout_alignParentLeft="true"
+                android:src="@drawable/down_sel" />
+
+        </RelativeLayout>
+
+        
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="6dp"
+
+            android:background="@drawable/seekbarbody">
+
+        </LinearLayout>
+
+        
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/bottom_buttons_layout"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+		android:paddingTop="30dp"
+        android:layout_centerHorizontal="true" 
+        android:paddingBottom="10dp">
+
+        <ImageView
+            android:id="@+id/iv_menu"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:layout_weight="1"
+            android:src="@drawable/menu_sel"
+            android:layout_gravity="bottom" />
+
+        <ImageView
+            android:id="@+id/iv_close"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:layout_weight="1"
+            android:src="@drawable/close_sel"
+            android:layout_gravity="bottom" />
+
+        <ImageView
+            android:id="@+id/iv_time"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:layout_weight="1"
+            android:src="@drawable/time_sel"
+            android:layout_gravity="bottom" />
+
+    </LinearLayout>
+
+</RelativeLayout>

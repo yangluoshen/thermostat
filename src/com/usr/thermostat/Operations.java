@@ -274,6 +274,7 @@ public class Operations {
 		PrintWrite(SETDOWNTEMP);
 	}
 	
+	
 	void sendCloseSignal(int state){
 		dataPackage[0] = commands[0];
 		dataPackage[3] &= switchResetByte;

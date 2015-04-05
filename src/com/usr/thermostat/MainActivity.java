@@ -24,13 +24,15 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.SeekBar;
+import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.Spinner;
 import android.widget.SpinnerAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
 public class MainActivity extends Activity  {
-	private int time_chip = 300;
+	private int time_chip = 10000;
 	
 	private static final String FONT_DIGITAL_7 = "fonts" + File.separator + "digital.ttf";
 	ImageView iv_menu;
@@ -46,11 +48,13 @@ public class MainActivity extends Activity  {
 	TextView tv_set;         //the text "set"
 	TextView tv_time;        //text time
 	static TextView tv_temp ;       // text temprature
-	TextView[] tv_dayofweek = new TextView[7];   // text day of week
+//	TextView[] tv_dayofweek = new TextView[7];   // text day of week
+	TextView tv_dayweek;
 	int[] dayofweekID = {R.id.tv_monday,R.id.tv_tuesday,R.id.tv_wednesday,
 			  			 R.id.tv_thursday,R.id.tv_friday,R.id.tv_saturday,R.id.tv_sunday};
 	TextView tv_week;        //the text "week"
 	Spinner spinner_num;
+	SeekBar skb_temp;
 	int currentSpinnerSelected = 1;
 	int mID1 = 1;
 	
@@ -58,7 +62,7 @@ public class MainActivity extends Activity  {
 	private ArrayAdapter<String> spinnerAdapter;
 
 	
-	LinearLayout content_layout;
+//	LinearLayout content_layout;
 	
 	int currentMenu = 0;
 	int currentWind = Operations.WIND_MODE_AUTO;
@@ -143,48 +147,17 @@ public class MainActivity extends Activity  {
 			}
 		}
 		
+		
 	};
-
-
-	public StringBuffer Bytes2String(byte[] bytes){
-		byte maskHigh = (byte) 0xf0;
-		byte maskLow  = (byte) 0x0f;
-		
-		StringBuffer buf = new StringBuffer();
-		buf.append("data above means: ");
-		for (byte b : bytes){
-			byte high, low;
-			high = (byte) ((b & maskHigh)>>4);
-			low  = (byte) ((b & maskLow));
-			buf.append(findHex(high));
-			buf.append(findHex(low));
-			buf.append(" ");
-		}
-		
-		return buf;
-	}
-	public  char findHex(byte b) {
-		int t = new Byte(b).intValue();
-		t = t < 0 ? t + 16 : t;
-		if ((0 <= t) &&(t <= 9)) {
-		return (char)(t + '0');
-		}
-		return (char)(t-10+'A');
-	}
-	
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.main);
-		
-
-		
+		setContentView(R.layout.activity_main);
 		initViews();
 		addEvents();
 		
 		operation = Operations.GetOperation(this);
-//		operation.setHandler(socketHandler);
 		
 		count = new Counter();
 		countThread = new Thread(count);
@@ -394,8 +367,39 @@ public class MainActivity extends Activity  {
 				// TODO Auto-generated method stub
 				
 			}
-
+		});
+		
+		skb_temp.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
+			private double selectProgress=20;
 			
+			@Override
+			public void onStopTrackingTouch(SeekBar seekBar) {
+				// TODO Auto-generated method stub
+				if (isRecvResponse){
+					countDown = countDownTime;
+					isSetTime = true;
+					
+					operation.setDataPackgeID0AndID1(currentSpinnerSelected, mID1);
+					operation.sendUpTemperature(selectProgress);
+
+
+				}
+			}
+			
+			@Override
+			public void onStartTrackingTouch(SeekBar seekBar) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public void onProgressChanged(SeekBar seekBar, int progress,
+					boolean fromUser) {
+				// TODO Auto-generated method stub
+				selectProgress = progress*1.0/2;
+				tv_temp.setText(""+(double)progress/2);
+				
+			}
 		});
 		
 	}
@@ -410,16 +414,15 @@ public class MainActivity extends Activity  {
 		tv_time.setVisibility(View.INVISIBLE);
 		
 		tv_week.setVisibility(View.INVISIBLE);
-		tv_dayofweek[dayOfWeek].setVisibility(View.INVISIBLE);
+		tv_dayweek.setVisibility(View.INVISIBLE);
 		
 		iv_menu.setClickable(false);
 		iv_wind.setClickable(false);
 		iv_up.setClickable(false);
 		iv_down.setClickable(false);
-		content_layout.setBackgroundColor(getResources().getColor(R.color.lightgray));
+//		content_layout.setBackgroundColor(getResources().getColor(R.color.lightgray));
 		spinner_num.setVisibility(View.INVISIBLE);
 		
-
 		
 	}
 	void turnOnDevice(){
@@ -433,7 +436,7 @@ public class MainActivity extends Activity  {
 		tv_time.setVisibility(View.VISIBLE);
 		
 		tv_week.setVisibility(View.VISIBLE);
-		tv_dayofweek[dayOfWeek].setVisibility(View.VISIBLE);
+		tv_dayweek.setVisibility(View.VISIBLE);
 		spinner_num.setVisibility(View.VISIBLE);
 		
 		
@@ -441,7 +444,7 @@ public class MainActivity extends Activity  {
 		iv_wind.setClickable(true);
 		iv_up.setClickable(true);
 		iv_down.setClickable(true);
-		content_layout.setBackgroundColor(getResources().getColor(R.color.lightblue));
+//		content_layout.setBackgroundColor(getResources().getColor(R.color.lightblue));
 	}
 
 	private void initViews() {
@@ -456,6 +459,7 @@ public class MainActivity extends Activity  {
 		windList[1] = (ImageView) findViewById(R.id.iv_wind1);
 		windList[2] = (ImageView) findViewById(R.id.iv_wind2);
 		windList[3] = (ImageView) findViewById(R.id.iv_wind3);
+		
 		
 		menuList[0] = (ImageView) findViewById(R.id.iv_cold);
 		menuList[1] = (ImageView) findViewById(R.id.iv_warm);
@@ -472,29 +476,31 @@ public class MainActivity extends Activity  {
 		iv_degree = (ImageView) findViewById(R.id.iv_degree);
 		tv_time = (TextView) findViewById(R.id.tv_time);
 		spinner_num = (Spinner) findViewById(R.id.spinner_num);
+		tv_dayweek = (TextView) findViewById(R.id.tv_dayofweek);
+		skb_temp = (SeekBar) findViewById(R.id.skb_temp);
 
 		tv_temp.setTypeface(font);
 		tv_time.setTypeface(font);
 		
-		for (int i=0; i<dayofweekID.length;i++){
-			tv_dayofweek[i] = (TextView) findViewById(dayofweekID[i]);
-			tv_dayofweek[i].setTypeface(font);
-		}
+//		for (int i=0; i<dayofweekID.length;i++){
+//			tv_dayofweek[i] = (TextView) findViewById(dayofweekID[i]);
+//			tv_dayofweek[i].setTypeface(font);
+//		}
 		time.setToNow();
 		dayOfWeek = time.weekDay-1;
 		if (dayOfWeek == -1){
 			dayOfWeek = 6;
-			tv_dayofweek[dayOfWeek].setText("7");
-			tv_dayofweek[dayOfWeek].setVisibility(View.VISIBLE);
+			tv_dayweek.setText("7");
+			tv_dayweek.setVisibility(View.VISIBLE);
 		}else{
-			tv_dayofweek[dayOfWeek].setText(""+time.weekDay);
-			tv_dayofweek[dayOfWeek].setVisibility(View.VISIBLE);
+			tv_dayweek.setText(""+time.weekDay);
+			tv_dayweek.setVisibility(View.VISIBLE);
 		}
 		minute = time.minute;
 		hour = time.hour;
 		
 
-		content_layout = (LinearLayout) findViewById(R.id.content_layout);
+//		content_layout = (LinearLayout) findViewById(R.id.content_layout);
 		
 		//spinner num
 		for (int i=0;i<10; i++){
@@ -505,9 +511,6 @@ public class MainActivity extends Activity  {
 		spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		spinner_num.setAdapter(spinnerAdapter);
 		spinner_num.setSelection(1);
-		
-		
-		
 		
 	}
 
@@ -535,7 +538,7 @@ public class MainActivity extends Activity  {
 					
 				}
 				try {
-					Thread.sleep(2000);
+					Thread.sleep(1000);
 				} catch (InterruptedException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -600,17 +603,7 @@ public class MainActivity extends Activity  {
 								msg.what = UPDATEALL;
 								msg.obj = readBuffer;
 								updateHandle.sendMessage(msg);
-								
-//								int int_temp =(int) readBuffer[6]; 
-//								double temp = (double) (int_temp*1.0/2.0);
-//								currentTemperature = temp;
-//								try {
-//									Thread.sleep(500);
-//								} catch (InterruptedException e) {
-//									// TODO Auto-generated catch block
-//									e.printStackTrace();
-//									
-//								}
+
 							}
 							
 						}
@@ -636,9 +629,9 @@ public class MainActivity extends Activity  {
 					Operations.CalcCheckSum(data);
 					
 					try {
-						Thread.sleep(time_chip);
+						Thread.sleep(200);
 						operation.getmPrintWriter().write(data);
-//						Thread.sleep(time_chip-200);
+						Thread.sleep(time_chip-200);
 						
 					} catch (InterruptedException e) {
 						// TODO Auto-generated catch block
@@ -729,12 +722,9 @@ public class MainActivity extends Activity  {
 		
 		//current temperature
 		currentTemperature = (double)(currentTempInfo*1.0/2.0);
-
 		
 	}
-	
 
-	
 	void  SetTemperature(double temp){
 		if (temp>50.0){
 			temp = 50.0;
