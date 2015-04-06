@@ -9,6 +9,7 @@ import java.util.List;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.R.integer;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.res.AssetManager;
@@ -32,7 +33,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 public class MainActivity extends Activity  {
-	private int time_chip = 10000;
+	private int time_chip = 5000;
+	private static final double MIN_INIT_TEMPERATURE = 0.0;
+	private static final double MAX_INIT_TEMPERATURE = 30.0;
+	private static final double MIN_CURRENT_TEMPERATURE = 0.0;
+	private static final double MAX_CURRENT_TEMPERATURE = 50.0;
 	
 	private static final String FONT_DIGITAL_7 = "fonts" + File.separator + "digital.ttf";
 	ImageView iv_menu;
@@ -47,7 +52,7 @@ public class MainActivity extends Activity  {
 	ImageView iv_degree;     // image "C"
 	TextView tv_set;         //the text "set"
 	TextView tv_time;        //text time
-	static TextView tv_temp ;       // text temprature
+	TextView tv_temp ;       // text temprature
 //	TextView[] tv_dayofweek = new TextView[7];   // text day of week
 	TextView tv_dayweek;
 	int[] dayofweekID = {R.id.tv_monday,R.id.tv_tuesday,R.id.tv_wednesday,
@@ -55,7 +60,7 @@ public class MainActivity extends Activity  {
 	TextView tv_week;        //the text "week"
 	Spinner spinner_num;
 	SeekBar skb_temp;
-	int currentSpinnerSelected = 1;
+	
 	int mID1 = 1;
 	
 	private List<String> spinnerDataList = new ArrayList<String>();
@@ -64,13 +69,32 @@ public class MainActivity extends Activity  {
 	
 //	LinearLayout content_layout;
 	
-	int currentMenu = 0;
+	int currentMenu = Operations.MENU_MODE_COLD;
 	int currentWind = Operations.WIND_MODE_AUTO;
+	double initTemperature = 22.0;
 	double currentTemperature = 0.0;
+	int currentSwitchState = SWITCHON;
+	int currentSpinnerSelected = 1;
+	
+	int nextMenu = Operations.MENU_MODE_WARM;
+	int nextWind = Operations.WIND_MODE_LOW;
+	double nextInitTemperature = 22.5;
+//	double nextCurrentTemperature = 0.0;
+	int nextSwitchState = SWITCHOFF;
+	
+	int currentMenu_fork = currentMenu;
+	int currentWind_fork = currentWind;
+	double initTemperature_fork = initTemperature;
+	double currentTemperature_fork = currentTemperature;
+	int currentSwitchState_fork = currentSwitchState;
+	int currentSpinnerSelected_fork = currentSpinnerSelected;
+	
 	static final int countDownTime = 3;
 	int countDown = 0;
-	double initTemperature = 22.0;
-	int currentSwitchState = SWITCHON;
+	int operationCountDownTime = 6;
+	int operationCountDown = 0;
+	
+	
 	
 	
 	int dayOfWeek;
@@ -96,8 +120,9 @@ public class MainActivity extends Activity  {
 	Thread getTemperatureRequest;
 	boolean threadRun = true;
 	boolean isSwitchDevice = false;
-	boolean isRecvResponse = true;
-	boolean isSetTime = false;
+	boolean isOperated = false;
+//	boolean isRecvResponse = true;
+//	boolean isSetTime = false;
 	
 	Operations operation;
 	
@@ -183,21 +208,32 @@ public class MainActivity extends Activity  {
 			@Override
 			public void onClick(View v) {
 				// TODO Auto-generated method stub
-				
-				if (isRecvResponse){
-					if (currentWind == Operations.WIND_MODE_AUTO){
-						operation.setDataPackgeID0AndID1(currentSpinnerSelected, mID1);
-						operation.sendWindData(Operations.WIND_MODE_LOW);
-					}else if(currentWind == Operations.WIND_MODE_LOW){
-						operation.setDataPackgeID0AndID1(currentSpinnerSelected, mID1);
-						operation.sendWindData(Operations.WIND_MODE_MIDDLE);
-					}else if(currentWind == Operations.WIND_MODE_MIDDLE){
-						operation.setDataPackgeID0AndID1(currentSpinnerSelected, mID1);
-						operation.sendWindData(Operations.WIND_MODE_HIGH);
-					}else if (currentWind == Operations.WIND_MODE_HIGH){
-						operation.setDataPackgeID0AndID1(currentSpinnerSelected, mID1);
-						operation.sendWindData(Operations.WIND_MODE_AUTO);
+				isOperated = true;
+				operationCountDown = operationCountDownTime;
+				operation.setDataPackgeID0AndID1(currentSpinnerSelected, mID1);
+//				if (isRecvResponse){
+					if (currentWind_fork == Operations.WIND_MODE_AUTO){
+						nextWind = Operations.WIND_MODE_LOW;
+					}else if(currentWind_fork == Operations.WIND_MODE_LOW){
+//						operation.setDataPackgeID0AndID1(currentSpinnerSelected, mID1);
+						nextWind = Operations.WIND_MODE_MIDDLE;
+//						operation.sendWindData(nextWind);
+					}else if(currentWind_fork == Operations.WIND_MODE_MIDDLE){
+//						operation.setDataPackgeID0AndID1(currentSpinnerSelected, mID1);
+						nextWind = Operations.WIND_MODE_HIGH;
+//						operation.sendWindData(nextWind);
+					}else if (currentWind_fork == Operations.WIND_MODE_HIGH){
+//						operation.setDataPackgeID0AndID1(currentSpinnerSelected, mID1);
+						nextWind  = Operations.WIND_MODE_AUTO;
+//						operation.sendWindData(nextWind);
 					}
+					
+					windList[currentWind_fork].setVisibility(View.INVISIBLE);
+//					currentWind++;
+					windList[nextWind].setVisibility(View.VISIBLE);
+					currentWind_fork = nextWind;
+					operation.sendWindData(nextWind);
+//			   }
 					
 //					if (currentWind == Operations.WIND_MODE_HIGH){
 //						nextWind = Operations.WIND_MODE_AUTO;
@@ -214,7 +250,7 @@ public class MainActivity extends Activity  {
 ////					operation.setDataPackgeID0AndID1(currentSpinnerSelected, mID1);
 //////					operation.sendWindData(currentWind);
 ////					operation.sendWindData(nextWind);
-				}
+				
 				
 			}
 		});
@@ -223,25 +259,41 @@ public class MainActivity extends Activity  {
 			@Override
 			public void onClick(View arg0) {
 				// TODO Auto-generated method stub
-				if (isRecvResponse){
-					int nextMenu = 0;
-					if (currentMenu >=2){
-						nextMenu = 0;
-//						menuList[currentMenu].setVisibility(View.INVISIBLE);
-//						currentMenu = 0;
-//						menuList[0].setVisibility(View.VISIBLE);
-					}
-					else{
-						nextMenu = currentMenu+1;
-//						menuList[currentMenu].setVisibility(View.INVISIBLE);
-//						currentMenu++;
-//						menuList[currentMenu].setVisibility(View.VISIBLE);
-					}
-					operation.setDataPackgeID0AndID1(currentSpinnerSelected, mID1);
-//					operation.sendMenuData(currentMenu);
-					operation.sendMenuData(nextMenu);
-					
+				isOperated = true;
+				operationCountDown = operationCountDownTime;
+				operation.setDataPackgeID0AndID1(currentSpinnerSelected, mID1);
+				if (currentMenu_fork == Operations.MENU_MODE_COLD){
+					nextMenu = Operations.MENU_MODE_WARM;
+				}else if (currentMenu_fork == Operations.MENU_MODE_WARM){
+					nextMenu = Operations.MENU_MODE_VENTILATE;
+				}else if (currentMenu_fork == Operations.MENU_MODE_VENTILATE){
+					nextMenu = Operations.MENU_MODE_COLD;
 				}
+				menuList[currentMenu_fork].setVisibility(View.INVISIBLE);
+				menuList[nextMenu].setVisibility(View.VISIBLE);
+				operation.sendMenuData(nextMenu);
+				currentMenu_fork = nextMenu;
+				
+				
+////				if (isRecvResponse){
+//					int nextMenu = 0;
+//					if (currentMenu >=2){
+//						nextMenu = 0;
+////						menuList[currentMenu].setVisibility(View.INVISIBLE);
+////						currentMenu = 0;
+////						menuList[0].setVisibility(View.VISIBLE);
+//					}
+//					else{
+//						nextMenu = currentMenu+1;
+////						menuList[currentMenu].setVisibility(View.INVISIBLE);
+////						currentMenu++;
+////						menuList[currentMenu].setVisibility(View.VISIBLE);
+//					}
+//					operation.setDataPackgeID0AndID1(currentSpinnerSelected, mID1);
+////					operation.sendMenuData(currentMenu);
+//					operation.sendMenuData(nextMenu);
+					
+//				}
 				
 				
 			}
@@ -251,15 +303,22 @@ public class MainActivity extends Activity  {
 			@Override
 			public void onClick(View arg0) {
 				// TODO Auto-generated method stub
-				if (isRecvResponse){
+				isOperated = true;
+				operationCountDown = operationCountDownTime;
+//				if (isRecvResponse){
 					countDown = countDownTime;
-					isSetTime = true;
-					double nextInitTemperature = initTemperature;
+//					isSetTime = true;
+					nextInitTemperature = initTemperature_fork;
 					
 					nextInitTemperature += 0.5;
-					if (nextInitTemperature >= 30.0){
-						nextInitTemperature = 30.0;
+					if (nextInitTemperature >= MAX_INIT_TEMPERATURE){
+						nextInitTemperature = MAX_INIT_TEMPERATURE;
 					}
+					initTemperature_fork = nextInitTemperature;
+					tv_temp.setText(""+initTemperature_fork);
+					iv_mark.setVisibility(View.INVISIBLE);
+					tv_set.setVisibility(View.VISIBLE);
+					
 					operation.setDataPackgeID0AndID1(currentSpinnerSelected, mID1);
 					operation.sendUpTemperature(nextInitTemperature);
 
@@ -275,7 +334,7 @@ public class MainActivity extends Activity  {
 //					operation.setDataPackgeID0AndID1(currentSpinnerSelected, mID1);
 //					operation.sendUpTemperature(initTemperature);
 	
-				}
+//				}
 								
 			}
 		});
@@ -284,14 +343,22 @@ public class MainActivity extends Activity  {
 			@Override
 			public void onClick(View arg0) {
 				// TODO Auto-generated method stub
-				if (isRecvResponse){
+				isOperated = true;
+				operationCountDown = operationCountDownTime;
+//				if (isRecvResponse){
 					countDown = countDownTime;
-					isSetTime = true;
-					double nextInitTemperature = initTemperature;
+//					isSetTime = true;
+					nextInitTemperature = initTemperature_fork;
+					
 					nextInitTemperature -= 0.5;
-					if (nextInitTemperature <= 10.0){
-						nextInitTemperature = 10.0;
+					if (nextInitTemperature <= MIN_INIT_TEMPERATURE){
+						nextInitTemperature = MIN_INIT_TEMPERATURE;
 					}
+					initTemperature_fork = nextInitTemperature;
+					tv_temp.setText(""+initTemperature_fork);
+					iv_mark.setVisibility(View.INVISIBLE);
+					tv_set.setVisibility(View.VISIBLE);
+					
 					operation.setDataPackgeID0AndID1(currentSpinnerSelected, mID1);
 					operation.sendDownTemprature(nextInitTemperature);
 					
@@ -305,7 +372,7 @@ public class MainActivity extends Activity  {
 					
 //					operation.setDataPackgeID0AndID1(currentSpinnerSelected, mID1);
 //					operation.sendDownTemprature(initTemperature);	
-				}
+//				}
 				
 			}
 		});
@@ -315,19 +382,22 @@ public class MainActivity extends Activity  {
 			@Override
 			public void onClick(View v) {
 				// TODO Auto-generated method stub
-				if (isRecvResponse){
+//				if (isRecvResponse){
+					isOperated = true;
+					operationCountDown = operationCountDownTime;
 					operation.setDataPackgeID0AndID1(currentSpinnerSelected, mID1);
-					if (currentSwitchState == SWITCHON){
-//						currentSwitchState = SWITCHOFF;
+					if (currentSwitchState_fork == SWITCHON){
+						currentSwitchState_fork = SWITCHOFF;
 						operation.sendCloseSignal(SWITCHOFF);
-//						turnDownDevice();
+						turnDownDevice();
 					}
 					else{
-//						currentSwitchState = SWITCHON;
+						
+						currentSwitchState_fork = SWITCHON;
 						operation.sendCloseSignal(SWITCHON);
-//						turnOnDevice();
+						turnOnDevice();
 					}
-				}
+//				}
 					
 				
 			}
@@ -340,8 +410,10 @@ public class MainActivity extends Activity  {
 					int position, long arg3) {
 				// TODO Auto-generated method stub
 //				Toast.makeText(MainActivity.this, ""+spinnerAdapter.getItem(position), Toast.LENGTH_SHORT).show();
-				currentSpinnerSelected = position;
-				if (currentSpinnerSelected == 0){
+				isOperated = true;
+				operationCountDown = operationCountDownTime;
+				currentSpinnerSelected_fork = position;
+				if (currentSpinnerSelected_fork == 0){
 					mID1 = 0;
 				}else{
 					mID1 = 1;
@@ -349,9 +421,10 @@ public class MainActivity extends Activity  {
 				
 				tv_temp.setText("00.0");
 				currentTemperature = 0.0;
+				currentTemperature_fork = currentTemperature;
 				isSwitchDevice = true;
 				
-				byte[] data = {(byte) 0xA0,(byte)currentSpinnerSelected, (byte) mID1, 0x00, 0x00, 0x00, 0x00,0x00};
+				byte[] data = {(byte) 0xA0,(byte)currentSpinnerSelected_fork, (byte) mID1, 0x00, 0x00, 0x00, 0x00,0x00};
 				Operations.CalcCheckSum(data);
 				try {
 					operation.getmPrintWriter().write(data);
@@ -375,15 +448,17 @@ public class MainActivity extends Activity  {
 			@Override
 			public void onStopTrackingTouch(SeekBar seekBar) {
 				// TODO Auto-generated method stub
-				if (isRecvResponse){
+//				if (isRecvResponse){
 					countDown = countDownTime;
-					isSetTime = true;
+					isOperated = true;
+					operationCountDown = operationCountDownTime;
+//					isSetTime = true;
 					
 					operation.setDataPackgeID0AndID1(currentSpinnerSelected, mID1);
 					operation.sendUpTemperature(selectProgress);
 
 
-				}
+//				}
 			}
 			
 			@Override
@@ -537,12 +612,17 @@ public class MainActivity extends Activity  {
 					countDown = countDownTime;
 					
 				}
+				if (operationCountDown == 0){
+					isOperated = false;
+					operationCountDown = operationCountDownTime;
+				}
 				try {
 					Thread.sleep(1000);
 				} catch (InterruptedException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
+				operationCountDown--;
 				countDown--;
 				
 			}
@@ -609,7 +689,7 @@ public class MainActivity extends Activity  {
 						}
 						isSwitchDevice = false;
 					}
-					isRecvResponse = true;
+//					isRecvResponse = true;
 				}
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
@@ -624,9 +704,11 @@ public class MainActivity extends Activity  {
 		
 			while (threadRun){
 				
-				if (isRecvResponse){
+//				if (isRecvResponse){
 					byte[] data = {(byte) 0xA0,(byte)currentSpinnerSelected, (byte) mID1, 0x00, 0x00, 0x00, 0x00,0x00};
-					Operations.CalcCheckSum(data);
+					byte command = Operations.commands[0];
+					parseCurrentState(data, command);
+//					Operations.CalcCheckSum(data);
 					
 					try {
 						Thread.sleep(200);
@@ -640,7 +722,7 @@ public class MainActivity extends Activity  {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}	
-				}
+//				}
 				
 			}
 		}
@@ -660,31 +742,23 @@ public class MainActivity extends Activity  {
 //		int lastWind = currentWind;
 		switch(wind){
 		case 0x00:
-			windList[currentWind].setVisibility(View.INVISIBLE);
 			currentWind = Operations.WIND_MODE_AUTO;
-			windList[currentWind].setVisibility(View.VISIBLE);
 			break;
 		case 0x01:
-			windList[currentWind].setVisibility(View.INVISIBLE);
 			currentWind = Operations.WIND_MODE_HIGH;
-			windList[currentWind].setVisibility(View.VISIBLE);
 			break;
 		case 0x02:
-			windList[currentWind].setVisibility(View.INVISIBLE);
 			currentWind = Operations.WIND_MODE_MIDDLE;
-			windList[currentWind].setVisibility(View.VISIBLE);
 			break;
 		case 0x03:
-			windList[currentWind].setVisibility(View.INVISIBLE);
 			currentWind = Operations.WIND_MODE_LOW;
-			windList[currentWind].setVisibility(View.VISIBLE);
 			break;
 		}
-//		windList[lastWind].setVisibility(View.INVISIBLE);
-//		windList[currentWind].setVisibility(View.VISIBLE);
+		windList[currentWind_fork].setVisibility(View.INVISIBLE);
+		windList[currentWind].setVisibility(View.VISIBLE);
+		currentWind_fork = currentWind;
 		
 		//menu state
-		int lastMenu = currentMenu;
 		switch (menu){
 		case 0x00:
 			currentMenu = Operations.MENU_MODE_COLD;
@@ -696,8 +770,9 @@ public class MainActivity extends Activity  {
 			currentMenu = Operations.MENU_MODE_VENTILATE;
 			break;
 		}
-		menuList[lastMenu].setVisibility(View.INVISIBLE);
+		menuList[currentMenu_fork].setVisibility(View.INVISIBLE);
 		menuList[currentMenu].setVisibility(View.VISIBLE);
+		currentMenu_fork = currentMenu;
 		
 		//switch state
 		switch (state){
@@ -710,20 +785,49 @@ public class MainActivity extends Activity  {
 			turnOnDevice();
 			break;
 		}
+		currentSwitchState_fork = currentSwitchState;
 		
 		//set temperature 
 		initTemperature = (double) (initTempInfo*1.0/2.0);
-		if (isSetTime){
-			Message msg = new Message();
-			msg.what = UPDATE_INIT_TEMPERATURE;
-			updateHandle.sendMessage(msg);
-			isSetTime = false;
-		}
+		initTemperature_fork = initTemperature;
+//		if (isSetTime){
+//			Message msg = new Message();
+//			msg.what = UPDATE_INIT_TEMPERATURE;
+//			updateHandle.sendMessage(msg);
+//			isSetTime = false;
+//		}
 		
 		//current temperature
 		currentTemperature = (double)(currentTempInfo*1.0/2.0);
+		currentTemperature_fork = currentTemperature;
 		
 	}
+	
+	void parseCurrentState(byte[] data,byte command){
+		/**dataPackage[0] is command
+		*  dataPackage[1] is ip0;
+		*  dataPackage[2] is ip1;
+		*  dataPackage[3] is data0;
+		*  dataPackage[4] is  data1;
+		*  dataPackage[5] is data 2;
+		*  dataPackage[6] is data3;
+		*  dataPackage[7] is checkSum;
+		*/
+		data[0] = command;
+		data[1] = (byte) currentSpinnerSelected_fork;
+		data[2] = (byte) mID1;
+		data[3] = 0x18;
+		data[3] = operation.WindDataParse(data[3], currentWind_fork);
+		data[3] = operation.MenuDataParse(data[3], currentMenu_fork);
+		data[3] = operation.SwitchStateParse(data[3], currentSwitchState_fork);
+		data[4] = 0x00;
+		int temp_initTemperature = (int) (initTemperature_fork*2);
+		data[5] = (byte) temp_initTemperature;
+		data[6] = 0x00;
+		Operations.CalcCheckSum(data);
+		
+	}
+	
 
 	void  SetTemperature(double temp){
 		if (temp>50.0){
@@ -747,7 +851,11 @@ public class MainActivity extends Activity  {
 		public void handleMessage(Message msg) {
 			// TODO Auto-generated method stub
 			if(msg.what == UPDATEALL){
-				parseRecvData((byte[]) msg.obj);
+				
+				if (!isOperated){
+					parseRecvData((byte[]) msg.obj);	
+				}
+				
 			}
 			if (msg.what == UPDATE_INIT_TEMPERATURE){
 				SetTemperature(initTemperature);

@@ -58,7 +58,7 @@ public class Operations {
 	public static Handler handler = null;
 //	Thread recvThread;
 	Thread getTemperatureRequest = null;
-	byte[] commands = {(byte) 0xa1,(byte) 0xa0,(byte) 0xa8};
+	static byte[] commands = {(byte) 0xa1,(byte) 0xa0,(byte) 0xa8};
 	
 	byte checkSum;
 	byte command;
@@ -204,22 +204,33 @@ public class Operations {
 		
 		case MENU_MODE_COLD :
 			dataPackage[3] |= 0x00;
-//			mPrintWriter.print(dataPackage);
-//			mPrintWriter.flush();
 			break;
 		case MENU_MODE_WARM :
 			dataPackage[3] |= 0x20;
-//			mPrintWriter.print();
-//			mPrintWriter.flush();
 			break;
 		case MENU_MODE_VENTILATE :
 			dataPackage[3] |= 0x40;
-//			mPrintWriter.print("menu 3");
-//			mPrintWriter.flush();
 			break;
 		}
 		PrintWrite(SETMENU);
 		
+	}
+	byte MenuDataParse(byte data, int mode){
+		data &= menuResetByte;
+				
+		switch(mode){
+		
+		case MENU_MODE_COLD :
+			data |= 0x00;
+			break;
+		case MENU_MODE_WARM :
+			data |= 0x20;
+			break;
+		case MENU_MODE_VENTILATE :
+			data |= 0x40;
+			break;
+		}
+		return data;
 	}
 	/**
 	 *  this function called whenever the wind level changed
@@ -232,31 +243,39 @@ public class Operations {
 		
 		case WIND_MODE_AUTO :
 			dataPackage[3] |= 0x00;
-//			mPrintWriter.print(" wind auto");
-//			mPrintWriter.flush();
+
 			break;
 		case WIND_MODE_LOW :
 			dataPackage[3] |= 0x03;
-//			mPrintWriter.print(" wind 1");
-//			mPrintWriter.flush();
+
 			break;
 		case WIND_MODE_MIDDLE :
 			dataPackage[3] |= 0x02;
-//			mPrintWriter.print(" wind 2");
-//			mPrintWriter.flush();
 			break;
 		case WIND_MODE_HIGH :
 			dataPackage[3] |= 0x01;
-//			mPrintWriter.print(" wind 4 ");
-//			mPrintWriter.flush();
 			break;
 		}
 		Log.i("yangluo","in send windata "+dataPackage.toString());
 		PrintWrite(SETWIND);
-//		CalcCheckSum();
-//		mPrintWriter.print(dataPackage);
-//		mPrintWriter.flush();
-		
+	}
+	byte WindDataParse(byte data, int mode){
+		data &= windResetByte;
+		switch (mode){
+			case WIND_MODE_AUTO :
+				data |= 0x00;
+				break;
+			case WIND_MODE_LOW :
+				data |= 0x03;
+				break;
+			case WIND_MODE_MIDDLE :
+				data |= 0x02;
+				break;
+			case WIND_MODE_HIGH :
+				data |= 0x01;
+				break;
+			}
+		return data;
 	}
 	
 	void sendUpTemperature(double temperature){
@@ -288,6 +307,19 @@ public class Operations {
 			isConnected = false;
 		}
 		PrintWrite(SETCLOSE);
+	}
+	byte SwitchStateParse(byte data, int state){
+		data &= switchResetByte;
+		if (state == MainActivity.SWITCHON){
+			data |= 0x10;
+//			isConnected = true;
+//			getTemperatureRequest.start();
+		}
+		else if (state == MainActivity.SWITCHOFF){
+			data |= 0x00;
+//			isConnected = false;
+		}
+		return data;
 	}
 	
 	/**
