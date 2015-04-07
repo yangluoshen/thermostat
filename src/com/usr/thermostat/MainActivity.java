@@ -91,7 +91,7 @@ public class MainActivity extends Activity  {
 	
 	static final int countDownTime = 3;
 	int countDown = 0;
-	int operationCountDownTime = 6;
+	int operationCountDownTime = 3;
 	int operationCountDown = 0;
 	
 	
@@ -233,6 +233,7 @@ public class MainActivity extends Activity  {
 					windList[nextWind].setVisibility(View.VISIBLE);
 					currentWind_fork = nextWind;
 					operation.sendWindData(nextWind);
+					skb_temp.setThumb(getResources().getDrawable(R.drawable.seekthumb_wait));
 //			   }
 					
 //					if (currentWind == Operations.WIND_MODE_HIGH){
@@ -273,7 +274,7 @@ public class MainActivity extends Activity  {
 				menuList[nextMenu].setVisibility(View.VISIBLE);
 				operation.sendMenuData(nextMenu);
 				currentMenu_fork = nextMenu;
-				
+				skb_temp.setThumb(getResources().getDrawable(R.drawable.seekthumb_wait));
 				
 ////				if (isRecvResponse){
 //					int nextMenu = 0;
@@ -321,7 +322,7 @@ public class MainActivity extends Activity  {
 					
 					operation.setDataPackgeID0AndID1(currentSpinnerSelected, mID1);
 					operation.sendUpTemperature(nextInitTemperature);
-
+					skb_temp.setThumb(getResources().getDrawable(R.drawable.seekthumb_wait));
 					
 //					initTemperature += 0.5;
 //					if (initTemperature >= 30.0){
@@ -362,6 +363,7 @@ public class MainActivity extends Activity  {
 					operation.setDataPackgeID0AndID1(currentSpinnerSelected, mID1);
 					operation.sendDownTemprature(nextInitTemperature);
 					
+					skb_temp.setThumb(getResources().getDrawable(R.drawable.seekthumb_wait));
 //					initTemperature -= 0.5;
 //					if (initTemperature <= 10.0){
 //						initTemperature = 10.0;
@@ -397,6 +399,7 @@ public class MainActivity extends Activity  {
 						operation.sendCloseSignal(SWITCHON);
 						turnOnDevice();
 					}
+					skb_temp.setThumb(getResources().getDrawable(R.drawable.seekthumb_wait));
 //				}
 					
 				
@@ -432,7 +435,7 @@ public class MainActivity extends Activity  {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-				
+				skb_temp.setThumb(getResources().getDrawable(R.drawable.seekthumb_wait));
 			}
 
 			@Override
@@ -456,7 +459,7 @@ public class MainActivity extends Activity  {
 					
 					operation.setDataPackgeID0AndID1(currentSpinnerSelected, mID1);
 					operation.sendUpTemperature(selectProgress);
-
+					skb_temp.setThumb(getResources().getDrawable(R.drawable.seekthumb_wait));
 
 //				}
 			}
@@ -480,8 +483,8 @@ public class MainActivity extends Activity  {
 	}
 	void turnDownDevice(){
 
-		windList[currentWind].setVisibility(View.INVISIBLE);
-		menuList[currentMenu].setVisibility(View.INVISIBLE);
+		windList[currentWind_fork].setVisibility(View.INVISIBLE);
+		menuList[currentMenu_fork].setVisibility(View.INVISIBLE);
 		tv_temp.setVisibility(View.INVISIBLE);
 		iv_mark.setVisibility(View.INVISIBLE);
 		iv_degree.setVisibility(View.INVISIBLE);
@@ -502,8 +505,8 @@ public class MainActivity extends Activity  {
 	}
 	void turnOnDevice(){
 
-		windList[currentWind].setVisibility(View.VISIBLE);
-		menuList[currentMenu].setVisibility(View.VISIBLE);
+		windList[currentWind_fork].setVisibility(View.VISIBLE);
+		menuList[currentMenu_fork].setVisibility(View.VISIBLE);
 		tv_temp.setVisibility(View.VISIBLE);
 //		iv_mark.setVisibility(View.VISIBLE);
 		iv_degree.setVisibility(View.VISIBLE);
@@ -553,7 +556,9 @@ public class MainActivity extends Activity  {
 		spinner_num = (Spinner) findViewById(R.id.spinner_num);
 		tv_dayweek = (TextView) findViewById(R.id.tv_dayofweek);
 		skb_temp = (SeekBar) findViewById(R.id.skb_temp);
-
+		
+		
+		
 		tv_temp.setTypeface(font);
 		tv_time.setTypeface(font);
 		
@@ -851,10 +856,10 @@ public class MainActivity extends Activity  {
 		public void handleMessage(Message msg) {
 			// TODO Auto-generated method stub
 			if(msg.what == UPDATEALL){
-				
 				if (!isOperated){
-					parseRecvData((byte[]) msg.obj);	
-				}
+						parseRecvData((byte[]) msg.obj);	
+						skb_temp.setThumb(getResources().getDrawable(R.drawable.thumb));
+					}
 				
 			}
 			if (msg.what == UPDATE_INIT_TEMPERATURE){
