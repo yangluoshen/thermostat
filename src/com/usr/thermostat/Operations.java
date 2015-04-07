@@ -62,7 +62,7 @@ public class Operations {
 	
 	byte checkSum;
 	byte command;
-	byte ID0 = 0x10;
+	byte ID0 = 0x01;
 	byte ID1 = 0x01;
 	byte Data0;
 	byte Data1;
@@ -108,8 +108,8 @@ public class Operations {
 	
 	void initDataPackage(){
 		dataPackage[0] = commands[0];
-		dataPackage[1] = 0x00;
-		dataPackage[2] = 0x00;
+		dataPackage[1] = ID0;
+		dataPackage[2] = ID1;
 		dataPackage[3] = 0x18;  //data0
 		dataPackage[4] = 0x00;
 		dataPackage[5] = 0x2c;  //init temperature
@@ -118,8 +118,8 @@ public class Operations {
 		CalcCheckSum(dataPackage);
 		
 	}
-	public boolean Connect( String registID){
-		
+	public byte[] Connect( String registID){
+		byte[] readBuffer = new byte[8];
 		try {
 //			Log.i("yangluo","connect1");
 //			int int_port = Integer.valueOf(port).intValue(); 
@@ -143,6 +143,14 @@ public class Operations {
 			mPrintWriter.write(dataPackage);
 			
 			
+			if (mDataInputeStream.read(readBuffer) != -1){
+				Operations.CalcCheckSum(readBuffer);
+					
+			}else{
+				return null;
+			}
+			
+			
 			sendInitTime();
 			//start the  thread
 			if (!threadMarker){
@@ -155,16 +163,16 @@ public class Operations {
 			// TODO Auto-generated catch block
 //			Toast.makeText(this.context, "connect failed-- unknow host", Toast.LENGTH_SHORT).show();
 			e.printStackTrace();
-			return false;
+			return null;
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 //			Toast.makeText(this.context, "connect failed2", Toast.LENGTH_SHORT).show();
 			e.printStackTrace();
 			
-			return false;
+			return null;
 		}
 		isConnected = true;
-		return true;
+		return readBuffer;
 	}
 	private void sendInitTime() {
 		// TODO Auto-generated method stub

@@ -33,7 +33,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 public class MainActivity extends Activity  {
-	private int time_chip = 5000;
+	private int time_chip = 4000;
 	private static final double MIN_INIT_TEMPERATURE = 0.0;
 	private static final double MAX_INIT_TEMPERATURE = 30.0;
 	private static final double MIN_CURRENT_TEMPERATURE = 0.0;
@@ -51,7 +51,7 @@ public class MainActivity extends Activity  {
 	ImageView iv_mark;       // image that mark the temperature
 	ImageView iv_degree;     // image "C"
 	TextView tv_set;         //the text "set"
-	TextView tv_time;        //text time
+//	TextView tv_time;        //text time
 	TextView tv_temp ;       // text temprature
 //	TextView[] tv_dayofweek = new TextView[7];   // text day of week
 	TextView tv_dayweek;
@@ -72,7 +72,7 @@ public class MainActivity extends Activity  {
 	int currentMenu = Operations.MENU_MODE_COLD;
 	int currentWind = Operations.WIND_MODE_AUTO;
 	double initTemperature = 22.0;
-	double currentTemperature = 0.0;
+	double currentTemperature = 10.0;
 	int currentSwitchState = SWITCHON;
 	int currentSpinnerSelected = 1;
 	
@@ -90,8 +90,8 @@ public class MainActivity extends Activity  {
 	int currentSpinnerSelected_fork = currentSpinnerSelected;
 	
 	static final int countDownTime = 3;
-	int countDown = 0;
-	int operationCountDownTime = 3;
+	int countDown = countDownTime;
+	int operationCountDownTime = 2;
 	int operationCountDown = 0;
 	
 	
@@ -102,7 +102,7 @@ public class MainActivity extends Activity  {
 	int minute;
 	
 	Counter count;
-	Timer timer;
+//	Timer timer;
 	static final int TIMEUP = 0;
 	static final int TIMEDOWN = 1;
 	static final int TIMECHANGED = 2;
@@ -115,7 +115,7 @@ public class MainActivity extends Activity  {
 	static final int UPDATE_CURRENT_TEMPERATURE = 6;
 	
 	Thread countThread;
-	Thread timeThread;
+//	Thread timeThread;
 	Thread recvThread;
 	Thread getTemperatureRequest;
 	boolean threadRun = true;
@@ -134,7 +134,7 @@ public class MainActivity extends Activity  {
 		public void handleMessage(Message msg) {
 			// TODO Auto-generated method stub
 			super.handleMessage(msg);
-			if (msg.what == TIMEUP && currentSwitchState == SWITCHON){
+			if (msg.what == TIMEUP && currentSwitchState_fork == SWITCHON){
 				SetTemperature(currentTemperature);
 				msg.what = TIMEDOWN;
 				
@@ -143,37 +143,37 @@ public class MainActivity extends Activity  {
 			}
 		}
 	};
-	Handler TimerHandler = new Handler(){
-		boolean flag = true;
-
-		@Override
-		public void handleMessage(Message msg) {
-			// TODO Auto-generated method stub
-			//super.handleMessage(msg);
-			
-			if (msg.what == TIMECHANGED){
-				String str_minute;
-				if (minute<10){
-					str_minute = "0"+minute;
-				}else {
-					str_minute  = ""+minute;
-				}
-				if (flag){
-					tv_time.setText(""+hour+":"+str_minute);
-					flag = false;
-				}else{
-					tv_time.setText(""+hour+" "+str_minute);
-					flag = true;
-				}
-				
-			}
-		    if (msg.what == WEEKDAYCHANGED){
-//				tv_dayofweek.setText(""+dayOfWeek);
-			}
-		}
-		
-		
-	};
+//	Handler TimerHandler = new Handler(){
+//		boolean flag = true;
+//
+//		@Override
+//		public void handleMessage(Message msg) {
+//			// TODO Auto-generated method stub
+//			//super.handleMessage(msg);
+//			
+//			if (msg.what == TIMECHANGED){
+//				String str_minute;
+//				if (minute<10){
+//					str_minute = "0"+minute;
+//				}else {
+//					str_minute  = ""+minute;
+//				}
+//				if (flag){
+//					tv_time.setText(""+hour+":"+str_minute);
+//					flag = false;
+//				}else{
+//					tv_time.setText(""+hour+" "+str_minute);
+//					flag = true;
+//				}
+//				
+//			}
+//		    if (msg.what == WEEKDAYCHANGED){
+////				tv_dayofweek.setText(""+dayOfWeek);
+//			}
+//		}
+//		
+//		
+//	};
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -188,16 +188,17 @@ public class MainActivity extends Activity  {
 		countThread = new Thread(count);
 		countThread.start();
 		
-		timer = new Timer();
-		timeThread = new Thread(timer);
-		timeThread.start();
-		
-
-		getTemperatureRequest = new Thread(mGetTemperatureRequest);
-		getTemperatureRequest.start();
+//		timer = new Timer();
+//		timeThread = new Thread(timer);
+//		timeThread.start();
 		
 		recvThread = new Thread(mRecvThread);
 		recvThread.start();
+		
+		getTemperatureRequest = new Thread(mGetTemperatureRequest);
+		getTemperatureRequest.start();
+		
+		
 
 		
 	}
@@ -323,7 +324,7 @@ public class MainActivity extends Activity  {
 					operation.setDataPackgeID0AndID1(currentSpinnerSelected, mID1);
 					operation.sendUpTemperature(nextInitTemperature);
 					skb_temp.setThumb(getResources().getDrawable(R.drawable.seekthumb_wait));
-					
+					skb_temp.setProgress((int)nextInitTemperature*2);
 //					initTemperature += 0.5;
 //					if (initTemperature >= 30.0){
 //						initTemperature = 30.0;
@@ -364,6 +365,7 @@ public class MainActivity extends Activity  {
 					operation.sendDownTemprature(nextInitTemperature);
 					
 					skb_temp.setThumb(getResources().getDrawable(R.drawable.seekthumb_wait));
+					skb_temp.setProgress((int)nextInitTemperature*2);
 //					initTemperature -= 0.5;
 //					if (initTemperature <= 10.0){
 //						initTemperature = 10.0;
@@ -415,15 +417,16 @@ public class MainActivity extends Activity  {
 //				Toast.makeText(MainActivity.this, ""+spinnerAdapter.getItem(position), Toast.LENGTH_SHORT).show();
 				isOperated = true;
 				operationCountDown = operationCountDownTime;
-				currentSpinnerSelected_fork = position;
-				if (currentSpinnerSelected_fork == 0){
-					mID1 = 0;
-				}else{
-					mID1 = 1;
-				}
+				currentSpinnerSelected_fork = position+1;
+//				if (currentSpinnerSelected_fork == 0){
+//					mID1 = 0;
+//				}else{
+//					mID1 = 1;
+//				}
+				mID1 = 1;
 				
-				tv_temp.setText("00.0");
-				currentTemperature = 0.0;
+//				tv_temp.setText("00.0");
+//				currentTemperature = 0.0;
 				currentTemperature_fork = currentTemperature;
 				isSwitchDevice = true;
 				
@@ -456,7 +459,8 @@ public class MainActivity extends Activity  {
 					isOperated = true;
 					operationCountDown = operationCountDownTime;
 //					isSetTime = true;
-					
+					nextInitTemperature = selectProgress;
+					initTemperature_fork = nextInitTemperature;
 					operation.setDataPackgeID0AndID1(currentSpinnerSelected, mID1);
 					operation.sendUpTemperature(selectProgress);
 					skb_temp.setThumb(getResources().getDrawable(R.drawable.seekthumb_wait));
@@ -467,7 +471,8 @@ public class MainActivity extends Activity  {
 			@Override
 			public void onStartTrackingTouch(SeekBar seekBar) {
 				// TODO Auto-generated method stub
-				
+				iv_mark.setVisibility(View.INVISIBLE);
+				tv_set.setVisibility(View.VISIBLE);
 			}
 			
 			@Override
@@ -489,7 +494,7 @@ public class MainActivity extends Activity  {
 		iv_mark.setVisibility(View.INVISIBLE);
 		iv_degree.setVisibility(View.INVISIBLE);
 		tv_set.setVisibility(View.INVISIBLE);
-		tv_time.setVisibility(View.INVISIBLE);
+//		tv_time.setVisibility(View.INVISIBLE);
 		
 		tv_week.setVisibility(View.INVISIBLE);
 		tv_dayweek.setVisibility(View.INVISIBLE);
@@ -508,10 +513,10 @@ public class MainActivity extends Activity  {
 		windList[currentWind_fork].setVisibility(View.VISIBLE);
 		menuList[currentMenu_fork].setVisibility(View.VISIBLE);
 		tv_temp.setVisibility(View.VISIBLE);
-//		iv_mark.setVisibility(View.VISIBLE);
+		iv_mark.setVisibility(View.VISIBLE);
 		iv_degree.setVisibility(View.VISIBLE);
 //		tv_set.setVisibility(View.VISIBLE);
-		tv_time.setVisibility(View.VISIBLE);
+//		tv_time.setVisibility(View.VISIBLE);
 		
 		tv_week.setVisibility(View.VISIBLE);
 		tv_dayweek.setVisibility(View.VISIBLE);
@@ -549,18 +554,19 @@ public class MainActivity extends Activity  {
 		iv_close = (ImageView) findViewById(R.id.iv_close);
 		
 		tv_set  = (TextView) findViewById(R.id.tv_set);
+		tv_set.setVisibility(View.INVISIBLE);
 		tv_week = (TextView) findViewById(R.id.tv_week);
 		iv_mark = (ImageView) findViewById(R.id.iv_mark);
 		iv_degree = (ImageView) findViewById(R.id.iv_degree);
-		tv_time = (TextView) findViewById(R.id.tv_time);
+//		tv_time = (TextView) findViewById(R.id.tv_time);
 		spinner_num = (Spinner) findViewById(R.id.spinner_num);
 		tv_dayweek = (TextView) findViewById(R.id.tv_dayofweek);
 		skb_temp = (SeekBar) findViewById(R.id.skb_temp);
-		
+
 		
 		
 		tv_temp.setTypeface(font);
-		tv_time.setTypeface(font);
+//		tv_time.setTypeface(font);
 		
 //		for (int i=0; i<dayofweekID.length;i++){
 //			tv_dayofweek[i] = (TextView) findViewById(dayofweekID[i]);
@@ -579,18 +585,25 @@ public class MainActivity extends Activity  {
 		minute = time.minute;
 		hour = time.hour;
 		
+		
 
 //		content_layout = (LinearLayout) findViewById(R.id.content_layout);
 		
 		//spinner num
-		for (int i=0;i<10; i++){
-			spinnerDataList.add("0"+i);
+		for (int i=0;i<9; i++){
+			spinnerDataList.add("0"+(i+1));
 		}
 		spinnerDataList.add("10");
 		spinnerAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item,spinnerDataList);
 		spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		spinner_num.setAdapter(spinnerAdapter);
-		spinner_num.setSelection(1);
+//		spinner_num.setSelection(0);
+		
+		Bundle bundle = getIntent().getExtras();
+		byte[] initState = bundle.getByteArray("initstate");
+		parseRecvData(initState);
+		SetTemperature(currentTemperature);
+		skb_temp.setThumb(getResources().getDrawable(R.drawable.thumb));
 		
 	}
 
@@ -633,37 +646,37 @@ public class MainActivity extends Activity  {
 			}
 		}
 	}
-	class Timer implements Runnable{
-
-		@Override
-		public void run() {
-			// TODO Auto-generated method stub
-			while (threadRun){
-				time.setToNow();
-				//dayOfWeek = time.weekDay;
-				hour = time.hour;
-				minute = time.minute;
-				
-				try {
-					Thread.sleep(1000);
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-				Message msg = Message.obtain();
-//				if (dayOfWeek != time.weekDay){
-//					msg.what = WEEKDAYCHANGED;
-//					dayOfWeek = time.weekDay;
-//					TimerHandler.sendMessage(msg);
+//	class Timer implements Runnable{
+//
+//		@Override
+//		public void run() {
+//			// TODO Auto-generated method stub
+//			while (threadRun){
+//				time.setToNow();
+//				//dayOfWeek = time.weekDay;
+//				hour = time.hour;
+//				minute = time.minute;
+//				
+//				try {
+//					Thread.sleep(1000);
+//				} catch (InterruptedException e) {
+//					// TODO Auto-generated catch block
+//					e.printStackTrace();
 //				}
-				msg.what = TIMECHANGED;
-				TimerHandler.sendMessage(msg);
-				
-				
-			}
-		}
-		
-	}
+//				Message msg = Message.obtain();
+////				if (dayOfWeek != time.weekDay){
+////					msg.what = WEEKDAYCHANGED;
+////					dayOfWeek = time.weekDay;
+////					TimerHandler.sendMessage(msg);
+////				}
+//				msg.what = TIMECHANGED;
+////				TimerHandler.sendMessage(msg);
+//				
+//				
+//			}
+//		}
+//		
+//	}
 	
 	
 	/**
@@ -688,7 +701,6 @@ public class MainActivity extends Activity  {
 								msg.what = UPDATEALL;
 								msg.obj = readBuffer;
 								updateHandle.sendMessage(msg);
-
 							}
 							
 						}
@@ -710,14 +722,15 @@ public class MainActivity extends Activity  {
 			while (threadRun){
 				
 //				if (isRecvResponse){
-					byte[] data = {(byte) 0xA0,(byte)currentSpinnerSelected, (byte) mID1, 0x00, 0x00, 0x00, 0x00,0x00};
+					byte[] data = {(byte) 0xA1,(byte)currentSpinnerSelected, (byte) mID1, 0x00, 0x00, 0x00, 0x00,0x00};
 					byte command = Operations.commands[0];
 					parseCurrentState(data, command);
 //					Operations.CalcCheckSum(data);
 					
 					try {
-						Thread.sleep(200);
+//						Thread.sleep(200);
 						operation.getmPrintWriter().write(data);
+
 						Thread.sleep(time_chip-200);
 						
 					} catch (InterruptedException e) {
@@ -795,6 +808,7 @@ public class MainActivity extends Activity  {
 		//set temperature 
 		initTemperature = (double) (initTempInfo*1.0/2.0);
 		initTemperature_fork = initTemperature;
+		skb_temp.setProgress(initTempInfo);
 //		if (isSetTime){
 //			Message msg = new Message();
 //			msg.what = UPDATE_INIT_TEMPERATURE;
@@ -888,7 +902,7 @@ public class MainActivity extends Activity  {
 				operation.isConnected = false;
 				threadRun = false;
 				countThread.interrupt();
-				timeThread.interrupt();
+//				timeThread.interrupt();
 				getTemperatureRequest.interrupt();
 				recvThread.interrupt();
 				

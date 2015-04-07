@@ -37,11 +37,14 @@ public class ConnectActivity extends Activity {
 		@Override
 		public void onClick(View v) {
 			// TODO Auto-generated method stub
+			byte[] initState = null;
 			if ("".equals(et_registID.getText().toString())){
 				
 			}
-			else if (operation.Connect(et_registID.getText().toString())){
+			else if (( initState = operation.Connect(et_registID.getText().toString()) )!= null){
+				
 				Intent _intent  = new Intent(ConnectActivity.this,MainActivity.class);
+				_intent.putExtra("initstate", initState);
 				ConnectActivity.this.startActivity(_intent);
 //				finish();
 			}else {
