@@ -7,20 +7,21 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 public class ConnectActivity extends Activity {
 //	EditText et_ip;
 //	EditText et_port;
 	EditText et_registID;
-	ImageButton ibtn_connect;
+	ImageView ibtn_connect;
 	Operations operation;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		// TODO Auto-generated method stub
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.connect_layout);
+		setContentView(R.layout.connect_new_version);
 		
 		operation = Operations.GetOperation(this);
 		initView();
@@ -61,7 +62,7 @@ public class ConnectActivity extends Activity {
 		// TODO Auto-generated method stub
 //		et_ip = (EditText) findViewById(R.id.et_ip);
 //		et_port = (EditText) findViewById(R.id.et_port);
-		ibtn_connect = (ImageButton) findViewById(R.id.btn_connect);
+		ibtn_connect = (ImageView) findViewById(R.id.btn_connect);
 		et_registID = (EditText) findViewById(R.id.et_registID);
 	}
 	

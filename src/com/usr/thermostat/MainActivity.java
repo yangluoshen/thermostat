@@ -34,10 +34,12 @@ import android.widget.Toast;
 
 public class MainActivity extends Activity  {
 	private int time_chip = 4000;
-	private static final double MIN_INIT_TEMPERATURE = 0.0;
+	private static final double MIN_INIT_TEMPERATURE = 10.0;
 	private static final double MAX_INIT_TEMPERATURE = 30.0;
 	private static final double MIN_CURRENT_TEMPERATURE = 0.0;
 	private static final double MAX_CURRENT_TEMPERATURE = 50.0;
+	//because of the progress range from 0~40, but the init_temp range from 10~30 ,so need a offset
+	private static final int INIT_TEMPERATURE_OFFSET = 20;
 	
 	private static final String FONT_DIGITAL_7 = "fonts" + File.separator + "digital.ttf";
 	ImageView iv_menu;
@@ -121,6 +123,7 @@ public class MainActivity extends Activity  {
 	boolean threadRun = true;
 	boolean isSwitchDevice = false;
 	boolean isOperated = false;
+	boolean isFirstIn = true;
 //	boolean isRecvResponse = true;
 //	boolean isSetTime = false;
 	
@@ -178,7 +181,7 @@ public class MainActivity extends Activity  {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_main);
+		setContentView(R.layout.main_new_version);
 		initViews();
 		addEvents();
 		
@@ -198,6 +201,15 @@ public class MainActivity extends Activity  {
 		getTemperatureRequest = new Thread(mGetTemperatureRequest);
 		getTemperatureRequest.start();
 		
+		
+		Bundle bundle = getIntent().getExtras();
+		if (bundle !=null){
+			byte[] initState = bundle.getByteArray("initstate");
+			parseRecvData(initState);
+			SetTemperature(currentTemperature);
+			skb_temp.setThumb(getResources().getDrawable(R.drawable.thumb));
+//			isFirstIn = false;
+		}
 		
 
 		
@@ -324,7 +336,7 @@ public class MainActivity extends Activity  {
 					operation.setDataPackgeID0AndID1(currentSpinnerSelected, mID1);
 					operation.sendUpTemperature(nextInitTemperature);
 					skb_temp.setThumb(getResources().getDrawable(R.drawable.seekthumb_wait));
-					skb_temp.setProgress((int)nextInitTemperature*2);
+					skb_temp.setProgress((int)(nextInitTemperature*2)-INIT_TEMPERATURE_OFFSET);
 //					initTemperature += 0.5;
 //					if (initTemperature >= 30.0){
 //						initTemperature = 30.0;
@@ -365,7 +377,7 @@ public class MainActivity extends Activity  {
 					operation.sendDownTemprature(nextInitTemperature);
 					
 					skb_temp.setThumb(getResources().getDrawable(R.drawable.seekthumb_wait));
-					skb_temp.setProgress((int)nextInitTemperature*2);
+					skb_temp.setProgress((int)(nextInitTemperature*2)-INIT_TEMPERATURE_OFFSET);
 //					initTemperature -= 0.5;
 //					if (initTemperature <= 10.0){
 //						initTemperature = 10.0;
@@ -415,30 +427,36 @@ public class MainActivity extends Activity  {
 					int position, long arg3) {
 				// TODO Auto-generated method stub
 //				Toast.makeText(MainActivity.this, ""+spinnerAdapter.getItem(position), Toast.LENGTH_SHORT).show();
-				isOperated = true;
-				operationCountDown = operationCountDownTime;
-				currentSpinnerSelected_fork = position+1;
-//				if (currentSpinnerSelected_fork == 0){
-//					mID1 = 0;
-//				}else{
-//					mID1 = 1;
-//				}
-				mID1 = 1;
-				
-//				tv_temp.setText("00.0");
-//				currentTemperature = 0.0;
-				currentTemperature_fork = currentTemperature;
-				isSwitchDevice = true;
-				
-				byte[] data = {(byte) 0xA0,(byte)currentSpinnerSelected_fork, (byte) mID1, 0x00, 0x00, 0x00, 0x00,0x00};
-				Operations.CalcCheckSum(data);
-				try {
-					operation.getmPrintWriter().write(data);
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+				if (!isFirstIn){
+					isOperated = true;
+					operationCountDown = operationCountDownTime;
+					currentSpinnerSelected_fork = position+1;
+//					if (currentSpinnerSelected_fork == 0){
+//						mID1 = 0;
+//					}else{
+//						mID1 = 1;
+//					}
+					mID1 = 1;
+					
+					tv_temp.setText("00.0");
+					currentTemperature = 0.0;
+					currentTemperature_fork = currentTemperature;
+					isSwitchDevice = true;
+					
+					byte[] data = {(byte) 0xA0,(byte)currentSpinnerSelected_fork, (byte) mID1, 0x00, 0x00, 0x00, 0x00,0x00};
+					Operations.CalcCheckSum(data);
+					try {
+						operation.getmPrintWriter().write(data);
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					skb_temp.setThumb(getResources().getDrawable(R.drawable.seekthumb_wait));
 				}
-				skb_temp.setThumb(getResources().getDrawable(R.drawable.seekthumb_wait));
+				else {
+//					isFirstIn = false;
+				}
+				
 			}
 
 			@Override
@@ -455,9 +473,9 @@ public class MainActivity extends Activity  {
 			public void onStopTrackingTouch(SeekBar seekBar) {
 				// TODO Auto-generated method stub
 //				if (isRecvResponse){
-					countDown = countDownTime;
-					isOperated = true;
-					operationCountDown = operationCountDownTime;
+//					countDown = countDownTime;
+//					isOperated = true;
+//					operationCountDown = operationCountDownTime;
 //					isSetTime = true;
 					nextInitTemperature = selectProgress;
 					initTemperature_fork = nextInitTemperature;
@@ -479,6 +497,11 @@ public class MainActivity extends Activity  {
 			public void onProgressChanged(SeekBar seekBar, int progress,
 					boolean fromUser) {
 				// TODO Auto-generated method stub
+				countDown = countDownTime;
+				isOperated = true;
+				operationCountDown = operationCountDownTime;
+				progress += INIT_TEMPERATURE_OFFSET;
+				
 				selectProgress = progress*1.0/2;
 				tv_temp.setText(""+(double)progress/2);
 				
@@ -597,13 +620,13 @@ public class MainActivity extends Activity  {
 		spinnerAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item,spinnerDataList);
 		spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		spinner_num.setAdapter(spinnerAdapter);
-//		spinner_num.setSelection(0);
+		spinner_num.setSelection(0);
 		
-		Bundle bundle = getIntent().getExtras();
-		byte[] initState = bundle.getByteArray("initstate");
-		parseRecvData(initState);
-		SetTemperature(currentTemperature);
-		skb_temp.setThumb(getResources().getDrawable(R.drawable.thumb));
+//		Bundle bundle = getIntent().getExtras();
+//		byte[] initState = bundle.getByteArray("initstate");
+//		parseRecvData(initState);
+//		SetTemperature(currentTemperature);
+//		skb_temp.setThumb(getResources().getDrawable(R.drawable.thumb));
 		
 	}
 
@@ -732,6 +755,7 @@ public class MainActivity extends Activity  {
 						operation.getmPrintWriter().write(data);
 
 						Thread.sleep(time_chip-200);
+						isFirstIn = false;
 						
 					} catch (InterruptedException e) {
 						// TODO Auto-generated catch block
@@ -808,7 +832,7 @@ public class MainActivity extends Activity  {
 		//set temperature 
 		initTemperature = (double) (initTempInfo*1.0/2.0);
 		initTemperature_fork = initTemperature;
-		skb_temp.setProgress(initTempInfo);
+		skb_temp.setProgress(initTempInfo-INIT_TEMPERATURE_OFFSET);
 //		if (isSetTime){
 //			Message msg = new Message();
 //			msg.what = UPDATE_INIT_TEMPERATURE;
@@ -917,6 +941,22 @@ public class MainActivity extends Activity  {
 		
 		return super.onKeyDown(keyCode, event);
 	}
+	@Override
+	protected void onResume() {
+		// TODO Auto-generated method stub
+		
+		super.onResume();
+	}
+	@Override
+	protected void onStart() {
+		// TODO Auto-generated method stub
+		
+		super.onStart();
+		
+		
+	}
+	
+	
 	
 	
 
