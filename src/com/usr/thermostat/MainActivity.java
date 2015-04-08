@@ -620,7 +620,7 @@ public class MainActivity extends Activity  {
 		
 		//spinner num
 		for (int i=0;i<9; i++){
-			spinnerDataList.add("0"+(i+1));
+			spinnerDataList.add(""+(i+1));
 		}
 		spinnerDataList.add("10");
 		spinnerAdapter = new ArrayAdapter<String>(this, R.layout.spinner_check_text,spinnerDataList){
@@ -634,17 +634,19 @@ public class MainActivity extends Activity  {
 				View view = LayoutInflater.from(getContext()).inflate(R.layout.spinner_item, null);
 				TextView text = (TextView) view.findViewById(R.id.spinner_item_num);
 				ImageView check = (ImageView) view.findViewById(R.id.spinner_item_checked_image);
-				text.setText("0"+(position+1));
+				text.setText("    "+(position+1));
 				
-//				if (spinner_num.getSelectedItemPosition() == position) {
+				if (spinner_num.getSelectedItemPosition() == position) {
+					check.setImageResource(R.drawable.spinner_item_checked);
 //                    view.setBackgroundColor(getResources().getColor(
 //                            R.color.lightblue));
-////                    check.setImageResource(R.drawable.check_selected);
-//                } else {
+//                    check.setImageResource(R.drawable.check_selected);
+                } else {
+                	check.setVisibility(View.INVISIBLE);
 //                    view.setBackgroundColor(getResources().getColor(
 //                            R.color.skyblue));
-////                    check.setImageResource(R.drawable.check_unselect);
-//                }
+//                    check.setImageResource(R.drawable.check_unselect);
+                }
 				
 				return view;
 			}

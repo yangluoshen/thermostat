@@ -3,10 +3,10 @@
     android:id="@android:id/text1"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:gravity="center_vertical"
+    android:gravity="center"
     android:padding="10dp"
     android:singleLine="true"
-    android:textColor="@color/lightblue"
-    android:textSize="20sp" >
+    android:textColor="#ffffff"
+    android:textSize="15sp" >
 
 </CheckedTextView>

@@ -55,21 +55,22 @@ public final class R {
         public static final int seekbarbody=0x7f020018;
         public static final int seekthumb=0x7f020019;
         public static final int seekthumb_wait=0x7f02001a;
-        public static final int spinnerbg=0x7f02001b;
-        public static final int temp=0x7f02001c;
-        public static final int thumb=0x7f02001d;
-        public static final int time=0x7f02001e;
-        public static final int time_sel=0x7f02001f;
-        public static final int timeup=0x7f020020;
-        public static final int up=0x7f020021;
-        public static final int up_sel=0x7f020022;
-        public static final int upup=0x7f020023;
-        public static final int ventilate=0x7f020024;
-        public static final int warm=0x7f020025;
-        public static final int wind1=0x7f020026;
-        public static final int wind2=0x7f020027;
-        public static final int wind3=0x7f020028;
-        public static final int windauto=0x7f020029;
+        public static final int spinner_item_checked=0x7f02001b;
+        public static final int spinnerbg=0x7f02001c;
+        public static final int temp=0x7f02001d;
+        public static final int thumb=0x7f02001e;
+        public static final int time=0x7f02001f;
+        public static final int time_sel=0x7f020020;
+        public static final int timeup=0x7f020021;
+        public static final int up=0x7f020022;
+        public static final int up_sel=0x7f020023;
+        public static final int upup=0x7f020024;
+        public static final int ventilate=0x7f020025;
+        public static final int warm=0x7f020026;
+        public static final int wind1=0x7f020027;
+        public static final int wind2=0x7f020028;
+        public static final int wind3=0x7f020029;
+        public static final int windauto=0x7f02002a;
     }
     public static final class id {
         public static final int RelativeLayout1=0x7f090000;
