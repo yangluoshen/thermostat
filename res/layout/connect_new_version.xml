@@ -36,7 +36,7 @@
                     android:inputType="number"
                     android:ems="10" >
 
-                    <requestFocus />
+                    
                 </EditText>
 
             </RelativeLayout>
@@ -67,7 +67,8 @@
                 android:layout_below="@+id/linearLayout2"
                 android:layout_centerHorizontal="true"
                 android:layout_marginTop="21dp"
-                android:src="@drawable/connect_btn_sel" />
+                android:src="@drawable/connect_btn_sel"
+                android:focusable="true" />
 
         </RelativeLayout>
 

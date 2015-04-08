@@ -1,5 +1,7 @@
 package com.usr.thermostat;
 
+import com.usr.thermostat.db.IdRecord;
+
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -27,7 +29,12 @@ public class ConnectActivity extends Activity {
 		initView();
 		addEvent();
 		
-		
+		IdRecord idrecord = new IdRecord(this);
+		String currentRecord = null;
+		if ((currentRecord = idrecord.GetLastLoginRecord()) != null){
+			et_registID.setText(currentRecord);
+			et_registID.setSelection(currentRecord.length());
+		}
 	}
 
 	private void addEvent() {
@@ -38,11 +45,16 @@ public class ConnectActivity extends Activity {
 		@Override
 		public void onClick(View v) {
 			// TODO Auto-generated method stub
+			ibtn_connect.setClickable(false);
 			byte[] initState = null;
 			if ("".equals(et_registID.getText().toString())){
 				
 			}
 			else if (( initState = operation.Connect(et_registID.getText().toString()) )!= null){
+				
+				IdRecord idrecord = new IdRecord(ConnectActivity.this);
+				Object[] param = {et_registID.getText().toString()};
+				idrecord.setUserLastLogin(param);
 				
 				Intent _intent  = new Intent(ConnectActivity.this,MainActivity.class);
 				_intent.putExtra("initstate", initState);
@@ -51,6 +63,7 @@ public class ConnectActivity extends Activity {
 			}else {
 				Toast.makeText(ConnectActivity.this, "connect failed !", Toast.LENGTH_SHORT).show();
 			}
+			ibtn_connect.setClickable(true);
 			
 //			v.setClickable(false);
 		}
