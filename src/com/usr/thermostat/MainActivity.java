@@ -5,6 +5,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.zip.Inflater;
+
+import com.usr.thermostat.R.id;
 
 import android.os.Bundle;
 import android.os.Handler;
@@ -16,10 +19,13 @@ import android.content.res.AssetManager;
 import android.graphics.Typeface;
 import android.text.format.Time;
 import android.util.Log;
+import android.view.InflateException;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
@@ -617,9 +623,36 @@ public class MainActivity extends Activity  {
 			spinnerDataList.add("0"+(i+1));
 		}
 		spinnerDataList.add("10");
-		spinnerAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item,spinnerDataList);
-		spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+		spinnerAdapter = new ArrayAdapter<String>(this, R.layout.spinner_check_text,spinnerDataList){
+
+			@Override
+			public View getDropDownView(int position, View convertView,
+					ViewGroup parent) {
+				// TODO Auto-generated method stub
+//				return super.getDropDownView(position, convertView, parent);
+				
+				View view = LayoutInflater.from(getContext()).inflate(R.layout.spinner_item, null);
+				TextView text = (TextView) view.findViewById(R.id.spinner_item_num);
+				ImageView check = (ImageView) view.findViewById(R.id.spinner_item_checked_image);
+				text.setText("0"+(position+1));
+				
+//				if (spinner_num.getSelectedItemPosition() == position) {
+//                    view.setBackgroundColor(getResources().getColor(
+//                            R.color.lightblue));
+////                    check.setImageResource(R.drawable.check_selected);
+//                } else {
+//                    view.setBackgroundColor(getResources().getColor(
+//                            R.color.skyblue));
+////                    check.setImageResource(R.drawable.check_unselect);
+//                }
+				
+				return view;
+			}
+			
+		};
 		spinner_num.setAdapter(spinnerAdapter);
+		spinnerAdapter.setDropDownViewResource(R.layout.spinner_item);
+		
 		spinner_num.setSelection(0);
 		
 //		Bundle bundle = getIntent().getExtras();

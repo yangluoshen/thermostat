@@ -74,7 +74,7 @@ public final class R {
     public static final class id {
         public static final int RelativeLayout1=0x7f090000;
         public static final int TableLayout1=0x7f090001;
-        public static final int action_settings=0x7f09002f;
+        public static final int action_settings=0x7f090031;
         public static final int bottom_buttons_layout=0x7f09002d;
         public static final int btn_connect=0x7f090009;
         public static final int content_layout=0x7f09000e;
@@ -98,6 +98,8 @@ public final class R {
         public static final int relativeLayout1=0x7f090029;
         public static final int relativeLayout2=0x7f09002a;
         public static final int skb_temp=0x7f09002e;
+        public static final int spinner_item_checked_image=0x7f090030;
+        public static final int spinner_item_num=0x7f09002f;
         public static final int spinner_num=0x7f09000d;
         public static final int tableRow1=0x7f090004;
         public static final int tableRow2=0x7f090006;
@@ -127,7 +129,9 @@ public final class R {
         public static final int ledview=0x7f030002;
         public static final int main=0x7f030003;
         public static final int main_new_version=0x7f030004;
-        public static final int testcolort=0x7f030005;
+        public static final int spinner_check_text=0x7f030005;
+        public static final int spinner_item=0x7f030006;
+        public static final int testcolort=0x7f030007;
     }
     public static final class menu {
         public static final int main=0x7f080000;

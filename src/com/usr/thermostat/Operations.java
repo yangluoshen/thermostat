@@ -107,7 +107,7 @@ public class Operations {
 	}
 	
 	void initDataPackage(){
-		dataPackage[0] = commands[0];
+		dataPackage[0] = commands[1];
 		dataPackage[1] = ID0;
 		dataPackage[2] = ID1;
 		dataPackage[3] = 0x18;  //data0
