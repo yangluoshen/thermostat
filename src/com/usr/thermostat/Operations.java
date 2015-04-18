@@ -29,12 +29,13 @@ public class Operations {
 	public static final int SETDOWNTEMP = 3;
 	public static final int SETCLOSE = 4;
 	public static final int SETCONNECT = 5;
-	public static boolean isConnected = false;
-	public boolean threadMarker = false;
+//	public static boolean isConnected = false;
+//	public boolean threadMarker = false;
 	
 	private Context context;
 	private String serverIp = "d2d.usr.cn";
 	private int serverPort = 25565;
+	private int registID;
 	
 	public Socket mSocket = null;
 	public InetSocketAddress mISA = null;
@@ -58,7 +59,7 @@ public class Operations {
 	public static Handler handler = null;
 //	Thread recvThread;
 	Thread getTemperatureRequest = null;
-	static byte[] commands = {(byte) 0xa1,(byte) 0xa0,(byte) 0xa8};
+	static byte[] commands = {(byte) 0xa1,(byte) 0xa0,(byte) 0xa8, (byte)0xa6};
 	
 	byte checkSum;
 	byte command;
@@ -106,20 +107,21 @@ public class Operations {
 		return operationInstance;
 	}
 	
+	
 	void initDataPackage(){
-		dataPackage[0] = commands[1];
+		dataPackage[0] = commands[0];
 		dataPackage[1] = ID0;
 		dataPackage[2] = ID1;
 		dataPackage[3] = 0x18;  //data0
 		dataPackage[4] = 0x00;
 		dataPackage[5] = 0x2c;  //init temperature
-		dataPackage[6] = 0x00;
+		dataPackage[6] = 0x01;
 		dataPackage[7] = 0x00;
 		CalcCheckSum(dataPackage);
 		
 	}
-	public byte[] Connect( String registID){
-		byte[] readBuffer = new byte[8];
+	public boolean Connect(int ID){
+//		byte[] readBuffer = new byte[8];
 		try {
 //			Log.i("yangluo","connect1");
 //			int int_port = Integer.valueOf(port).intValue(); 
@@ -137,44 +139,48 @@ public class Operations {
 			mDataInputeStream = new DataInputStream(mSocket.getInputStream());
 			mPrintWriter = new DataOutputStream(mSocket.getOutputStream());
 			
-			int int_registID = Integer.valueOf(registID).intValue(); 
-			sendRegist(int_registID);
+			
+//			registID = Integer.valueOf(registID).intValue(); 
+			registID = ID;
+			
+			sendRegist(registID);
 			//send the init data
 			mPrintWriter.write(dataPackage);
-			
-			
-			if (mDataInputeStream.read(readBuffer) != -1){
-				Operations.CalcCheckSum(readBuffer);
-					
-			}else{
-				return null;
-			}
-			
-			
-			sendInitTime();
-			//start the  thread
-			if (!threadMarker){
-//				recvThread.start();
-//				getTemperatureRequest.start();
-				threadMarker =  true;
-			}
+//			if (mDataInputeStream.read(readBuffer) != -1){
+//				Operations.CalcCheckSum(readBuffer);
+//					
+//			}else{
+//				return null;
+//			}
+//			sendInitTime();
 			
 		} catch (UnknownHostException e) {
 			// TODO Auto-generated catch block
 //			Toast.makeText(this.context, "connect failed-- unknow host", Toast.LENGTH_SHORT).show();
 			e.printStackTrace();
-			return null;
+			try {
+				mSocket.close();
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			return false;
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 //			Toast.makeText(this.context, "connect failed2", Toast.LENGTH_SHORT).show();
 			e.printStackTrace();
-			
-			return null;
+			try {
+				mSocket.close();
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			return false;
 		}
-		isConnected = true;
-		return readBuffer;
+//		isConnected = true;
+		return true;
 	}
-	private void sendInitTime() {
+	public  void sendInitTime() {
 		// TODO Auto-generated method stub
 		time.setToNow();
 		byte[] bytes = {0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00};
@@ -288,7 +294,7 @@ public class Operations {
 	
 	void sendUpTemperature(double temperature){
 		int int_temperature = (int) (temperature * 2);
-		dataPackage[0] = commands[0];
+		dataPackage[0] = commands[3];
 		dataPackage[5] = (byte)int_temperature;
 		PrintWrite(SETUPTEMP);
 
@@ -296,7 +302,7 @@ public class Operations {
 	
 	void sendDownTemprature(double temperature){
 		int int_temperature = (int) (temperature * 2);
-		dataPackage[0] = commands[0];
+		dataPackage[0] = commands[3];
 		dataPackage[5] = (byte)int_temperature;
 		PrintWrite(SETDOWNTEMP);
 	}
@@ -307,12 +313,12 @@ public class Operations {
 		dataPackage[3] &= switchResetByte;
 		if (state == MainActivity.SWITCHON){
 			dataPackage[3] |= 0x10;
-			isConnected = true;
+//			isConnected = true;
 //			getTemperatureRequest.start();
 		}
 		else if (state == MainActivity.SWITCHOFF){
 			dataPackage[3] |= 0x00;
-			isConnected = false;
+//			isConnected = false;
 		}
 		PrintWrite(SETCLOSE);
 	}
@@ -330,24 +336,7 @@ public class Operations {
 		return data;
 	}
 	
-	/**
-	 * convert a byte[] to a chars[]
-	 * @param bytes
-	 * @return
-	 */
-	char[] Bytes2Chars(byte[] bytes){
-		char[] chars = new char[bytes.length];
-		
-		for (int i=0; i<bytes.length; i++){
-			if ( (bytes[i] & 0x80) == 0){
-				chars[i] = (char)bytes[i];
-			}else{
-				chars[i] = (char)bytes[i];
-				chars[i] &= 0x00ff;
-			}
-		}
-		return chars;
-	}
+
 	
 	static void CalcCheckSum(byte[] bytes){
 		bytes[7] = 0x00;
@@ -356,45 +345,9 @@ public class Operations {
 		}
 		bytes[7] = (byte) (bytes[7] & 0xff ^ 0xa5);
 	}
-	/**
-	 * convert a byte[] to String
-	 * @param bytes
-	 * @return
-	 */
-	public StringBuffer Bytes2String(byte[] bytes){
-		byte maskHigh = (byte) 0xf0;
-		byte maskLow  = (byte) 0x0f;
-		
-		StringBuffer buf = new StringBuffer();
-		buf.append("data above means: ");
-		for (byte b : bytes){
-			byte high, low;
-			high = (byte) ((b & maskHigh)>>4);
-			low  = (byte) ((b & maskLow));
-			buf.append(findHex(high));
-			buf.append(findHex(low));
-			buf.append(" ");
-		}
-		
-		return buf;
-	}
-	
-	
-	/**
-	 * convert a byte to a char
-	 * @param b
-	 * @return
-	 */
-	public  char findHex(byte b) {
-		int t = new Byte(b).intValue();
-		t = t < 0 ? t + 16 : t;
-		if ((0 <= t) &&(t <= 9)) {
-		return (char)(t + '0');
-		}
-		return (char)(t-10+'A');
-	}
-	
+
 	void PrintWrite(int type){
+		dataPackage[6] = 0x00;
 		CalcCheckSum(dataPackage);
 		try {
 			mPrintWriter.write(dataPackage);
@@ -412,37 +365,37 @@ public class Operations {
 	 * just  used when test
 	 * @param type
 	 */
-	void printStringResult(int type){
-		try {
-			
-			switch(type){
-			case SETCONNECT:
-				mPrintWriter.writeChars(Bytes2String(dataPackage)+" set connect\n ");
-				break;
-			case SETWIND:
-				mPrintWriter.writeChars(Bytes2String(dataPackage)+" set wind\n ");
-				break;
-			case SETMENU :
-				mPrintWriter.writeChars(Bytes2String(dataPackage)+" set function\n ");
-				break;
-			case SETUPTEMP :
-				mPrintWriter.writeChars(Bytes2String(dataPackage)+" up temperature\n ");
-				break;
-			case SETDOWNTEMP:
-				mPrintWriter.writeChars(Bytes2String(dataPackage)+" down temperature\n ");
-				break;
-			case SETCLOSE:
-				mPrintWriter.writeChars(Bytes2String(dataPackage)+" close device\n ");
-	//			mPrintWriter.flush();
-				break;
-				
-			}
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-	}
+//	void printStringResult(int type){
+//		try {
+//			
+//			switch(type){
+//			case SETCONNECT:
+//				mPrintWriter.writeChars(Bytes2String(dataPackage)+" set connect\n ");
+//				break;
+//			case SETWIND:
+//				mPrintWriter.writeChars(Bytes2String(dataPackage)+" set wind\n ");
+//				break;
+//			case SETMENU :
+//				mPrintWriter.writeChars(Bytes2String(dataPackage)+" set function\n ");
+//				break;
+//			case SETUPTEMP :
+//				mPrintWriter.writeChars(Bytes2String(dataPackage)+" up temperature\n ");
+//				break;
+//			case SETDOWNTEMP:
+//				mPrintWriter.writeChars(Bytes2String(dataPackage)+" down temperature\n ");
+//				break;
+//			case SETCLOSE:
+//				mPrintWriter.writeChars(Bytes2String(dataPackage)+" close device\n ");
+//	//			mPrintWriter.flush();
+//				break;
+//				
+//			}
+//		} catch (IOException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+//
+//	}
 	
 	public Handler getHandler() {
 		return handler;
@@ -467,6 +420,13 @@ public class Operations {
 		dataPackage[1] = (byte) id0;
 		dataPackage[2] = (byte) id1;
 	}
+	
+	public int getRegistID() {
+		return registID;
+	}
+	public void setRegistID(int int_registID) {
+		this.registID = int_registID;
+	}
 	public void sendRegist(int registID){
 		long id = registID*65536 +65535 - registID;
 		
@@ -483,6 +443,62 @@ public class Operations {
 			e.printStackTrace();
 		}
 		
+	}
+	
+	public void closeSocket()
+	{
+		try {
+			this.mSocket.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	public boolean reConnect(byte[] data)
+	{
+		
+		try {
+	
+			//parse as ip
+			InetAddress inetHost;
+			inetHost = InetAddress.getByName(serverIp);
+			String ip = inetHost.getHostAddress();
+			
+			mSocket = new Socket();
+			mISA = new InetSocketAddress(ip, serverPort);
+			mSocket.connect(mISA, socketTimeOut);
+			
+			mDataInputeStream = new DataInputStream(mSocket.getInputStream());
+			mPrintWriter = new DataOutputStream(mSocket.getOutputStream());
+			
+			sendRegist(registID);
+			//send the init data
+			mPrintWriter.write(data);
+
+			
+		} catch (UnknownHostException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			try {
+				mSocket.close();
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			return false;
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			try {
+				mSocket.close();
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			return false;
+		}
+		return true;
 	}
 	
 	

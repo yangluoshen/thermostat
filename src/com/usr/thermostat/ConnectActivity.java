@@ -45,25 +45,26 @@ public class ConnectActivity extends Activity {
 		@Override
 		public void onClick(View v) {
 			// TODO Auto-generated method stub
-			ibtn_connect.setClickable(false);
-			byte[] initState = null;
+//			ibtn_connect.setClickable(false);
+//			byte[] initState = null;
+			
 			if ("".equals(et_registID.getText().toString())){
-				
+				Toast.makeText(ConnectActivity.this, "ID should not be empty", Toast.LENGTH_SHORT).show();
 			}
-			else if (( initState = operation.Connect(et_registID.getText().toString()) )!= null){
+			else if (operation.Connect(calcRegistID(et_registID.getText().toString())) ){
 				
 				IdRecord idrecord = new IdRecord(ConnectActivity.this);
 				Object[] param = {et_registID.getText().toString()};
 				idrecord.setUserLastLogin(param);
 				
 				Intent _intent  = new Intent(ConnectActivity.this,MainActivity.class);
-				_intent.putExtra("initstate", initState);
+//				_intent.putExtra("initstate", initState);
 				ConnectActivity.this.startActivity(_intent);
 //				finish();
 			}else {
 				Toast.makeText(ConnectActivity.this, "connect failed !", Toast.LENGTH_SHORT).show();
 			}
-			ibtn_connect.setClickable(true);
+//			ibtn_connect.setClickable(true);
 			
 //			v.setClickable(false);
 		}
@@ -77,6 +78,11 @@ public class ConnectActivity extends Activity {
 //		et_port = (EditText) findViewById(R.id.et_port);
 		ibtn_connect = (ImageView) findViewById(R.id.btn_connect);
 		et_registID = (EditText) findViewById(R.id.et_registID);
+	}
+	private int calcRegistID(String strID)
+	{
+		int intID = Integer.valueOf(strID).intValue();
+		return (intID - 65535)/255;
 	}
 	
 

@@ -4,6 +4,7 @@ package com.usr.thermostat;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.zip.Inflater;
 
@@ -39,7 +40,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 public class MainActivity extends Activity  {
-	private int time_chip = 4000;
+	private int time_chip = 10000;
 	private static final double MIN_INIT_TEMPERATURE = 10.0;
 	private static final double MAX_INIT_TEMPERATURE = 30.0;
 	private static final double MIN_CURRENT_TEMPERATURE = 0.0;
@@ -59,43 +60,20 @@ public class MainActivity extends Activity  {
 	ImageView iv_mark;       // image that mark the temperature
 	ImageView iv_degree;     // image "C"
 	TextView tv_set;         //the text "set"
-//	TextView tv_time;        //text time
 	TextView tv_temp ;       // text temprature
-//	TextView[] tv_dayofweek = new TextView[7];   // text day of week
 	TextView tv_dayweek;
-	int[] dayofweekID = {R.id.tv_monday,R.id.tv_tuesday,R.id.tv_wednesday,
-			  			 R.id.tv_thursday,R.id.tv_friday,R.id.tv_saturday,R.id.tv_sunday};
 	TextView tv_week;        //the text "week"
 	Spinner spinner_num;
 	SeekBar skb_temp;
 	
-	int mID1 = 1;
-	
-	private List<String> spinnerDataList = new ArrayList<String>();
+	private ArrayList<String> spinnerDataList = new ArrayList<String>();
 	private ArrayAdapter<String> spinnerAdapter;
 
+
+	State currentState = new State();
+//	State currentState_fork;
 	
-//	LinearLayout content_layout;
-	
-	int currentMenu = Operations.MENU_MODE_COLD;
-	int currentWind = Operations.WIND_MODE_AUTO;
-	double initTemperature = 22.0;
-	double currentTemperature = 10.0;
-	int currentSwitchState = SWITCHON;
-	int currentSpinnerSelected = 1;
-	
-	int nextMenu = Operations.MENU_MODE_WARM;
-	int nextWind = Operations.WIND_MODE_LOW;
-	double nextInitTemperature = 22.5;
-//	double nextCurrentTemperature = 0.0;
 	int nextSwitchState = SWITCHOFF;
-	
-	int currentMenu_fork = currentMenu;
-	int currentWind_fork = currentWind;
-	double initTemperature_fork = initTemperature;
-	double currentTemperature_fork = currentTemperature;
-	int currentSwitchState_fork = currentSwitchState;
-	int currentSpinnerSelected_fork = currentSpinnerSelected;
 	
 	static final int countDownTime = 3;
 	int countDown = countDownTime;
@@ -103,7 +81,8 @@ public class MainActivity extends Activity  {
 	int operationCountDown = 0;
 	
 	
-	
+//	byte[] recvDataBuffer = new byte[8];
+	LinkedList<byte[]> recvDataBuffer  = new LinkedList<byte[]>();
 	
 	int dayOfWeek;
 	int hour;
@@ -128,10 +107,9 @@ public class MainActivity extends Activity  {
 	Thread getTemperatureRequest;
 	boolean threadRun = true;
 	boolean isSwitchDevice = false;
-	boolean isOperated = false;
+//	boolean isOperated = false;
 	boolean isFirstIn = true;
-//	boolean isRecvResponse = true;
-//	boolean isSetTime = false;
+	CountDownTimer opCountDown;
 	
 	Operations operation;
 	
@@ -143,8 +121,8 @@ public class MainActivity extends Activity  {
 		public void handleMessage(Message msg) {
 			// TODO Auto-generated method stub
 			super.handleMessage(msg);
-			if (msg.what == TIMEUP && currentSwitchState_fork == SWITCHON){
-				SetTemperature(currentTemperature);
+			if (msg.what == TIMEUP && currentState.getSwitchState() == SWITCHON){
+				SetTemperature(currentState.getTemperature());
 				msg.what = TIMEDOWN;
 				
 				iv_mark.setVisibility(View.VISIBLE);
@@ -152,37 +130,7 @@ public class MainActivity extends Activity  {
 			}
 		}
 	};
-//	Handler TimerHandler = new Handler(){
-//		boolean flag = true;
-//
-//		@Override
-//		public void handleMessage(Message msg) {
-//			// TODO Auto-generated method stub
-//			//super.handleMessage(msg);
-//			
-//			if (msg.what == TIMECHANGED){
-//				String str_minute;
-//				if (minute<10){
-//					str_minute = "0"+minute;
-//				}else {
-//					str_minute  = ""+minute;
-//				}
-//				if (flag){
-//					tv_time.setText(""+hour+":"+str_minute);
-//					flag = false;
-//				}else{
-//					tv_time.setText(""+hour+" "+str_minute);
-//					flag = true;
-//				}
-//				
-//			}
-//		    if (msg.what == WEEKDAYCHANGED){
-////				tv_dayofweek.setText(""+dayOfWeek);
-//			}
-//		}
-//		
-//		
-//	};
+
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -190,6 +138,17 @@ public class MainActivity extends Activity  {
 		setContentView(R.layout.main_new_version);
 		initViews();
 		addEvents();
+		
+		
+		currentState.setMenu(Operations.MENU_MODE_COLD);
+		currentState.setWind(Operations.WIND_MODE_AUTO);
+		currentState.setSetTemperature(0.0);
+		currentState.setTemperature(0.0);
+		currentState.setSwitchState(SWITCHON);
+		currentState.setSpinnerSelected(1);
+		currentState.setmID1(1);
+		
+//		currentState_fork = new State(currentState);
 		
 		operation = Operations.GetOperation(this);
 		
@@ -207,15 +166,26 @@ public class MainActivity extends Activity  {
 		getTemperatureRequest = new Thread(mGetTemperatureRequest);
 		getTemperatureRequest.start();
 		
+		opCountDown = new CountDownTimer();
+		opCountDown.setCountDownMax(2);
+		opCountDown.setCountDown(2);
+		opCountDown.setFlag(true);
+		opCountDown.setInitFlag(true);
+		opCountDown.setHandler(updateHandle);
+		opCountDown.setHandlerMsg(UPDATEALL);
+		opCountDown.startTimer();
+//		opCountDown.setTimer(timer)
 		
-		Bundle bundle = getIntent().getExtras();
-		if (bundle !=null){
-			byte[] initState = bundle.getByteArray("initstate");
-			parseRecvData(initState);
-			SetTemperature(currentTemperature);
-			skb_temp.setThumb(getResources().getDrawable(R.drawable.thumb));
-//			isFirstIn = false;
-		}
+		
+//		Bundle bundle = getIntent().getExtras();
+//		if (bundle !=null){
+//			byte[] initState = bundle.getByteArray("initstate");
+//			recvDataBuffer = initState;
+//			parseRecvData(initState);
+//			SetTemperature(currentTemperature);
+//			skb_temp.setThumb(getResources().getDrawable(R.drawable.thumb));
+////			isFirstIn = false;
+//		}
 		
 
 		
@@ -227,49 +197,28 @@ public class MainActivity extends Activity  {
 			@Override
 			public void onClick(View v) {
 				// TODO Auto-generated method stub
-				isOperated = true;
+//				isOperated = true
+				opCountDown.reSetCountDown();
 				operationCountDown = operationCountDownTime;
-				operation.setDataPackgeID0AndID1(currentSpinnerSelected, mID1);
-//				if (isRecvResponse){
-					if (currentWind_fork == Operations.WIND_MODE_AUTO){
-						nextWind = Operations.WIND_MODE_LOW;
-					}else if(currentWind_fork == Operations.WIND_MODE_LOW){
-//						operation.setDataPackgeID0AndID1(currentSpinnerSelected, mID1);
-						nextWind = Operations.WIND_MODE_MIDDLE;
-//						operation.sendWindData(nextWind);
-					}else if(currentWind_fork == Operations.WIND_MODE_MIDDLE){
-//						operation.setDataPackgeID0AndID1(currentSpinnerSelected, mID1);
-						nextWind = Operations.WIND_MODE_HIGH;
-//						operation.sendWindData(nextWind);
-					}else if (currentWind_fork == Operations.WIND_MODE_HIGH){
-//						operation.setDataPackgeID0AndID1(currentSpinnerSelected, mID1);
-						nextWind  = Operations.WIND_MODE_AUTO;
-//						operation.sendWindData(nextWind);
-					}
-					
-					windList[currentWind_fork].setVisibility(View.INVISIBLE);
-//					currentWind++;
-					windList[nextWind].setVisibility(View.VISIBLE);
-					currentWind_fork = nextWind;
-					operation.sendWindData(nextWind);
-					skb_temp.setThumb(getResources().getDrawable(R.drawable.seekthumb_wait));
-//			   }
-					
-//					if (currentWind == Operations.WIND_MODE_HIGH){
-//						nextWind = Operations.WIND_MODE_AUTO;
-////						windList[currentWind].setVisibility(View.INVISIBLE);
-////						currentWind = 0;
-////						windList[0].setVisibility(View.VISIBLE);
-//					}
-//					else{
-//						nextWind = currentWind+1;
-////						windList[currentWind].setVisibility(View.INVISIBLE);
-////						currentWind++;
-////						windList[currentWind].setVisibility(View.VISIBLE);
-//					}
-////					operation.setDataPackgeID0AndID1(currentSpinnerSelected, mID1);
-//////					operation.sendWindData(currentWind);
-////					operation.sendWindData(nextWind);
+				operation.setDataPackgeID0AndID1(currentState.getSpinnerSelected(), currentState.getmID1());
+				
+				int nextWind = Operations.WIND_MODE_AUTO;
+				
+				if (currentState.getWind() == Operations.WIND_MODE_AUTO){
+					nextWind = Operations.WIND_MODE_LOW;
+				}else if(currentState.getWind() == Operations.WIND_MODE_LOW){
+					nextWind = Operations.WIND_MODE_MIDDLE;
+				}else if(currentState.getWind() == Operations.WIND_MODE_MIDDLE){
+					nextWind = Operations.WIND_MODE_HIGH;
+				}else if (currentState.getWind() == Operations.WIND_MODE_HIGH){
+					nextWind  = Operations.WIND_MODE_AUTO;
+				}
+				
+				windList[currentState.getWind()].setVisibility(View.INVISIBLE);
+				windList[nextWind].setVisibility(View.VISIBLE);
+				currentState.setWind(nextWind);
+				operation.sendWindData(nextWind);
+				skb_temp.setThumb(getResources().getDrawable(R.drawable.seekthumb_wait));
 				
 				
 			}
@@ -279,41 +228,25 @@ public class MainActivity extends Activity  {
 			@Override
 			public void onClick(View arg0) {
 				// TODO Auto-generated method stub
-				isOperated = true;
+//				isOperated = true;
+				opCountDown.reSetCountDown();
 				operationCountDown = operationCountDownTime;
-				operation.setDataPackgeID0AndID1(currentSpinnerSelected, mID1);
-				if (currentMenu_fork == Operations.MENU_MODE_COLD){
+				
+				int nextMenu = Operations.MENU_MODE_WARM;
+				operation.setDataPackgeID0AndID1(currentState.getSpinnerSelected(), currentState.getmID1());
+				if (currentState.getMenu() == Operations.MENU_MODE_COLD){
 					nextMenu = Operations.MENU_MODE_WARM;
-				}else if (currentMenu_fork == Operations.MENU_MODE_WARM){
+				}else if (currentState.getMenu() == Operations.MENU_MODE_WARM){
 					nextMenu = Operations.MENU_MODE_VENTILATE;
-				}else if (currentMenu_fork == Operations.MENU_MODE_VENTILATE){
+				}else if (currentState.getMenu() == Operations.MENU_MODE_VENTILATE){
 					nextMenu = Operations.MENU_MODE_COLD;
 				}
-				menuList[currentMenu_fork].setVisibility(View.INVISIBLE);
+				menuList[currentState.getMenu()].setVisibility(View.INVISIBLE);
 				menuList[nextMenu].setVisibility(View.VISIBLE);
 				operation.sendMenuData(nextMenu);
-				currentMenu_fork = nextMenu;
+				currentState.setMenu(nextMenu);
 				skb_temp.setThumb(getResources().getDrawable(R.drawable.seekthumb_wait));
-				
-////				if (isRecvResponse){
-//					int nextMenu = 0;
-//					if (currentMenu >=2){
-//						nextMenu = 0;
-////						menuList[currentMenu].setVisibility(View.INVISIBLE);
-////						currentMenu = 0;
-////						menuList[0].setVisibility(View.VISIBLE);
-//					}
-//					else{
-//						nextMenu = currentMenu+1;
-////						menuList[currentMenu].setVisibility(View.INVISIBLE);
-////						currentMenu++;
-////						menuList[currentMenu].setVisibility(View.VISIBLE);
-//					}
-//					operation.setDataPackgeID0AndID1(currentSpinnerSelected, mID1);
-////					operation.sendMenuData(currentMenu);
-//					operation.sendMenuData(nextMenu);
-					
-//				}
+
 				
 				
 			}
@@ -323,38 +256,30 @@ public class MainActivity extends Activity  {
 			@Override
 			public void onClick(View arg0) {
 				// TODO Auto-generated method stub
-				isOperated = true;
+//				isOperated = true;
+				opCountDown.reSetCountDown();
 				operationCountDown = operationCountDownTime;
 //				if (isRecvResponse){
 					countDown = countDownTime;
 //					isSetTime = true;
-					nextInitTemperature = initTemperature_fork;
+					double nextInitTemperature;
+					
+					nextInitTemperature = currentState.getSetTemperature();
 					
 					nextInitTemperature += 0.5;
 					if (nextInitTemperature >= MAX_INIT_TEMPERATURE){
 						nextInitTemperature = MAX_INIT_TEMPERATURE;
 					}
-					initTemperature_fork = nextInitTemperature;
-					tv_temp.setText(""+initTemperature_fork);
+					currentState.setSetTemperature(nextInitTemperature);
+//					initTemperature_fork = nextInitTemperature;
+					tv_temp.setText(""+currentState.getSetTemperature());
 					iv_mark.setVisibility(View.INVISIBLE);
 					tv_set.setVisibility(View.VISIBLE);
 					
-					operation.setDataPackgeID0AndID1(currentSpinnerSelected, mID1);
+					operation.setDataPackgeID0AndID1(currentState.getSpinnerSelected(), currentState.getmID1());
 					operation.sendUpTemperature(nextInitTemperature);
 					skb_temp.setThumb(getResources().getDrawable(R.drawable.seekthumb_wait));
 					skb_temp.setProgress((int)(nextInitTemperature*2)-INIT_TEMPERATURE_OFFSET);
-//					initTemperature += 0.5;
-//					if (initTemperature >= 30.0){
-//						initTemperature = 30.0;
-//					}
-//					tv_temp.setText(""+initTemperature);
-//					iv_mark.setVisibility(View.INVISIBLE);
-//					tv_set.setVisibility(View.VISIBLE);
-					
-//					operation.setDataPackgeID0AndID1(currentSpinnerSelected, mID1);
-//					operation.sendUpTemperature(initTemperature);
-	
-//				}
 								
 			}
 		});
@@ -363,38 +288,30 @@ public class MainActivity extends Activity  {
 			@Override
 			public void onClick(View arg0) {
 				// TODO Auto-generated method stub
-				isOperated = true;
+//				isOperated = true;
+				opCountDown.reSetCountDown();
 				operationCountDown = operationCountDownTime;
-//				if (isRecvResponse){
-					countDown = countDownTime;
+				countDown = countDownTime;
 //					isSetTime = true;
-					nextInitTemperature = initTemperature_fork;
-					
-					nextInitTemperature -= 0.5;
-					if (nextInitTemperature <= MIN_INIT_TEMPERATURE){
-						nextInitTemperature = MIN_INIT_TEMPERATURE;
-					}
-					initTemperature_fork = nextInitTemperature;
-					tv_temp.setText(""+initTemperature_fork);
-					iv_mark.setVisibility(View.INVISIBLE);
-					tv_set.setVisibility(View.VISIBLE);
-					
-					operation.setDataPackgeID0AndID1(currentSpinnerSelected, mID1);
-					operation.sendDownTemprature(nextInitTemperature);
-					
-					skb_temp.setThumb(getResources().getDrawable(R.drawable.seekthumb_wait));
-					skb_temp.setProgress((int)(nextInitTemperature*2)-INIT_TEMPERATURE_OFFSET);
-//					initTemperature -= 0.5;
-//					if (initTemperature <= 10.0){
-//						initTemperature = 10.0;
-//					}
-//					tv_temp.setText(""+initTemperature);
-//					iv_mark.setVisibility(View.INVISIBLE);
-//					tv_set.setVisibility(View.VISIBLE);
-					
-//					operation.setDataPackgeID0AndID1(currentSpinnerSelected, mID1);
-//					operation.sendDownTemprature(initTemperature);	
-//				}
+				
+				double nextInitTemperature = 0.0;
+				nextInitTemperature = currentState.getSetTemperature();
+				
+				nextInitTemperature -= 0.5;
+				if (nextInitTemperature <= MIN_INIT_TEMPERATURE){
+					nextInitTemperature = MIN_INIT_TEMPERATURE;
+				}
+
+				currentState.setSetTemperature(nextInitTemperature);
+				tv_temp.setText(""+currentState.getSetTemperature());
+				iv_mark.setVisibility(View.INVISIBLE);
+				tv_set.setVisibility(View.VISIBLE);
+				
+				operation.setDataPackgeID0AndID1(currentState.getSpinnerSelected(), currentState.getmID1());
+				operation.sendDownTemprature(nextInitTemperature);
+				
+				skb_temp.setThumb(getResources().getDrawable(R.drawable.seekthumb_wait));
+				skb_temp.setProgress((int)(nextInitTemperature*2)-INIT_TEMPERATURE_OFFSET);
 				
 			}
 		});
@@ -405,21 +322,22 @@ public class MainActivity extends Activity  {
 			public void onClick(View v) {
 				// TODO Auto-generated method stub
 //				if (isRecvResponse){
-					isOperated = true;
-					operationCountDown = operationCountDownTime;
-					operation.setDataPackgeID0AndID1(currentSpinnerSelected, mID1);
-					if (currentSwitchState_fork == SWITCHON){
-						currentSwitchState_fork = SWITCHOFF;
-						operation.sendCloseSignal(SWITCHOFF);
-						turnDownDevice();
-					}
-					else{
-						
-						currentSwitchState_fork = SWITCHON;
-						operation.sendCloseSignal(SWITCHON);
-						turnOnDevice();
-					}
-					skb_temp.setThumb(getResources().getDrawable(R.drawable.seekthumb_wait));
+//					isOperated = true;
+				opCountDown.reSetCountDown();
+				operationCountDown = operationCountDownTime;
+				operation.setDataPackgeID0AndID1(currentState.getSpinnerSelected(), currentState.getmID1());
+				if (currentState.getSwitchState() == SWITCHON){
+					currentState.setSwitchState(SWITCHOFF);
+					operation.sendCloseSignal(SWITCHOFF);
+					turnDownDevice();
+				}
+				else{
+					
+					currentState.setSwitchState(SWITCHON);
+					operation.sendCloseSignal(SWITCHON);
+					turnOnDevice();
+				}
+				skb_temp.setThumb(getResources().getDrawable(R.drawable.seekthumb_wait));
 //				}
 					
 				
@@ -432,24 +350,19 @@ public class MainActivity extends Activity  {
 			public void onItemSelected(AdapterView<?> arg0, View arg1,
 					int position, long arg3) {
 				// TODO Auto-generated method stub
-//				Toast.makeText(MainActivity.this, ""+spinnerAdapter.getItem(position), Toast.LENGTH_SHORT).show();
 				if (!isFirstIn){
-					isOperated = true;
+//					isOperated = true;
+					opCountDown.reSetCountDown();
 					operationCountDown = operationCountDownTime;
-					currentSpinnerSelected_fork = position+1;
-//					if (currentSpinnerSelected_fork == 0){
-//						mID1 = 0;
-//					}else{
-//						mID1 = 1;
-//					}
-					mID1 = 1;
+					currentState.setSpinnerSelected(position+1);
+
+					currentState.setmID1(1);
 					
 					tv_temp.setText("00.0");
-					currentTemperature = 0.0;
-					currentTemperature_fork = currentTemperature;
+					currentState.setTemperature(0.0);
 					isSwitchDevice = true;
 					
-					byte[] data = {(byte) 0xA0,(byte)currentSpinnerSelected_fork, (byte) mID1, 0x00, 0x00, 0x00, 0x00,0x00};
+					byte[] data = {(byte) 0xA0,(byte)currentState.getSpinnerSelected(), (byte) currentState.getmID1(), 0x00, 0x00, 0x00, 0x00,0x00};
 					Operations.CalcCheckSum(data);
 					try {
 						operation.getmPrintWriter().write(data);
@@ -478,18 +391,12 @@ public class MainActivity extends Activity  {
 			@Override
 			public void onStopTrackingTouch(SeekBar seekBar) {
 				// TODO Auto-generated method stub
-//				if (isRecvResponse){
-//					countDown = countDownTime;
-//					isOperated = true;
-//					operationCountDown = operationCountDownTime;
-//					isSetTime = true;
-					nextInitTemperature = selectProgress;
-					initTemperature_fork = nextInitTemperature;
-					operation.setDataPackgeID0AndID1(currentSpinnerSelected, mID1);
-					operation.sendUpTemperature(selectProgress);
-					skb_temp.setThumb(getResources().getDrawable(R.drawable.seekthumb_wait));
 
-//				}
+				currentState.setSetTemperature(selectProgress);
+				operation.setDataPackgeID0AndID1(currentState.getSpinnerSelected(), currentState.getmID1());
+				operation.sendUpTemperature(selectProgress);
+				skb_temp.setThumb(getResources().getDrawable(R.drawable.seekthumb_wait));
+
 			}
 			
 			@Override
@@ -504,7 +411,8 @@ public class MainActivity extends Activity  {
 					boolean fromUser) {
 				// TODO Auto-generated method stub
 				countDown = countDownTime;
-				isOperated = true;
+//				isOperated = true;
+				opCountDown.reSetCountDown();
 				operationCountDown = operationCountDownTime;
 				progress += INIT_TEMPERATURE_OFFSET;
 				
@@ -517,13 +425,12 @@ public class MainActivity extends Activity  {
 	}
 	void turnDownDevice(){
 
-		windList[currentWind_fork].setVisibility(View.INVISIBLE);
-		menuList[currentMenu_fork].setVisibility(View.INVISIBLE);
+		windList[currentState.getWind()].setVisibility(View.INVISIBLE);
+		menuList[currentState.getMenu()].setVisibility(View.INVISIBLE);
 		tv_temp.setVisibility(View.INVISIBLE);
 		iv_mark.setVisibility(View.INVISIBLE);
 		iv_degree.setVisibility(View.INVISIBLE);
 		tv_set.setVisibility(View.INVISIBLE);
-//		tv_time.setVisibility(View.INVISIBLE);
 		
 		tv_week.setVisibility(View.INVISIBLE);
 		tv_dayweek.setVisibility(View.INVISIBLE);
@@ -532,20 +439,18 @@ public class MainActivity extends Activity  {
 		iv_wind.setClickable(false);
 		iv_up.setClickable(false);
 		iv_down.setClickable(false);
-//		content_layout.setBackgroundColor(getResources().getColor(R.color.lightgray));
 		spinner_num.setVisibility(View.INVISIBLE);
 		
 		
 	}
 	void turnOnDevice(){
 
-		windList[currentWind_fork].setVisibility(View.VISIBLE);
-		menuList[currentMenu_fork].setVisibility(View.VISIBLE);
+		windList[currentState.getWind()].setVisibility(View.VISIBLE);
+		menuList[currentState.getMenu()].setVisibility(View.VISIBLE);
 		tv_temp.setVisibility(View.VISIBLE);
 		iv_mark.setVisibility(View.VISIBLE);
 		iv_degree.setVisibility(View.VISIBLE);
-//		tv_set.setVisibility(View.VISIBLE);
-//		tv_time.setVisibility(View.VISIBLE);
+
 		
 		tv_week.setVisibility(View.VISIBLE);
 		tv_dayweek.setVisibility(View.VISIBLE);
@@ -556,7 +461,7 @@ public class MainActivity extends Activity  {
 		iv_wind.setClickable(true);
 		iv_up.setClickable(true);
 		iv_down.setClickable(true);
-//		content_layout.setBackgroundColor(getResources().getColor(R.color.lightblue));
+
 	}
 
 	private void initViews() {
@@ -595,12 +500,7 @@ public class MainActivity extends Activity  {
 		
 		
 		tv_temp.setTypeface(font);
-//		tv_time.setTypeface(font);
-		
-//		for (int i=0; i<dayofweekID.length;i++){
-//			tv_dayofweek[i] = (TextView) findViewById(dayofweekID[i]);
-//			tv_dayofweek[i].setTypeface(font);
-//		}
+
 		time.setToNow();
 		dayOfWeek = time.weekDay-1;
 		if (dayOfWeek == -1){
@@ -613,10 +513,6 @@ public class MainActivity extends Activity  {
 		}
 		minute = time.minute;
 		hour = time.hour;
-		
-		
-
-//		content_layout = (LinearLayout) findViewById(R.id.content_layout);
 		
 		//spinner num
 		for (int i=0;i<9; i++){
@@ -688,10 +584,6 @@ public class MainActivity extends Activity  {
 					countDown = countDownTime;
 					
 				}
-				if (operationCountDown == 0){
-					isOperated = false;
-					operationCountDown = operationCountDownTime;
-				}
 				try {
 					Thread.sleep(1000);
 				} catch (InterruptedException e) {
@@ -704,39 +596,7 @@ public class MainActivity extends Activity  {
 			}
 		}
 	}
-//	class Timer implements Runnable{
-//
-//		@Override
-//		public void run() {
-//			// TODO Auto-generated method stub
-//			while (threadRun){
-//				time.setToNow();
-//				//dayOfWeek = time.weekDay;
-//				hour = time.hour;
-//				minute = time.minute;
-//				
-//				try {
-//					Thread.sleep(1000);
-//				} catch (InterruptedException e) {
-//					// TODO Auto-generated catch block
-//					e.printStackTrace();
-//				}
-//				Message msg = Message.obtain();
-////				if (dayOfWeek != time.weekDay){
-////					msg.what = WEEKDAYCHANGED;
-////					dayOfWeek = time.weekDay;
-////					TimerHandler.sendMessage(msg);
-////				}
-//				msg.what = TIMECHANGED;
-////				TimerHandler.sendMessage(msg);
-//				
-//				
-//			}
-//		}
-//		
-//	}
-	
-	
+
 	/**
 	 * a thread that receive the message from server. 
 	 * the message could only contents (double)temperature
@@ -746,25 +606,24 @@ public class MainActivity extends Activity  {
 //		boolean isFirstLoop = true;
 		public void run(){
 			try {
-				byte[] readBuffer = new byte[8];
 				while ( threadRun ){
-//					Toast.makeText(Operations.this.context.getApplicationContext(),"1 data is ", Toast.LENGTH_LONG).show();
+					byte[] readBuffer = new byte[8];
 					if (operation.getmDataInputeStream().read(readBuffer) != -1){
-						
+						//如果切换了房间操作，将最近的收到的一个数据包丢掉
 						if (!isSwitchDevice){
+							//检查校验和
 							byte responseCheckSum = readBuffer[7];
 							Operations.CalcCheckSum(readBuffer);
 							if (responseCheckSum == readBuffer[7]){
-								Message msg = new Message();
-								msg.what = UPDATEALL;
-								msg.obj = readBuffer;
-								updateHandle.sendMessage(msg);
+								recvDataBuffer.addLast(readBuffer);
+//								Message msg = new Message();
+//								msg.what = UPDATEALL;
+//								msg.obj = readBuffer;
+//								updateHandle.sendMessage(msg);
 							}
-							
 						}
 						isSwitchDevice = false;
 					}
-//					isRecvResponse = true;
 				}
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
@@ -773,148 +632,122 @@ public class MainActivity extends Activity  {
 		}
 	};
 	
+	
 	private Runnable mGetTemperatureRequest = new Runnable(){
 		
 		public void run(){
-		
 			while (threadRun){
+				try {
+					Thread.sleep(time_chip);
+				} catch (InterruptedException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
 				
-//				if (isRecvResponse){
-					byte[] data = {(byte) 0xA1,(byte)currentSpinnerSelected, (byte) mID1, 0x00, 0x00, 0x00, 0x00,0x00};
+//				if (!opCountDown.isFlag())
+//				{
+					byte[] data = new byte[8];
 					byte command = Operations.commands[0];
-					parseCurrentState(data, command);
-//					Operations.CalcCheckSum(data);
+					data = currentState.toByteArray();
+					data[0] = command;
+					data[6] = 0x00;
+					Operations.CalcCheckSum(data);
 					
-					try {
-//						Thread.sleep(200);
-						operation.getmPrintWriter().write(data);
-
-						Thread.sleep(time_chip-200);
-						isFirstIn = false;
-						
-					} catch (InterruptedException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}	
+//					operation.closeSocket();
+//					if (operation.reConnect(data))
+//					{
+						try {
+							//如果此时没有用户操作
+							operation.getmPrintWriter().write(data);
+							isFirstIn = false;
+							
+						} catch (IOException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+//					}
 //				}
-				
 			}
 		}
 	};
 	
-	void parseRecvData(byte[] results){
+	State parseRecvData(final byte[] results){
 		
 		byte ctrlInfo = results[3];
 		int  initTempInfo = (int) results[5];
 		int  currentTempInfo = (int )results[6];
 		
 		byte wind = (byte) (ctrlInfo & 0x03);
-		byte state = (byte) (ctrlInfo & 0x10);
+		byte switchState = (byte) (ctrlInfo & 0x10);
 		byte menu = (byte) (ctrlInfo & 0x60);
 		
+		State parseState = new State(currentState);
+		
 		//parse wind state
-//		int lastWind = currentWind;
 		switch(wind){
 		case 0x00:
-			currentWind = Operations.WIND_MODE_AUTO;
+			parseState.setWind(Operations.WIND_MODE_AUTO);
 			break;
 		case 0x01:
-			currentWind = Operations.WIND_MODE_HIGH;
+			parseState.setWind(Operations.WIND_MODE_HIGH);
 			break;
 		case 0x02:
-			currentWind = Operations.WIND_MODE_MIDDLE;
+			parseState.setWind(Operations.WIND_MODE_MIDDLE);
 			break;
 		case 0x03:
-			currentWind = Operations.WIND_MODE_LOW;
+			parseState.setWind(Operations.WIND_MODE_LOW);
 			break;
 		}
-		windList[currentWind_fork].setVisibility(View.INVISIBLE);
-		windList[currentWind].setVisibility(View.VISIBLE);
-		currentWind_fork = currentWind;
 		
 		//menu state
 		switch (menu){
 		case 0x00:
-			currentMenu = Operations.MENU_MODE_COLD;
+			parseState.setMenu(Operations.MENU_MODE_COLD);
 			break;
 		case 0x20:
-			currentMenu = Operations.MENU_MODE_WARM;
+			parseState.setMenu(Operations.MENU_MODE_WARM);
 			break;
 		case 0x40:
-			currentMenu = Operations.MENU_MODE_VENTILATE;
+			parseState.setMenu(Operations.MENU_MODE_VENTILATE);
 			break;
 		}
-		menuList[currentMenu_fork].setVisibility(View.INVISIBLE);
-		menuList[currentMenu].setVisibility(View.VISIBLE);
-		currentMenu_fork = currentMenu;
 		
 		//switch state
-		switch (state){
+		switch (switchState){
 		case 0x00:
-			currentSwitchState = SWITCHOFF;
-			turnDownDevice();
+//			currentSwitchState = SWITCHOFF;
+			parseState.setSwitchState(SWITCHOFF);
+//			turnDownDevice();******************************do not forget
 			break;
 		case 0x10:
-			currentSwitchState = SWITCHON;
-			turnOnDevice();
+//			currentSwitchState = SWITCHON;
+			parseState.setSwitchState(SWITCHON);
+//			turnOnDevice();**********************************
 			break;
 		}
-		currentSwitchState_fork = currentSwitchState;
+//		currentSwitchState_fork = currentSwitchState;
 		
 		//set temperature 
-		initTemperature = (double) (initTempInfo*1.0/2.0);
-		initTemperature_fork = initTemperature;
-		skb_temp.setProgress(initTempInfo-INIT_TEMPERATURE_OFFSET);
-//		if (isSetTime){
-//			Message msg = new Message();
-//			msg.what = UPDATE_INIT_TEMPERATURE;
-//			updateHandle.sendMessage(msg);
-//			isSetTime = false;
-//		}
+		parseState.setSetTemperature((double)(initTempInfo*1.0/2.0));;
+
+//		skb_temp.setProgress(initTempInfo-INIT_TEMPERATURE_OFFSET);************************
+
 		
 		//current temperature
-		currentTemperature = (double)(currentTempInfo*1.0/2.0);
-		currentTemperature_fork = currentTemperature;
+
+		parseState.setTemperature((double)(currentTempInfo*1.0/2));
 		
+		return parseState;
 	}
-	
-	void parseCurrentState(byte[] data,byte command){
-		/**dataPackage[0] is command
-		*  dataPackage[1] is ip0;
-		*  dataPackage[2] is ip1;
-		*  dataPackage[3] is data0;
-		*  dataPackage[4] is  data1;
-		*  dataPackage[5] is data 2;
-		*  dataPackage[6] is data3;
-		*  dataPackage[7] is checkSum;
-		*/
-		data[0] = command;
-		data[1] = (byte) currentSpinnerSelected_fork;
-		data[2] = (byte) mID1;
-		data[3] = 0x18;
-		data[3] = operation.WindDataParse(data[3], currentWind_fork);
-		data[3] = operation.MenuDataParse(data[3], currentMenu_fork);
-		data[3] = operation.SwitchStateParse(data[3], currentSwitchState_fork);
-		data[4] = 0x00;
-		int temp_initTemperature = (int) (initTemperature_fork*2);
-		data[5] = (byte) temp_initTemperature;
-		data[6] = 0x00;
-		Operations.CalcCheckSum(data);
-		
-	}
-	
 
 	void  SetTemperature(double temp){
-		if (temp>50.0){
-			temp = 50.0;
+		if (temp > MAX_CURRENT_TEMPERATURE){
+			temp = MAX_CURRENT_TEMPERATURE;
 		}
-		if (temp<0.0){
-			temp = 0.0;
+		if (temp < MIN_CURRENT_TEMPERATURE){
+			temp = MIN_CURRENT_TEMPERATURE;
 		}
-		if (temp<10.0){
+		if (temp < 10.0){
 			tv_temp.setText("0"+temp);
 		}
 		else{
@@ -923,34 +756,72 @@ public class MainActivity extends Activity  {
 		
 	}
 	
+	
 	Handler updateHandle = new Handler(){
 
 		@Override
 		public void handleMessage(Message msg) {
 			// TODO Auto-generated method stub
 			if(msg.what == UPDATEALL){
-				if (!isOperated){
-						parseRecvData((byte[]) msg.obj);	
-						skb_temp.setThumb(getResources().getDrawable(R.drawable.thumb));
-					}
+//				recvDataBuffer.add((byte[])msg.obj);
+				
+				if(recvDataBuffer.isEmpty())
+				{
+					return;
+				}
+				
+				if (isFirstIn)
+				{
+					currentState.byteArrayToState(recvDataBuffer.getLast());
+					operation.sendInitTime();
+				}
+				State stateTmp = new State();
+				stateTmp.byteArrayToState(recvDataBuffer.getLast());
+				if (!currentState.equalto(stateTmp))
+				{
+//					Toast.makeText(MainActivity.this, "not equal", Toast.LENGTH_SHORT).show();
+					return;
+				}
+				
+//					currentState.byteArrayToState(recvDataBuffer.getLast());
+				recvDataBuffer.clear();
+				updateUI(currentState);
+				
 				
 			}
 			if (msg.what == UPDATE_INIT_TEMPERATURE){
-				SetTemperature(initTemperature);
+				SetTemperature(currentState.getSetTemperature());
 
 				iv_mark.setVisibility(View.INVISIBLE);
 				tv_set.setVisibility(View.VISIBLE);
 			}
 			if (msg.what == UPDATE_CURRENT_TEMPERATURE){
-//				SetTemperature(currentTemperature);
-//
-//				iv_mark.setVisibility(View.VISIBLE);
-//				tv_set.setVisibility(View.INVISIBLE);
+				
 			}
-//			super.handleMessage(msg);
 		}
+
 		
 	};
+	private void updateUI(State state) {
+		// TODO Auto-generated method stub
+		
+		if (state.getSwitchState() == SWITCHON){
+			turnOnDevice();
+			fateView(windList);
+			windList[state.getWind()].setVisibility(View.VISIBLE);
+			
+			fateView(menuList);
+			menuList[state.getMenu()].setVisibility(View.VISIBLE);
+			
+			skb_temp.setProgress((int) (state.getSetTemperature()*2)-INIT_TEMPERATURE_OFFSET);
+			SetTemperature(state.getTemperature());
+		}
+		else {
+			turnDownDevice();
+		}
+		
+		skb_temp.setThumb(getResources().getDrawable(R.drawable.thumb));
+	}
 
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
@@ -958,13 +829,14 @@ public class MainActivity extends Activity  {
 		if (keyCode == event.KEYCODE_BACK && event.getRepeatCount() == 0){
 			try {
 				operation.mSocket.close();
-				operation.isConnected = false;
+//				operation.isConnected = false;
 				threadRun = false;
 				countThread.interrupt();
 //				timeThread.interrupt();
 				getTemperatureRequest.interrupt();
 				recvThread.interrupt();
 				
+				opCountDown.cancleTask();
 				
 //				finish();
 			} catch (IOException e) {
@@ -990,9 +862,12 @@ public class MainActivity extends Activity  {
 		
 		
 	}
-	
-	
-	
-	
+	private void fateView(ImageView[] viewList)
+	{
+		for (ImageView iv : viewList)
+		{
+			iv.setVisibility(View.INVISIBLE);
+		}
+	}
 
 }
