@@ -40,7 +40,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 public class MainActivity extends Activity  {
-	private int time_chip = 10000;
+	private int time_chip = 3000;
 	private static final double MIN_INIT_TEMPERATURE = 10.0;
 	private static final double MAX_INIT_TEMPERATURE = 30.0;
 	private static final double MIN_CURRENT_TEMPERATURE = 0.0;
@@ -100,6 +100,7 @@ public class MainActivity extends Activity  {
 	static final int UPDATEALL = 4;
 	static final int UPDATE_INIT_TEMPERATURE = 5;
 	static final int UPDATE_CURRENT_TEMPERATURE = 6;
+	static final int SEND_HEART_CLOCK = 7;
 	
 	Thread countThread;
 //	Thread timeThread;
@@ -156,9 +157,6 @@ public class MainActivity extends Activity  {
 		countThread = new Thread(count);
 		countThread.start();
 		
-//		timer = new Timer();
-//		timeThread = new Thread(timer);
-//		timeThread.start();
 		
 		recvThread = new Thread(mRecvThread);
 		recvThread.start();
@@ -171,7 +169,7 @@ public class MainActivity extends Activity  {
 		opCountDown.setCountDown(2);
 		opCountDown.setFlag(true);
 		opCountDown.setInitFlag(true);
-		opCountDown.setHandler(updateHandle);
+		opCountDown.setHandler(mainHandler);
 		opCountDown.setHandlerMsg(UPDATEALL);
 		opCountDown.startTimer();
 //		opCountDown.setTimer(timer)
@@ -606,7 +604,7 @@ public class MainActivity extends Activity  {
 //		boolean isFirstLoop = true;
 		public void run(){
 			try {
-				while ( threadRun ){
+				while (threadRun){
 					byte[] readBuffer = new byte[8];
 					if (operation.getmDataInputeStream().read(readBuffer) != -1){
 						//如果切换了房间操作，将最近的收到的一个数据包丢掉
@@ -644,29 +642,10 @@ public class MainActivity extends Activity  {
 					e1.printStackTrace();
 				}
 				
-//				if (!opCountDown.isFlag())
-//				{
-					byte[] data = new byte[8];
-					byte command = Operations.commands[0];
-					data = currentState.toByteArray();
-					data[0] = command;
-					data[6] = 0x00;
-					Operations.CalcCheckSum(data);
-					
-//					operation.closeSocket();
-//					if (operation.reConnect(data))
-//					{
-						try {
-							//如果此时没有用户操作
-							operation.getmPrintWriter().write(data);
-							isFirstIn = false;
-							
-						} catch (IOException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
-//					}
-//				}
+				Message msg = new Message();
+				msg.what = SEND_HEART_CLOCK;
+				mainHandler.sendMessage(msg);
+				
 			}
 		}
 	};
@@ -757,7 +736,7 @@ public class MainActivity extends Activity  {
 	}
 	
 	
-	Handler updateHandle = new Handler(){
+	Handler mainHandler = new Handler(){
 
 		@Override
 		public void handleMessage(Message msg) {
@@ -789,6 +768,34 @@ public class MainActivity extends Activity  {
 				
 				
 			}
+			//发送心跳包
+			if (msg.what == SEND_HEART_CLOCK)
+			{
+				if (!opCountDown.isFlag())
+				{
+					byte[] data = new byte[8];
+					byte command = Operations.commands[0];
+					data = currentState.toByteArray();
+					data[0] = command;
+					data[6] = 0x00;
+					Operations.CalcCheckSum(data);
+					
+//					operation.closeSocket();
+					boolean flagTmp = operation.reConnect(data);
+					if (flagTmp)
+					{
+						try {
+							//如果此时没有用户操作
+							operation.getmPrintWriter().write(data);
+							isFirstIn = false;
+							
+						} catch (IOException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					}
+				}
+			}
 			if (msg.what == UPDATE_INIT_TEMPERATURE){
 				SetTemperature(currentState.getSetTemperature());
 
@@ -799,7 +806,7 @@ public class MainActivity extends Activity  {
 				
 			}
 		}
-
+		
 		
 	};
 	private void updateUI(State state) {

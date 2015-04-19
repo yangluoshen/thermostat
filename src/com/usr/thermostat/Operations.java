@@ -23,12 +23,13 @@ import android.widget.Toast;
 public class Operations {
 	private static Operations operationInstance = null;
 	
-	public static final int SETWIND = 0;
-	public static final int SETMENU = 1;
-	public static final int SETUPTEMP = 2;
-	public static final int SETDOWNTEMP = 3;
-	public static final int SETCLOSE = 4;
-	public static final int SETCONNECT = 5;
+	public static final int SETWIND      = 0;
+	public static final int SETMENU      = 1;
+	public static final int SETUPTEMP    = 2;
+	public static final int SETDOWNTEMP  = 3;
+	public static final int SETSWITCHOFF = 4;
+	public static final int SETSWITCHON  = 5;
+	public static final int SETCONNECT   = 6;
 //	public static boolean isConnected = false;
 //	public boolean threadMarker = false;
 	
@@ -38,7 +39,7 @@ public class Operations {
 	private int registID;
 	
 	public Socket mSocket = null;
-	public InetSocketAddress mISA = null;
+//	public InetSocketAddress mISA = null;
 	public int socketTimeOut = 3000;
 //	private BufferedReader mBufferedReader  = null;
 //	private PrintWriter mPrintWriter = null;
@@ -132,6 +133,7 @@ public class Operations {
 			String ip = inetHost.getHostAddress();
 			
 			mSocket = new Socket();
+			InetSocketAddress mISA = null;
 			mISA = new InetSocketAddress(ip, serverPort);
 			mSocket.connect(mISA, socketTimeOut);
 			initDataPackage();
@@ -191,13 +193,13 @@ public class Operations {
 		bytes[4] = (byte) time.minute;
 		bytes[5] = (byte) time.hour;
 		if (time.weekDay == 0){
-			bytes[6] = 0x00;
+			bytes[6] = 0x07;
 		}
 		else{
 			bytes[6] = (byte) time.weekDay;
 		}
 		
-		CalcCheckSum(bytes);
+		CalcCheckSum(bytes	);
 		try {
 			mPrintWriter.write(bytes);
 		} catch (IOException e) {
@@ -270,7 +272,6 @@ public class Operations {
 			dataPackage[3] |= 0x01;
 			break;
 		}
-		Log.i("yangluo","in send windata "+dataPackage.toString());
 		PrintWrite(SETWIND);
 	}
 	byte WindDataParse(byte data, int mode){
@@ -313,14 +314,13 @@ public class Operations {
 		dataPackage[3] &= switchResetByte;
 		if (state == MainActivity.SWITCHON){
 			dataPackage[3] |= 0x10;
-//			isConnected = true;
-//			getTemperatureRequest.start();
+			PrintWrite(SETSWITCHON);
 		}
 		else if (state == MainActivity.SWITCHOFF){
 			dataPackage[3] |= 0x00;
-//			isConnected = false;
+			PrintWrite(SETSWITCHOFF);
 		}
-		PrintWrite(SETCLOSE);
+		
 	}
 	byte SwitchStateParse(byte data, int state){
 		data &= switchResetByte;
@@ -347,11 +347,15 @@ public class Operations {
 	}
 
 	void PrintWrite(int type){
-		dataPackage[6] = 0x00;
+		dataPackage[6] = 0x01;
+		if (type == SETSWITCHOFF)
+		{
+			dataPackage[6] = 0x00;
+		}
+		
 		CalcCheckSum(dataPackage);
 		try {
 			mPrintWriter.write(dataPackage);
-//			printStringResult(type);
 
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -465,9 +469,10 @@ public class Operations {
 			inetHost = InetAddress.getByName(serverIp);
 			String ip = inetHost.getHostAddress();
 			
-			mSocket = new Socket();
-			mISA = new InetSocketAddress(ip, serverPort);
-			mSocket.connect(mISA, socketTimeOut);
+			mSocket = new Socket(ip, serverPort);
+//			InetSocketAddress mISA = null;
+//			mISA = new InetSocketAddress(ip, serverPort);
+//			mSocket.connect(mISA, socketTimeOut);
 			
 			mDataInputeStream = new DataInputStream(mSocket.getInputStream());
 			mPrintWriter = new DataOutputStream(mSocket.getOutputStream());
