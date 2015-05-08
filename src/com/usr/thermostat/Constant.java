@@ -19,4 +19,11 @@ public class Constant {
 	public static final int MENU_MODE_COLD    = 0;
 	public static final int MENU_MODE_WARM    = 1;
 	public static final int MENU_MODE_VENTILATE = 2;
+	
+	
+	public static final String INTENT_MODE_ADD = "add";
+	public static final String INTENT_MODE_MODIFY = "modify";
+	
+	
+	
 }

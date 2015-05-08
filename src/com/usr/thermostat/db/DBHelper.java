@@ -7,7 +7,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 public class DBHelper extends SQLiteOpenHelper {
 	private static int version = 1;
 	public  static String dbname = "usr.db";
-	public  static final String IDRECORD_TABLE = "idrecord";
+	public  static final String ROOMTABLE = "roomtable";
 
 	public DBHelper(Context context) {
 		super(context, dbname, null, version);
@@ -16,7 +16,8 @@ public class DBHelper extends SQLiteOpenHelper {
 	@Override
 	public void onCreate(SQLiteDatabase db) {
 		// TODO Auto-generated method stub
-		String sql = "create table if not exists idrecord (id INTEGER PRIMARY KEY AUTOINCREMENT, record String, lastlogin bit)";
+		String sql = "create table if not exists " + ROOMTABLE + " (id INTEGER PRIMARY KEY AUTOINCREMENT, registid varchar(20), " +
+				"roomname varchar(40) );";
 		db.execSQL(sql);
 	}
 

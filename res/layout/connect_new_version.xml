@@ -12,16 +12,39 @@
         <RelativeLayout
             android:layout_width="300dp"
             android:layout_height="400dp"
-            android:layout_centerInParent="true"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
             android:background="@drawable/connect_content_bg" >
 
+
+
             <RelativeLayout
-                android:id="@+id/linearLayout2"
+                android:id="@+id/linearLayout4"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentRight="true"
+                android:paddingBottom="20dp"
+                android:paddingLeft="40dp" >
+            </RelativeLayout>
+
+            <Button
+                android:id="@+id/btn_connect"
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:layout_alignParentBottom="true"
+                android:layout_centerHorizontal="true"
+                android:layout_marginBottom="56dp"
+                android:focusable="true"
+                android:background="@drawable/connect_btn_sel" />
+
+            <RelativeLayout
+                android:id="@+id/linearLayout5"
                 android:layout_width="220dp"
                 android:layout_height="50dp"
-                android:background="@drawable/id_edit_bg"
+                android:layout_above="@+id/btn_connect"
                 android:layout_centerHorizontal="true"
-                android:layout_centerVertical="true" >
+                android:background="@drawable/id_edit_bg" >
 
                 <EditText
                     android:id="@+id/et_registID"
@@ -30,45 +53,54 @@
                     android:layout_alignParentTop="true"
                     android:layout_centerHorizontal="true"
                     android:background="@null"
-                    android:maxLines="1"
-                    android:maxLength="8"
-                    android:textColor="#2a99d0"
+                    android:ems="10"
                     android:inputType="number"
-                    android:ems="10" >
-
-                    
-                </EditText>
-
+                    android:maxLength="8"
+                    android:maxLines="1"
+                    android:textColor="#2a99d0" 
+                    android:hint="Regist id"/>
             </RelativeLayout>
 
+            <TextView
+                android:id="@+id/textView1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_above="@+id/linearLayout5"
+                android:layout_centerHorizontal="true"
+                android:text="Enter Your ID Number"
+                android:textColor="#72b835" />
+
             <RelativeLayout
-                android:id="@+id/linearLayout1"
+                android:id="@+id/linearLayout2"
+                android:layout_width="220dp"
+                android:layout_height="50dp"
+                android:layout_above="@+id/textView1"
+                android:layout_alignLeft="@+id/linearLayout5"
+                android:background="@drawable/id_edit_bg" >
+
+                <EditText
+                    android:id="@+id/et_roomname"
+                    android:layout_width="200dp"
+                    android:layout_height="50dp"
+                    android:layout_alignParentTop="true"
+                    android:layout_centerHorizontal="true"
+                    android:background="@null"
+                    android:ems="10"
+                    android:inputType="number"
+                    android:maxLength="8"
+                    android:maxLines="1"
+                    android:textColor="#2a99d0"
+                    android:hint="Room" />
+            </RelativeLayout>
+
+            <TextView
+                android:id="@+id/textView4"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_above="@+id/linearLayout2"
-                android:layout_alignParentLeft="true"
-                android:layout_alignParentRight="true"
-                android:paddingBottom="20dp"
-                android:paddingLeft="40dp" >
-
-                <TextView
-                    android:id="@+id/textView1"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_centerHorizontal="true"
-                    android:text="Enter Your ID Number"
-                    android:textColor="#72b835" />
-            </RelativeLayout>
-
-            <ImageView
-                android:id="@+id/btn_connect"
-                android:layout_width="100dp"
-                android:layout_height="100dp"
-                android:layout_below="@+id/linearLayout2"
-                android:layout_centerHorizontal="true"
-                android:layout_marginTop="21dp"
-                android:src="@drawable/connect_btn_sel"
-                android:focusable="true" />
+                android:layout_alignLeft="@+id/textView1"
+                android:text="named your room"
+                android:textColor="#72b835" />
 
         </RelativeLayout>
 

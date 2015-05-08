@@ -1,14 +1,17 @@
 package com.usr.thermostat;
 
-
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.zip.Inflater;
 
 import com.usr.thermostat.R.id;
+import com.usr.thermostat.network.NetManager;
+import com.usr.thermostat.network.SocketThreadManager;
+import com.usr.thermostat.network.TCPClient;
 
 import android.os.Bundle;
 import android.os.Handler;
@@ -16,6 +19,7 @@ import android.os.Message;
 import android.R.integer;
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.Intent;
 import android.content.res.AssetManager;
 import android.graphics.Typeface;
 import android.text.format.Time;
@@ -40,7 +44,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 public class MainActivity extends Activity  {
-	private int time_chip = 3000;
+	private int time_chip = 4000;
 	private static final double MIN_INIT_TEMPERATURE = 10.0;
 	private static final double MAX_INIT_TEMPERATURE = 30.0;
 	private static final double MIN_CURRENT_TEMPERATURE = 0.0;
@@ -63,15 +67,14 @@ public class MainActivity extends Activity  {
 	TextView tv_temp ;       // text temprature
 	TextView tv_dayweek;
 	TextView tv_week;        //the text "week"
-	Spinner spinner_num;
+//	Spinner spinner_num;
 	SeekBar skb_temp;
 	
-	private ArrayList<String> spinnerDataList = new ArrayList<String>();
-	private ArrayAdapter<String> spinnerAdapter;
+//	private ArrayList<String> spinnerDataList = new ArrayList<String>();
+//	private ArrayAdapter<String> spinnerAdapter;
 
 
 	State currentState = new State();
-//	State currentState_fork;
 	
 	int nextSwitchState = SWITCHOFF;
 	
@@ -82,7 +85,7 @@ public class MainActivity extends Activity  {
 	
 	
 //	byte[] recvDataBuffer = new byte[8];
-	LinkedList<byte[]> recvDataBuffer  = new LinkedList<byte[]>();
+//	LinkedList<byte[]> recvDataBuffer  = new LinkedList<byte[]>();
 	
 	int dayOfWeek;
 	int hour;
@@ -97,17 +100,23 @@ public class MainActivity extends Activity  {
 	static final int SWITCHOFF = 0;
 	static final int SWITCHON = 1;
 	
+	public static final int SEND_MESSAGE_FAILED = 0;
+	public static final int SEND_MESSAGE_SUCCESS = 1;
 	static final int UPDATEALL = 4;
 	static final int UPDATE_INIT_TEMPERATURE = 5;
 	static final int UPDATE_CURRENT_TEMPERATURE = 6;
 	static final int SEND_HEART_CLOCK = 7;
+	static final int RECV_DATA = 8;
+	
+	public static final int NETMANAGER_NOTIFY_ERROR = 9;
+	public static final int NETMANAGER_NOTIFY_OK = 10;
 	
 	Thread countThread;
 //	Thread timeThread;
 	Thread recvThread;
 	Thread getTemperatureRequest;
 	boolean threadRun = true;
-	boolean isSwitchDevice = false;
+//	boolean isSwitchDevice = false;
 //	boolean isOperated = false;
 	boolean isFirstIn = true;
 	CountDownTimer opCountDown;
@@ -115,6 +124,8 @@ public class MainActivity extends Activity  {
 	Operations operation;
 	
 	Time time = new Time();
+//	public static  List<byte[]> recvMsgList = new CopyOnWriteArrayList<byte[]>();
+	
 	
 	Handler CounterHandler = new Handler(){
 
@@ -150,16 +161,19 @@ public class MainActivity extends Activity  {
 		currentState.setmID1(1);
 		
 //		currentState_fork = new State(currentState);
+		NetManager.instance().init(this);
+		NetManager.instance().setHandler(mainHandler);
 		
-		operation = Operations.GetOperation(this);
+		operation = Operations.GetOperation();
+		operation.setHandler(mainHandler);
 		
 		count = new Counter();
 		countThread = new Thread(count);
 		countThread.start();
 		
 		
-		recvThread = new Thread(mRecvThread);
-		recvThread.start();
+//		recvThread = new Thread(mRecvThread);
+//		recvThread.start();
 		
 		getTemperatureRequest = new Thread(mGetTemperatureRequest);
 		getTemperatureRequest.start();
@@ -172,7 +186,6 @@ public class MainActivity extends Activity  {
 		opCountDown.setHandler(mainHandler);
 		opCountDown.setHandlerMsg(UPDATEALL);
 		opCountDown.startTimer();
-//		opCountDown.setTimer(timer)
 		
 		
 //		Bundle bundle = getIntent().getExtras();
@@ -342,46 +355,46 @@ public class MainActivity extends Activity  {
 			}
 		});
 		
-		spinner_num.setOnItemSelectedListener(new Spinner.OnItemSelectedListener() {
-
-			@Override
-			public void onItemSelected(AdapterView<?> arg0, View arg1,
-					int position, long arg3) {
-				// TODO Auto-generated method stub
-				if (!isFirstIn){
-//					isOperated = true;
-					opCountDown.reSetCountDown();
-					operationCountDown = operationCountDownTime;
-					currentState.setSpinnerSelected(position+1);
-
-					currentState.setmID1(1);
-					
-					tv_temp.setText("00.0");
-					currentState.setTemperature(0.0);
-					isSwitchDevice = true;
-					
-					byte[] data = {(byte) 0xA0,(byte)currentState.getSpinnerSelected(), (byte) currentState.getmID1(), 0x00, 0x00, 0x00, 0x00,0x00};
-					Operations.CalcCheckSum(data);
-					try {
-						operation.getmPrintWriter().write(data);
-					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-					skb_temp.setThumb(getResources().getDrawable(R.drawable.seekthumb_wait));
-				}
-				else {
-//					isFirstIn = false;
-				}
-				
-			}
-
-			@Override
-			public void onNothingSelected(AdapterView<?> arg0) {
-				// TODO Auto-generated method stub
-				
-			}
-		});
+//		spinner_num.setOnItemSelectedListener(new Spinner.OnItemSelectedListener() {
+//
+//			@Override
+//			public void onItemSelected(AdapterView<?> arg0, View arg1,
+//					int position, long arg3) {
+//				// TODO Auto-generated method stub
+//				if (!isFirstIn){
+////					isOperated = true;
+//					opCountDown.reSetCountDown();
+//					operationCountDown = operationCountDownTime;
+//					currentState.setSpinnerSelected(position+1);
+//
+//					currentState.setmID1(1);
+//					
+//					tv_temp.setText("00.0");
+//					currentState.setTemperature(0.0);
+//					isSwitchDevice = true;
+//					
+//					byte[] data = {(byte) 0xA0,(byte)currentState.getSpinnerSelected(), (byte) currentState.getmID1(), 0x00, 0x00, 0x00, 0x00,0x00};
+//					Operations.CalcCheckSum(data);
+//					try {
+//						operation.getmPrintWriter().write(data);
+//					} catch (IOException e) {
+//						// TODO Auto-generated catch block
+//						e.printStackTrace();
+//					}
+//					skb_temp.setThumb(getResources().getDrawable(R.drawable.seekthumb_wait));
+//				}
+//				else {
+////					isFirstIn = false;
+//				}
+//				
+//			}
+//
+//			@Override
+//			public void onNothingSelected(AdapterView<?> arg0) {
+//				// TODO Auto-generated method stub
+//				
+//			}
+//		});
 		
 		skb_temp.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
 			private double selectProgress=20;
@@ -437,7 +450,7 @@ public class MainActivity extends Activity  {
 		iv_wind.setClickable(false);
 		iv_up.setClickable(false);
 		iv_down.setClickable(false);
-		spinner_num.setVisibility(View.INVISIBLE);
+//		spinner_num.setVisibility(View.INVISIBLE);
 		
 		
 	}
@@ -452,7 +465,7 @@ public class MainActivity extends Activity  {
 		
 		tv_week.setVisibility(View.VISIBLE);
 		tv_dayweek.setVisibility(View.VISIBLE);
-		spinner_num.setVisibility(View.VISIBLE);
+//		spinner_num.setVisibility(View.VISIBLE);
 		
 		
 		iv_menu.setClickable(true);
@@ -491,7 +504,7 @@ public class MainActivity extends Activity  {
 		iv_mark = (ImageView) findViewById(R.id.iv_mark);
 		iv_degree = (ImageView) findViewById(R.id.iv_degree);
 //		tv_time = (TextView) findViewById(R.id.tv_time);
-		spinner_num = (Spinner) findViewById(R.id.spinner_num);
+//		spinner_num = (Spinner) findViewById(R.id.spinner_num);
 		tv_dayweek = (TextView) findViewById(R.id.tv_dayofweek);
 		skb_temp = (SeekBar) findViewById(R.id.skb_temp);
 
@@ -513,43 +526,43 @@ public class MainActivity extends Activity  {
 		hour = time.hour;
 		
 		//spinner num
-		for (int i=0;i<9; i++){
-			spinnerDataList.add(""+(i+1));
-		}
-		spinnerDataList.add("10");
-		spinnerAdapter = new ArrayAdapter<String>(this, R.layout.spinner_check_text,spinnerDataList){
-
-			@Override
-			public View getDropDownView(int position, View convertView,
-					ViewGroup parent) {
-				// TODO Auto-generated method stub
-//				return super.getDropDownView(position, convertView, parent);
-				
-				View view = LayoutInflater.from(getContext()).inflate(R.layout.spinner_item, null);
-				TextView text = (TextView) view.findViewById(R.id.spinner_item_num);
-				ImageView check = (ImageView) view.findViewById(R.id.spinner_item_checked_image);
-				text.setText("    "+(position+1));
-				
-				if (spinner_num.getSelectedItemPosition() == position) {
-					check.setImageResource(R.drawable.spinner_item_checked);
-//                    view.setBackgroundColor(getResources().getColor(
-//                            R.color.lightblue));
-//                    check.setImageResource(R.drawable.check_selected);
-                } else {
-                	check.setVisibility(View.INVISIBLE);
-//                    view.setBackgroundColor(getResources().getColor(
-//                            R.color.skyblue));
-//                    check.setImageResource(R.drawable.check_unselect);
-                }
-				
-				return view;
-			}
-			
-		};
-		spinner_num.setAdapter(spinnerAdapter);
-		spinnerAdapter.setDropDownViewResource(R.layout.spinner_item);
-		
-		spinner_num.setSelection(0);
+//		for (int i=0;i<9; i++){
+//			spinnerDataList.add(""+(i+1));
+//		}
+//		spinnerDataList.add("10");
+//		spinnerAdapter = new ArrayAdapter<String>(this, R.layout.spinner_check_text,spinnerDataList){
+//
+//			@Override
+//			public View getDropDownView(int position, View convertView,
+//					ViewGroup parent) {
+//				// TODO Auto-generated method stub
+////				return super.getDropDownView(position, convertView, parent);
+//				
+//				View view = LayoutInflater.from(getContext()).inflate(R.layout.spinner_item, null);
+//				TextView text = (TextView) view.findViewById(R.id.spinner_item_num);
+//				ImageView check = (ImageView) view.findViewById(R.id.spinner_item_checked_image);
+//				text.setText("    "+(position+1));
+//				
+//				if (spinner_num.getSelectedItemPosition() == position) {
+//					check.setImageResource(R.drawable.spinner_item_checked);
+////                    view.setBackgroundColor(getResources().getColor(
+////                            R.color.lightblue));
+////                    check.setImageResource(R.drawable.check_selected);
+//                } else {
+//                	check.setVisibility(View.INVISIBLE);
+////                    view.setBackgroundColor(getResources().getColor(
+////                            R.color.skyblue));
+////                    check.setImageResource(R.drawable.check_unselect);
+//                }
+//				
+//				return view;
+//			}
+//			
+//		};
+//		spinner_num.setAdapter(spinnerAdapter);
+//		spinnerAdapter.setDropDownViewResource(R.layout.spinner_item);
+//		
+//		spinner_num.setSelection(0);
 		
 //		Bundle bundle = getIntent().getExtras();
 //		byte[] initState = bundle.getByteArray("initstate");
@@ -595,40 +608,41 @@ public class MainActivity extends Activity  {
 		}
 	}
 
-	/**
-	 * a thread that receive the message from server. 
-	 * the message could only contents (double)temperature
-	 * if necessary, you should convert the message to a double format (such as "22.5")
-	 */
-	private Runnable mRecvThread = new Runnable(){
-//		boolean isFirstLoop = true;
-		public void run(){
-			try {
-				while (threadRun){
-					byte[] readBuffer = new byte[8];
-					if (operation.getmDataInputeStream().read(readBuffer) != -1){
-						//如果切换了房间操作，将最近的收到的一个数据包丢掉
-						if (!isSwitchDevice){
-							//检查校验和
-							byte responseCheckSum = readBuffer[7];
-							Operations.CalcCheckSum(readBuffer);
-							if (responseCheckSum == readBuffer[7]){
-								recvDataBuffer.addLast(readBuffer);
-//								Message msg = new Message();
-//								msg.what = UPDATEALL;
-//								msg.obj = readBuffer;
-//								updateHandle.sendMessage(msg);
-							}
-						}
-						isSwitchDevice = false;
-					}
-				}
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-	};
+//	/**
+//	 * a thread that receive the message from server. 
+//	 * the message could only contents (double)temperature
+//	 * if necessary, you should convert the message to a double format (such as "22.5")
+//	 */
+//	private Runnable mRecvThread = new Runnable(){
+////		boolean isFirstLoop = true;
+//		public void run(){
+//			while (threadRun){
+//				try {
+//					byte[] readBuffer = new byte[8];
+//					if (operation.getmDataInputeStream().read(readBuffer) != -1){
+//						//如果切换了房间操作，将最近的收到的一个数据包丢掉
+////						if (!isSwitchDevice){
+//							//检查校验和
+//							byte responseCheckSum = readBuffer[7];
+//							Operations.CalcCheckSum(readBuffer);
+//							if (responseCheckSum == readBuffer[7]){
+//								recvDataBuffer.addLast(readBuffer);
+////								Message msg = new Message();
+////								msg.what = UPDATEALL;
+////								msg.obj = readBuffer;
+////								updateHandle.sendMessage(msg);
+//							}
+////						}
+////						isSwitchDevice = false;
+//					}
+//				} catch (IOException e) {
+//					// TODO Auto-generated catch block
+//					e.printStackTrace();
+//				}
+//			}
+//			
+//		}
+//	};
 	
 	
 	private Runnable mGetTemperatureRequest = new Runnable(){
@@ -743,30 +757,39 @@ public class MainActivity extends Activity  {
 			// TODO Auto-generated method stub
 			if(msg.what == UPDATEALL){
 //				recvDataBuffer.add((byte[])msg.obj);
-				
-				if(recvDataBuffer.isEmpty())
+				byte[] recvData = new byte[8];
+				synchronized (GlobalData.Instance().getRecvMsgList()) {
+					if (GlobalData.Instance().getRecvMsgList().isEmpty())
+					{
+						return;
+					}
+					recvData = GlobalData.Instance().getRecvMsgList().get(GlobalData.Instance().getRecvMsgList().size()-1);
+					GlobalData.Instance().getRecvMsgList().clear();
+				}
+//				recvData = SocketThreadManager.sharedInstance().getMsg();
+					
+				if(null == recvData)
 				{
 					return;
 				}
 				
 				if (isFirstIn)
 				{
-					currentState.byteArrayToState(recvDataBuffer.getLast());
+					currentState.byteArrayToState(recvData);
 					operation.sendInitTime();
+					isFirstIn = false;
 				}
-				State stateTmp = new State();
-				stateTmp.byteArrayToState(recvDataBuffer.getLast());
-				if (!currentState.equalto(stateTmp))
+				else 
 				{
-//					Toast.makeText(MainActivity.this, "not equal", Toast.LENGTH_SHORT).show();
-					return;
+					State stateTmp = new State();
+					stateTmp.byteArrayToState(recvData);
+					if (!currentState.equalto(stateTmp))
+					{
+						return;
+					}
+					currentState.setTemperature(stateTmp.getTemperature());
 				}
-				
-//					currentState.byteArrayToState(recvDataBuffer.getLast());
-				recvDataBuffer.clear();
 				updateUI(currentState);
-				
-				
 			}
 			//发送心跳包
 			if (msg.what == SEND_HEART_CLOCK)
@@ -780,20 +803,8 @@ public class MainActivity extends Activity  {
 					data[6] = 0x00;
 					Operations.CalcCheckSum(data);
 					
-//					operation.closeSocket();
-					boolean flagTmp = operation.reConnect(data);
-					if (flagTmp)
-					{
-						try {
-							//如果此时没有用户操作
-							operation.getmPrintWriter().write(data);
-							isFirstIn = false;
+					SocketThreadManager.sharedInstance().sendMsg(data, mainHandler);
 							
-						} catch (IOException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
-					}
 				}
 			}
 			if (msg.what == UPDATE_INIT_TEMPERATURE){
@@ -804,6 +815,14 @@ public class MainActivity extends Activity  {
 			}
 			if (msg.what == UPDATE_CURRENT_TEMPERATURE){
 				
+			}
+			if (msg.what == NETMANAGER_NOTIFY_ERROR)
+			{
+				Toast.makeText(getApplicationContext(), "net not ok ", Toast.LENGTH_SHORT).show();
+			}
+			if (msg.what == NETMANAGER_NOTIFY_OK)
+			{
+				Toast.makeText(getApplicationContext(), "net  ok ", Toast.LENGTH_SHORT).show();
 			}
 		}
 		
@@ -835,20 +854,32 @@ public class MainActivity extends Activity  {
 		// TODO Auto-generated method stub
 		if (keyCode == event.KEYCODE_BACK && event.getRepeatCount() == 0){
 			try {
-				operation.mSocket.close();
+//				operation.mSocket.close();
 //				operation.isConnected = false;
-				threadRun = false;
-				countThread.interrupt();
-//				timeThread.interrupt();
-				getTemperatureRequest.interrupt();
-				recvThread.interrupt();
-				
-				opCountDown.cancleTask();
-				
-//				finish();
-			} catch (IOException e) {
+				operation.releaseInstance();
+			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
+			}
+			try
+			{
+				threadRun = false;
+				countThread.interrupt();
+//					timeThread.interrupt();
+				getTemperatureRequest.interrupt();
+//					recvThread.interrupt();
+				NetManager.instance().release();
+				opCountDown.cancleTask();
+			}
+			catch (Exception e) {
+				// TODO: handle exception
+			}
+			finally
+			{
+
+				//释放Mainactivity的所有资源
+				//不能用finish()，finish()只是将activity移除栈，资源并没有释放
+				System.exit(0);
 			}
 			
 		}
@@ -869,6 +900,9 @@ public class MainActivity extends Activity  {
 		
 		
 	}
+	
+	
+ 
 	private void fateView(ImageView[] viewList)
 	{
 		for (ImageView iv : viewList)

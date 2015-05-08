@@ -69,10 +69,10 @@ public class State {
 		{
 			return false;
 		}
-		if (this.temperature != state.getTemperature())
-		{
-			return false;
-		}
+//		if (this.temperature != state.getTemperature())
+//		{
+//			return false;
+//		}
 //		if (this.spinnerSelected != state.getSpinnerSelected())
 //		{
 //			return false;

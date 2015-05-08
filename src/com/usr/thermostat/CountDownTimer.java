@@ -7,6 +7,7 @@ import android.os.Handler;
 import android.os.Message;
 
 public class CountDownTimer {
+//	private OpCountDown opCountDown = null;
 	private int countDownMax;
 	private boolean initFlag;
 	private boolean flag;
@@ -15,12 +16,21 @@ public class CountDownTimer {
 	private int handlerMsg;
 	private Timer timer = new Timer();
 	
+	private boolean isTimerStart = false;
+	
 	
 
 	public CountDownTimer()
 	{
 		
 	}
+//	public static Instance()
+//	{
+//		if (opCountDown == null)
+//		{
+//			
+//		}
+//	}
 	public void reSetCountDown()
 	{
 		this.countDown = this.countDownMax;
@@ -29,8 +39,13 @@ public class CountDownTimer {
 	
 	public void startTimer()
 	{
+		if (isTimerStart)
+		{
+			return;
+		}
 		
 		timer.schedule(new CountDownTask(), 0,1 * 1000);
+		isTimerStart = true;
 		
 	}
 	
@@ -58,7 +73,12 @@ public class CountDownTimer {
 	}
 	public void cancleTask()
 	{
+		if (!isTimerStart)
+		{
+			return;
+		}
 		this.getTimer().cancel();
+		isTimerStart = false;
 	}
 
 	public int getCountDownMax() {
