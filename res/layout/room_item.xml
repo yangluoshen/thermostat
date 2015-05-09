@@ -2,25 +2,55 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    android:orientation="vertical"
-    android:background="@color/lightgray">
+    android:background="@null"
+    android:orientation="vertical" >
 
     <RelativeLayout
-        android:id="@+id/room_item_bg_rl"
-        android:layout_width="100dp"
-        android:layout_height="100dp"
-        android:layout_gravity="center"
-        android:background="@drawable/room_bg" >
+        android:layout_width="116dp"
+        android:layout_height="130dp"
+        android:gravity="center"
+        android:paddingLeft="8dp"
+        android:paddingRight="8dp" >
+
+        <RelativeLayout
+            android:id="@+id/room_item_bg_rl"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:background="@drawable/blue_sel" >
+
+            <TextView
+                android:id="@+id/room_temp_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
+                android:layout_centerVertical="true"
+                android:text="0.0"
+                android:textColor="#ffffff"
+                android:textSize="30sp" />
+
+            <ImageView
+                android:id="@+id/room_item_wind"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_below="@+id/room_temp_tv"
+                android:layout_centerHorizontal="true"
+                 />
+
+        </RelativeLayout>
 
         <TextView
-            android:id="@+id/room_temp_tv"
+            android:id="@+id/room_item_name"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerHorizontal="true"
-            android:layout_centerVertical="true"
-            android:textColor="#ffffff"
-            android:textSize="30sp"
-            android:text="0.00" />
+            android:layout_height="30dp"
+            android:layout_alignParentLeft="true"
+            android:layout_alignRight="@+id/room_item_bg_rl"
+            android:layout_below="@+id/room_item_bg_rl"
+
+            android:maxLines="1"
+            android:text="TextView"
+            android:textColor="@color/skyblue"
+            android:gravity="center"
+            android:textSize="18sp" />
 
     </RelativeLayout>
 

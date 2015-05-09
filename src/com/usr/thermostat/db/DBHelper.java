@@ -16,8 +16,9 @@ public class DBHelper extends SQLiteOpenHelper {
 	@Override
 	public void onCreate(SQLiteDatabase db) {
 		// TODO Auto-generated method stub
+		//(id, registid, roomname, wind, mode, settemp, isoperated)
 		String sql = "create table if not exists " + ROOMTABLE + " (id INTEGER PRIMARY KEY AUTOINCREMENT, registid varchar(20), " +
-				"roomname varchar(40) );";
+				"roomname varchar(40) , wind INTEGER, mode INTEGER, settemp varchar(20), isoperated bit);";
 		db.execSQL(sql);
 	}
 

@@ -9,17 +9,24 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.zip.Inflater;
 
 import com.usr.thermostat.R.id;
+import com.usr.thermostat.db.RoomDB;
 import com.usr.thermostat.network.NetManager;
+import com.usr.thermostat.network.NetworkDetectorService;
+import com.usr.thermostat.network.NetworkDetectorService.GetConnectState;
 import com.usr.thermostat.network.SocketThreadManager;
 import com.usr.thermostat.network.TCPClient;
 
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.Message;
 import android.R.integer;
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.res.AssetManager;
 import android.graphics.Typeface;
 import android.text.format.Time;
@@ -110,21 +117,23 @@ public class MainActivity extends Activity  {
 	
 	public static final int NETMANAGER_NOTIFY_ERROR = 9;
 	public static final int NETMANAGER_NOTIFY_OK = 10;
+	public static final int NETWORK_NOTOK = 11;
 	
 	Thread countThread;
-//	Thread timeThread;
+
 	Thread recvThread;
 	Thread getTemperatureRequest;
 	boolean threadRun = true;
-//	boolean isSwitchDevice = false;
-//	boolean isOperated = false;
+
 	boolean isFirstIn = true;
 	CountDownTimer opCountDown;
 	
 	Operations operation;
+	private NetworkDetectorService mNDS;
+	private boolean connectState = true;
 	
 	Time time = new Time();
-//	public static  List<byte[]> recvMsgList = new CopyOnWriteArrayList<byte[]>();
+	int currentRoomId;
 	
 	
 	Handler CounterHandler = new Handler(){
@@ -150,6 +159,8 @@ public class MainActivity extends Activity  {
 		setContentView(R.layout.main_new_version);
 		initViews();
 		addEvents();
+		
+		bindNetworkService();
 		
 		
 		currentState.setMenu(Operations.MENU_MODE_COLD);
@@ -187,6 +198,8 @@ public class MainActivity extends Activity  {
 		opCountDown.setHandlerMsg(UPDATEALL);
 		opCountDown.startTimer();
 		
+		//获取上个activity传来的数据
+		currentRoomId = getIntent().getExtras().getInt("id");
 		
 //		Bundle bundle = getIntent().getExtras();
 //		if (bundle !=null){
@@ -231,7 +244,7 @@ public class MainActivity extends Activity  {
 				operation.sendWindData(nextWind);
 				skb_temp.setThumb(getResources().getDrawable(R.drawable.seekthumb_wait));
 				
-				
+
 			}
 		});
 		iv_menu.setOnClickListener(new OnClickListener() {
@@ -258,8 +271,7 @@ public class MainActivity extends Activity  {
 				currentState.setMenu(nextMenu);
 				skb_temp.setThumb(getResources().getDrawable(R.drawable.seekthumb_wait));
 
-				
-				
+
 			}
 		});
 		iv_up.setOnClickListener(new OnClickListener() {
@@ -291,7 +303,8 @@ public class MainActivity extends Activity  {
 					operation.sendUpTemperature(nextInitTemperature);
 					skb_temp.setThumb(getResources().getDrawable(R.drawable.seekthumb_wait));
 					skb_temp.setProgress((int)(nextInitTemperature*2)-INIT_TEMPERATURE_OFFSET);
-								
+							
+					
 			}
 		});
 		iv_down.setOnClickListener(new OnClickListener() {
@@ -324,6 +337,7 @@ public class MainActivity extends Activity  {
 				skb_temp.setThumb(getResources().getDrawable(R.drawable.seekthumb_wait));
 				skb_temp.setProgress((int)(nextInitTemperature*2)-INIT_TEMPERATURE_OFFSET);
 				
+
 			}
 		});
 
@@ -777,7 +791,9 @@ public class MainActivity extends Activity  {
 				{
 					currentState.byteArrayToState(recvData);
 					operation.sendInitTime();
+					
 					isFirstIn = false;
+					
 				}
 				else 
 				{
@@ -824,6 +840,9 @@ public class MainActivity extends Activity  {
 			{
 				Toast.makeText(getApplicationContext(), "net  ok ", Toast.LENGTH_SHORT).show();
 			}
+			if (msg.what == NETWORK_NOTOK){
+				Toast.makeText(getApplicationContext(), "network not ok ", Toast.LENGTH_SHORT).show();
+			}
 		}
 		
 		
@@ -853,35 +872,7 @@ public class MainActivity extends Activity  {
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 		// TODO Auto-generated method stub
 		if (keyCode == event.KEYCODE_BACK && event.getRepeatCount() == 0){
-			try {
-//				operation.mSocket.close();
-//				operation.isConnected = false;
-				operation.releaseInstance();
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			try
-			{
-				threadRun = false;
-				countThread.interrupt();
-//					timeThread.interrupt();
-				getTemperatureRequest.interrupt();
-//					recvThread.interrupt();
-				NetManager.instance().release();
-				opCountDown.cancleTask();
-			}
-			catch (Exception e) {
-				// TODO: handle exception
-			}
-			finally
-			{
-
-				//释放Mainactivity的所有资源
-				//不能用finish()，finish()只是将activity移除栈，资源并没有释放
-				System.exit(0);
-			}
-			
+			readyToExit();
 		}
 		
 		return super.onKeyDown(keyCode, event);
@@ -909,6 +900,90 @@ public class MainActivity extends Activity  {
 		{
 			iv.setVisibility(View.INVISIBLE);
 		}
+	}
+	
+	
+	
+	private ServiceConnection serviceConnection = new ServiceConnection() {
+		
+		@Override
+		public void onServiceDisconnected(ComponentName name) {
+			// TODO Auto-generated method stub
+			
+		}
+		
+		@Override
+		public void onServiceConnected(ComponentName name, IBinder service) {
+			// TODO Auto-generated method stub
+			mNDS = ((NetworkDetectorService.MyBinder) service).getService();
+			mNDS.setOnGetConnectState(new GetConnectState() {
+				
+				@Override
+				public void GetState(boolean isConnected) {
+					// TODO Auto-generated method stub
+					//whenever network state changed occur following event
+					if (connectState != isConnected){
+						connectState = isConnected;
+						if (!connectState){
+							Message msg = new Message();
+							msg.what = NETWORK_NOTOK;
+							mainHandler.sendMessage(msg);
+							readyToExit();
+							
+						}
+					}
+				}
+			});
+		}
+	};
+	
+	private void bindNetworkService(){
+		Intent _intent = new Intent(MainActivity.this, NetworkDetectorService.class);
+		bindService(_intent, serviceConnection, Context.BIND_AUTO_CREATE);
+	}
+	
+	public void readyToExit()
+	{
+		try {
+//			operation.mSocket.close();
+//			operation.isConnected = false;
+			operation.releaseInstance();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		try
+		{
+			threadRun = false;
+			countThread.interrupt();
+//				timeThread.interrupt();
+			getTemperatureRequest.interrupt();
+//				recvThread.interrupt();
+			NetManager.instance().release();
+			opCountDown.cancleTask();
+			
+			RoomDB roomdb = new RoomDB(getApplicationContext());
+			//设置当前房间为以操作
+			roomdb.setRecordOperated(1, currentRoomId);
+			//将当前设置状态写入数据库
+			//params wind , mode , settemp, id
+			Object[] params = {currentState.getWind(), currentState.getMenu(),
+							""+currentState.getSetTemperature(), currentRoomId};
+			roomdb.updateStateInfo(params);
+			
+		}
+		catch (Exception e) {
+			// TODO: handle exception
+		}
+		finally
+		{
+
+			//释放Mainactivity的所有资源
+			//不能用finish()，finish()只是将activity移除栈，资源并没有释放
+//			System.exit(0);
+			finish();
+		}
+		
 	}
 
 }

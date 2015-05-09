@@ -25,9 +25,12 @@ public class RoomManagerActivity extends Activity {
 		setContentView(R.layout.room_manager_layout);
 		
 		gv_rooms = (GridView) findViewById(R.id.room_gv);
-		adapter = new RoomListAdapter(getApplicationContext(), data);
-		gv_rooms.setAdapter(adapter);
+//		adapter = new RoomListAdapter(getApplicationContext(), data);
+//		gv_rooms.setAdapter(adapter);
 		gv_rooms.setSelector(new ColorDrawable(Color.TRANSPARENT));
+		
+		//将所有房间状态设置为未操作
+		new RoomDB(getApplicationContext()).setAllNonOperated();
 		
 	}
 	public void setData()
@@ -43,6 +46,10 @@ public class RoomManagerActivity extends Activity {
 	@Override
 	protected void onResume() {
 		// TODO Auto-generated method stub
+		data.clear();
+		adapter = new RoomListAdapter(getApplicationContext(), data);
+		gv_rooms.setAdapter(adapter);
+		
 		setData();
 		
 		super.onResume();

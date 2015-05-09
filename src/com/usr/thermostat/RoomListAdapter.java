@@ -3,6 +3,7 @@ package com.usr.thermostat;
 import java.util.List;
 
 import com.usr.thermostat.Utils.CalculationUtils;
+import com.usr.thermostat.Utils.CommonUtils;
 import com.usr.thermostat.beans.RoomItemInfo;
 import com.usr.thermostat.network.NetManager;
 
@@ -10,12 +11,14 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.provider.SyncStateContract.Constants;
+import android.text.NoCopySpan.Concrete;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -30,6 +33,7 @@ public class RoomListAdapter extends BaseAdapter {
 	{
 		this.context = ctx;
 		this.list = l;
+		
 	}
 
 	@Override
@@ -60,7 +64,8 @@ public class RoomListAdapter extends BaseAdapter {
 			convertView = LayoutInflater.from(context).inflate(R.layout.room_item, null);
 			holder.tv_temp = (TextView) convertView.findViewById(R.id.room_temp_tv);
 			holder.rl_itemBg = (RelativeLayout) convertView.findViewById(R.id.room_item_bg_rl);
-			
+			holder.iv_roomWind = (ImageView) convertView.findViewById(R.id.room_item_wind);
+			holder.tv_name = (TextView) convertView.findViewById(R.id.room_item_name);
 			convertView.setTag(holder);
 		}
 		else
@@ -70,8 +75,12 @@ public class RoomListAdapter extends BaseAdapter {
 		
 		if (position == list.size()-1)
 		{
-			holder.rl_itemBg.setBackgroundDrawable(context.getResources().getDrawable(R.drawable.room_add));
+			//将gridView 最后一个元素设置为添加按钮
+			holder.rl_itemBg.setBackgroundDrawable(context.getResources().getDrawable(R.drawable.add_room_sel));
 			holder.tv_temp.setVisibility(View.GONE);
+			holder.iv_roomWind.setVisibility(View.GONE);
+			holder.tv_name.setText("ADD");
+			
 			holder.rl_itemBg.setOnClickListener(new OnClickListener() {
 				
 				@Override
@@ -90,8 +99,84 @@ public class RoomListAdapter extends BaseAdapter {
 		}
 		else
 		{
-			holder.tv_temp.setText(list.get(position).getName());
+			//如果当前元素不是最后一个的话，则为房间按钮
+//			String key = ""+list.get(position).getId();
+			int isOperated = list.get(position).getIsoperated();
 			
+			//设置房间名称
+			holder.tv_name.setText(list.get(position).getName());
+			
+			//设置房间图标背景色：将当前的房间的mode设置房间图标背景色
+			int background = 0;
+			//判断此房间是否被设置过
+			if (isOperated == 1)
+			{
+				int mode = list.get(position).getMode();
+				
+				if (mode == Operations.MENU_MODE_VENTILATE)
+				{
+					background = R.drawable.green_sel;
+				}
+				else if (mode == Operations.MENU_MODE_WARM)
+				{
+					background = R.drawable.orange;
+				}
+				else 
+				{
+					background = R.drawable.blue_sel;
+				}
+			}
+			else
+			{
+				background = R.drawable.black;
+			}
+			
+			holder.rl_itemBg.setBackgroundDrawable(context.getResources().getDrawable(background));
+			//设置风速图标：根据房间风速，设置风速图标
+			int windType = 0;
+			
+			//先判断此房间是否被设置过
+			if(isOperated == 1)
+			{
+				int wind = list.get(position).getWind();
+				
+				if (wind == Operations.WIND_MODE_LOW)
+				{
+					windType = R.drawable.wind1;
+				}
+				else if (wind == Operations.WIND_MODE_MIDDLE)
+				{
+					windType = R.drawable.wind2;
+				}
+				else if (wind == Operations.WIND_MODE_HIGH)
+				{
+					windType = R.drawable.wind3;
+				}
+				else 
+				{
+					windType = R.drawable.windauto;
+				}
+//				holder.iv_roomWind.setVisibility(View.VISIBLE);
+				holder.iv_roomWind.setBackgroundDrawable(context.getResources().getDrawable(windType));
+				holder.iv_roomWind.setVisibility(View.VISIBLE);
+			}
+			else 
+			{
+				//若没有被设置过，则不显示
+				holder.iv_roomWind.setVisibility(View.INVISIBLE);
+			}
+			
+			
+			//设置房间设置温度
+			//先判断此房间是否被设置过
+			String setTemp = "0.0";
+			if(isOperated == 1)
+			{
+				setTemp = list.get(position).getSettemp();
+			}
+			
+			holder.tv_temp.setText(""+setTemp);
+			//房间按钮的长按事件， 长按跳转到编辑界面
 			OnLongClickListener editListener = new OnLongClickListener() {
 				private int pos = currentPos;
 				
@@ -111,7 +196,7 @@ public class RoomListAdapter extends BaseAdapter {
 					return false;
 				}
 			};
-			
+			//房间按钮的点击事件，单击进入操作界面
 			OnClickListener intentOperationListener = new OnClickListener() {
 				private int pos = currentPos;
 				
@@ -125,7 +210,11 @@ public class RoomListAdapter extends BaseAdapter {
 					if (Operations.GetOperation().Connect(int_registID))
 					{
 						NetManager.instance().release();
-						Intent _intent = new Intent(context,MainActivity.class);
+//						//跳转到mainactivity前的准备
+//						CommonUtils.readyIntentMain(int_registID);
+						
+						Intent _intent = new Intent(context, MainActivity.class);
+						_intent.putExtra("id", list.get(pos).getId());
 						_intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK); 
 						context.startActivity(_intent);
 					}
@@ -149,10 +238,13 @@ public class RoomListAdapter extends BaseAdapter {
 		return convertView;
 	}
 	
+	
 	class ViewHolder 
 	{
 		TextView tv_temp;
 		RelativeLayout rl_itemBg;
+		ImageView iv_roomWind;
+		TextView tv_name;
 	}
 
 }

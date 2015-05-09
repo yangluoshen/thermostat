@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.usr.thermostat.beans.RoomItemInfo;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -15,24 +16,28 @@ public class RoomDB {
 	public static final int COLUMN_RECORD = 1;
 	public static final int COLUMN_LASTLOGIN = 2;
 	
-	//sql = "create table if not exists userinfo (id INTEGER PRIMARY KEY AUTOINCREMENT ,
-	//email varchar(50),nickname varchar(30), lastlogin bit)";
+	//(id, registid, roomname, wind, mode, settemp, isoperated)
 	public RoomDB(Context context){
 		dbhelper = new DBHelper(context);
 	}
 	
 	/**
 	 * @param params {registid,roomname}
-	 * @return
+	 * @return id
 	 */
-	public boolean addRecord(Object[] params){
-		boolean flag = false;
+	public int addRecord(Object[] params){
 		SQLiteDatabase database = null;
+		String sql = "";
+		int id = 0;
 		try{
-			String sql = "insert into "+ DBHelper.ROOMTABLE + " (registid,roomname) values(?,?)";
+			sql = "insert into "+ DBHelper.ROOMTABLE + " (registid,roomname,isoperated) values(?,?,0)";
 			database  = dbhelper.getWritableDatabase();
 			database.execSQL(sql,params);
-			flag = true;
+			
+			sql = "SELECT id FROM " + DBHelper.ROOMTABLE + " ORDER BY id DESC ";
+			Cursor cursor = database.rawQuery(sql, null);
+			cursor.moveToFirst();
+			id = cursor.getInt(cursor.getColumnIndex("id"));
 		}catch (Exception e){
 			e.printStackTrace();
 		}finally{
@@ -40,7 +45,9 @@ public class RoomDB {
 				database.close();
 			}
 		}
-		return flag;
+		
+		return id;
+		
 	}
 	
 	public List<RoomItemInfo> getAllRecord()
@@ -58,13 +65,26 @@ public class RoomDB {
 			while(cursor.moveToNext())
 			{
 				RoomItemInfo item = new RoomItemInfo();
-				String id_value = cursor.getString(0);
-				String registid_value = cursor.getString(1);
-				String roomname_value = cursor.getString(2);
-				item.setId(Integer.parseInt(id_value));
+				
+				int id_value = cursor.getInt(cursor.getColumnIndex("id"));
+				String registid_value = cursor.getString(cursor.getColumnIndex("registid"));
+				String roomname_value = cursor.getString(cursor.getColumnIndex("roomname"));
+				int wind_value = cursor.getInt(cursor.getColumnIndex("wind"));
+				int mode_value = cursor.getInt(cursor.getColumnIndex("mode"));
+				String settmp_value = cursor.getString(cursor.getColumnIndex("settemp"));
+				int isoperated_value = cursor.getInt(cursor.getColumnIndex("isoperated"));
+				
+				item.setId(id_value);
 				item.setRegistid(registid_value);
 				item.setName(roomname_value);
+				item.setWind(wind_value);
+				item.setMode(mode_value);
+				item.setSettemp(settmp_value);
+				item.setIsoperated(isoperated_value);
+				
 				list.add(item);
+				
+				
 			}
 			
 		}
@@ -113,18 +133,28 @@ public class RoomDB {
 	 * @param params
 	 * @return
 	 */
-	public boolean updateRecord(Object[] params){
+	public boolean updateRoomInfo(Object[] params){
 		boolean flag = false;
 		SQLiteDatabase database = null;
-		try{
-			String sql = "update " + DBHelper.ROOMTABLE + " set registid = '?',roomname = '?' where id = ?";
+		
+		ContentValues cv = new ContentValues();
+		
+		cv.put("registid", (String)params[0]);
+		cv.put("roomname", (String)params[1]);
+		try
+		{
 			database = dbhelper.getWritableDatabase();
-			database.execSQL(sql,params);
+			database.update(DBHelper.ROOMTABLE, cv, "id = ?", new String[]{Integer.toString((Integer)params[2])});
 			flag = true;
-		}catch(Exception e){
-			
-		}finally{
-			if (database != null){
+		}
+		catch (Exception e) {
+			// TODO: handle exception
+			e.printStackTrace();
+		}
+		finally
+		{
+			if (database != null)
+			{
 				database.close();
 			}
 		}
@@ -132,6 +162,104 @@ public class RoomDB {
 		return flag;
 		
 	}
+	
+	/**
+	 * execute sql = "update roomtable set wind = ?,set mode = ?, set settemp = ? where id = ?";
+	 * params wind , mode , settemp, id
+	 * @param params
+	 * @return
+	 */
+	public boolean updateStateInfo(Object[] params){
+		boolean flag = false;
+		SQLiteDatabase database = null;
+		
+		ContentValues cv = new ContentValues();
+		
+		cv.put("wind", (Integer)params[0]);
+		cv.put("mode", (Integer)params[1]);
+		cv.put("settemp", (String)params[2]);
+		try
+		{
+			database = dbhelper.getWritableDatabase();
+			database.update(DBHelper.ROOMTABLE, cv, "id = ?", new String[]{Integer.toString((Integer)params[3])});
+			flag = true;
+		}
+		catch (Exception e) {
+			// TODO: handle exception
+			e.printStackTrace();
+		}
+		finally
+		{
+			if (database != null)
+			{
+				database.close();
+			}
+		}
+		
+		return flag;
+		
+	}
+	
+	public boolean setRecordOperated(int isoperated, int id)
+	{
+		boolean flag = false;
+		
+		SQLiteDatabase database = null;
+		
+		ContentValues cv = new ContentValues();
+		
+		cv.put("isoperated", isoperated);
+		try
+		{
+			database = dbhelper.getWritableDatabase();
+			database.update(DBHelper.ROOMTABLE, cv, "id = ?", new String[]{Integer.toString(id)});
+			flag = true;
+		}
+		catch (Exception e) {
+			// TODO: handle exception
+			e.printStackTrace();
+		}
+		finally
+		{
+			if (database != null)
+			{
+				database.close();
+			}
+		}
+		
+		return flag;
+	}
+	
+	public boolean setAllNonOperated()
+	{
+		boolean flag = false;
+		
+		SQLiteDatabase database = null;
+		
+		ContentValues cv = new ContentValues();
+		
+		cv.put("isoperated", 0);
+		try
+		{
+			database = dbhelper.getWritableDatabase();
+			database.update(DBHelper.ROOMTABLE, cv, null,null);
+			flag = true;
+		}
+		catch (Exception e) {
+			// TODO: handle exception
+			e.printStackTrace();
+		}
+		finally
+		{
+			if (database != null)
+			{
+				database.close();
+			}
+		}
+		
+		return flag;
+	}
+	
 	/**
 	 * sql = "delete from roomtable where id = ?";
 	 * @param params

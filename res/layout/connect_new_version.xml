@@ -10,13 +10,12 @@
         android:background="@drawable/connectbg" >
 
         <RelativeLayout
+            android:id="@+id/relativeLayout1"
             android:layout_width="300dp"
             android:layout_height="400dp"
             android:layout_alignParentRight="true"
             android:layout_centerVertical="true"
             android:background="@drawable/connect_content_bg" >
-
-
 
             <RelativeLayout
                 android:id="@+id/linearLayout4"
@@ -35,8 +34,8 @@
                 android:layout_alignParentBottom="true"
                 android:layout_centerHorizontal="true"
                 android:layout_marginBottom="56dp"
-                android:focusable="true"
-                android:background="@drawable/connect_btn_sel" />
+                android:background="@drawable/connect_btn_sel"
+                android:focusable="true" />
 
             <RelativeLayout
                 android:id="@+id/linearLayout5"
@@ -54,11 +53,11 @@
                     android:layout_centerHorizontal="true"
                     android:background="@null"
                     android:ems="10"
+                    android:hint="Regist id"
                     android:inputType="number"
                     android:maxLength="8"
                     android:maxLines="1"
-                    android:textColor="#2a99d0" 
-                    android:hint="Regist id"/>
+                    android:textColor="#2a99d0" />
             </RelativeLayout>
 
             <TextView
@@ -86,11 +85,11 @@
                     android:layout_centerHorizontal="true"
                     android:background="@null"
                     android:ems="10"
-                    android:inputType="number"
-                    android:maxLength="8"
+                    android:hint="Room"
+                    android:inputType="text"
+                    android:maxLength="30"
                     android:maxLines="1"
-                    android:textColor="#2a99d0"
-                    android:hint="Room" />
+                    android:textColor="#2a99d0" />
             </RelativeLayout>
 
             <TextView
@@ -101,8 +100,15 @@
                 android:layout_alignLeft="@+id/textView1"
                 android:text="named your room"
                 android:textColor="#72b835" />
-
         </RelativeLayout>
+
+        <Button
+            android:id="@+id/connect_delete_room_btn"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentRight="true"
+            android:background="@drawable/connect_delete_room" />
 
     </RelativeLayout>
 

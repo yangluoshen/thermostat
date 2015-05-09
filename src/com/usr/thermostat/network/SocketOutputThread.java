@@ -1,6 +1,8 @@
 package com.usr.thermostat.network;
 
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import com.usr.thermostat.CountDownTimer;
@@ -18,11 +20,14 @@ import android.os.Message;
  */
 public class SocketOutputThread extends Thread
 {
+	
+	private Long taskTimeChip = 300L;
 	public static final int NOTIFY = 0;
 	private boolean isStart = true;
 	private static String tag = "socketOutputThread";
 	private List<MsgEntity> sendMsgList;
-	private CountDownTimer countDown;
+	private Timer timer = new Timer();
+//	private CountDownTimer countDown;
 	
 	
 	public SocketOutputThread( )
@@ -30,13 +35,13 @@ public class SocketOutputThread extends Thread
 
 		sendMsgList = new CopyOnWriteArrayList<MsgEntity>();
 		
-		countDown = new CountDownTimer();
-		countDown.setCountDownMax(1);
-		countDown.setCountDown(1);
-		countDown.setFlag(true);
-		countDown.setInitFlag(true);
-		countDown.setHandler(mainHandler);
-		countDown.setHandlerMsg(NOTIFY);
+//		countDown = new CountDownTimer();
+//		countDown.setCountDownMax(1);
+//		countDown.setCountDown(1);
+//		countDown.setFlag(true);
+//		countDown.setInitFlag(true);
+//		countDown.setHandler(mainHandler);
+//		countDown.setHandlerMsg(NOTIFY);
 //		countDown.startTimer();
 	}
 	
@@ -45,9 +50,24 @@ public class SocketOutputThread extends Thread
 		this.isStart = isStart;
 		if (isStart)
 		{
-			countDown.startTimer();
+//			countDown.startTimer();
+			timer.schedule(new NotifyTask(), 0, taskTimeChip);
+		}
+		else
+		{
+			timer.cancel();
 		}
 		notifyThread();
+	}
+	
+	class NotifyTask extends TimerTask{
+
+		@Override
+		public void run() {
+			// TODO Auto-generated method stub
+			notifyThread();
+		}
+		
 	}
 	
 	public void notifyThread()

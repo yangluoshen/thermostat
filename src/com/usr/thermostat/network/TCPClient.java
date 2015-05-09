@@ -211,6 +211,7 @@ public class TCPClient
 			initialize();
 			isInitialized = true;
 			sendMsg(Operations.GetOperation().getRegistData());
+			
 		} catch (IOException e)
 		{
 			isInitialized = false;

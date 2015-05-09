@@ -1,6 +1,7 @@
 package com.usr.thermostat;
 
 import com.usr.thermostat.Utils.CalculationUtils;
+import com.usr.thermostat.Utils.CommonUtils;
 import com.usr.thermostat.beans.RoomItemInfo;
 import com.usr.thermostat.db.RoomDB;
 import com.usr.thermostat.network.NetManager;
@@ -25,6 +26,7 @@ public class ConnectActivity extends Activity {
 	Button btn_connect;
 	Operations operation;
 	private EditText et_roomName;
+	private Button btn_deleteRoom;
 	
 	private String mode;
 	private RoomItemInfo roomItemInfo ;
@@ -56,6 +58,7 @@ public class ConnectActivity extends Activity {
 		{
 			roomItemInfo = null;
 			btn_connect.setText("GO");
+			btn_deleteRoom.setVisibility(View.GONE);
 		}
 		
 //		RoomDB idrecord = new RoomDB(this);
@@ -71,59 +74,78 @@ public class ConnectActivity extends Activity {
 		
 		btn_connect.setOnClickListener(new OnClickListener() {
 		
-		@Override
-		public void onClick(View v) {
-			// TODO Auto-generated method stub
-//			ibtn_connect.setClickable(false);
-//			byte[] initState = null;
-			String roomName = et_roomName.getText().toString();
-			String registID = et_registID.getText().toString();
-			
-			NetManager.instance().init(ConnectActivity.this);
-			
-			if ("".equals(roomName))
-			{
-				Toast.makeText(ConnectActivity.this, "Room name should not be empty", Toast.LENGTH_SHORT).show();
-				return;
-			}
-			
-			if ("".equals(registID)){
-				Toast.makeText(ConnectActivity.this, "ID should not be empty", Toast.LENGTH_SHORT).show();
-			}
-			else if (operation.Connect(CalculationUtils.calcRegistID(et_registID.getText().toString())) ){
-				NetManager.instance().release();
-//				RoomDB idrecord = new RoomDB(ConnectActivity.this);
-//				Object[] param = {et_registID.getText().toString()};
-//				idrecord.setUserLastLogin(param);
+			@Override
+			public void onClick(View v) {
+				// TODO Auto-generated method stub
+	//			ibtn_connect.setClickable(false);
+	//			byte[] initState = null;
+				String roomName = et_roomName.getText().toString();
+				String registID = et_registID.getText().toString();
 				
-				if (mode.equals(Constant.INTENT_MODE_ADD))
+				NetManager.instance().init(ConnectActivity.this);
+				
+				if ("".equals(roomName))
 				{
-					RoomDB roomdb = new RoomDB(context);
-					Object[] params = {roomName,registID};
-					roomdb.addRecord(params);
-				}
-				else
-				{
-					RoomDB roomdb = new RoomDB(context);
-					Object[] params = {roomName, registID, roomItemInfo.getId()};
-					roomdb.updateRecord(params);
+					Toast.makeText(ConnectActivity.this, "Room name should not be empty", Toast.LENGTH_SHORT).show();
+					return;
 				}
 				
 				
-				Intent _intent  = new Intent(ConnectActivity.this,MainActivity.class);
+				if ("".equals(registID)){
+					Toast.makeText(ConnectActivity.this, "ID should not be empty", Toast.LENGTH_SHORT).show();
+				}
+				else if (operation.Connect(CalculationUtils.calcRegistID(et_registID.getText().toString())) ){
+					NetManager.instance().release();
+	//				RoomDB idrecord = new RoomDB(ConnectActivity.this);
+	//				Object[] param = {et_registID.getText().toString()};
+	//				idrecord.setUserLastLogin(param);
+					
+					if (mode.equals(Constant.INTENT_MODE_ADD))
+					{
+						RoomDB roomdb = new RoomDB(context);
+						Object[] params = {registID,roomName};
+						int id = roomdb.addRecord(params);
+						
+						Intent _intent  = new Intent(ConnectActivity.this,MainActivity.class);
+						_intent.putExtra("id", id);
+						ConnectActivity.this.startActivity(_intent);
+						
+					}
+					else
+					{
+						RoomDB roomdb = new RoomDB(context);
+						Object[] params = {registID, roomName, roomItemInfo.getId()};
+						roomdb.updateRoomInfo(params);
+						
+						Intent _intent  = new Intent(ConnectActivity.this,MainActivity.class);
+						_intent.putExtra("id", roomItemInfo.getId());
+						ConnectActivity.this.startActivity(_intent);
+					}
+					
+					
+					
+					
+					finish();
+				}else {
+					Toast.makeText(ConnectActivity.this, "connect failed !", Toast.LENGTH_SHORT).show();
+				}
+	//			ibtn_connect.setClickable(true);
 				
-				ConnectActivity.this.startActivity(_intent);
-				
-				
+	//			v.setClickable(false);
+			}
+		});
+		
+		btn_deleteRoom.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				// TODO Auto-generated method stub
+				RoomDB roomdb = new RoomDB(context);
+				Object[] params = {roomItemInfo.getId()};
+				roomdb.deleteRecord(params);
 				finish();
-			}else {
-				Toast.makeText(ConnectActivity.this, "connect failed !", Toast.LENGTH_SHORT).show();
 			}
-//			ibtn_connect.setClickable(true);
-			
-//			v.setClickable(false);
-		}
-	});
+		});
 		
 	}
 
@@ -134,6 +156,8 @@ public class ConnectActivity extends Activity {
 		btn_connect = (Button) findViewById(R.id.btn_connect);
 		et_registID = (EditText) findViewById(R.id.et_registID);
 		et_roomName = (EditText) findViewById(R.id.et_roomname);
+		btn_deleteRoom = (Button) findViewById(R.id.connect_delete_room_btn);
+		
 	}
 	
 

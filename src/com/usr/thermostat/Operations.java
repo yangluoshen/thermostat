@@ -80,8 +80,8 @@ public class Operations {
 	private Operations() {
 		// TODO Auto-generated constructor stub
 //		this.context = context;
-		
 		SocketThreadManager.sharedInstance();
+		
 		
 	}
 	/**
@@ -94,6 +94,7 @@ public class Operations {
 		
 		if (operationInstance == null){
 			operationInstance = new Operations();
+			
 		}
 		
 		return operationInstance;
@@ -115,11 +116,12 @@ public class Operations {
 	public boolean Connect(int ID){
 //		byte[] readBuffer = new byte[8];
 		try {
-			
+			TCPClient.instance().closeTCPSocket();
 			registID = ID;
 			sendRegist(registID);
 			//send the init data
 			initDataPackage();
+			
 			TCPClient.instance().sendMsg(dataPackage);
 
 			

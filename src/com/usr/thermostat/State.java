@@ -17,10 +17,6 @@ public class State {
 	public State(){
 		
 	}
-	
-
-
-	
 	public State(double temperature, double setTemperature, int wind, int menu,
 			int switchState, int spinnerSelected, int mID1) {
 		super();
