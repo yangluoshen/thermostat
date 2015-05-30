@@ -105,7 +105,7 @@ public class State {
 		data[3] = WindDataParse(data[3], this.getWind());
 		data[3] = MenuDataParse(data[3], this.getMenu());
 		data[3] = SwitchStateParse(data[3], this.getSwitchState());
-		data[4] = 0x00;
+		data[4] = (byte) 0xfe;
 		int temp_initTemperature = (int) (this.getSetTemperature()*2);
 		data[5] = (byte) temp_initTemperature;
 		data[6] = 0x00;

@@ -106,7 +106,7 @@ public class Operations {
 		dataPackage[1] = ID0;
 		dataPackage[2] = ID1;
 		dataPackage[3] = 0x18;  //data0
-		dataPackage[4] = 0x00;
+		dataPackage[4] = (byte) 0xfe;
 		dataPackage[5] = 0x2c;  //init temperature
 		dataPackage[6] = 0x01;
 		dataPackage[7] = 0x00;
@@ -307,10 +307,10 @@ public class Operations {
 
 	void PrintWrite(int type){
 		dataPackage[6] = 0x01;
-		if (type == SETSWITCHOFF)
-		{
-			dataPackage[6] = 0x00;
-		}
+//		if (type == SETSWITCHOFF)
+//		{
+//			dataPackage[6] = 0x00;
+//		}
 		
 		CalcCheckSum(dataPackage);
 		try {

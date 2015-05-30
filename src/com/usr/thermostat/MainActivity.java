@@ -287,6 +287,7 @@ public class MainActivity extends Activity  {
 //					isSetTime = true;
 					double nextInitTemperature;
 					
+					
 					nextInitTemperature = currentState.getSetTemperature();
 					
 					nextInitTemperature += 0.5;

@@ -30,7 +30,7 @@ public class RoomManagerActivity extends Activity {
 		gv_rooms.setSelector(new ColorDrawable(Color.TRANSPARENT));
 		
 		//将所有房间状态设置为未操作
-		new RoomDB(getApplicationContext()).setAllNonOperated();
+//		new RoomDB(getApplicationContext()).setAllNonOperated();
 		
 	}
 	public void setData()

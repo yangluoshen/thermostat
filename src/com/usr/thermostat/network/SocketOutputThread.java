@@ -21,7 +21,7 @@ import android.os.Message;
 public class SocketOutputThread extends Thread
 {
 	
-	private Long taskTimeChip = 300L;
+	private Long taskTimeChip = 150L;
 	public static final int NOTIFY = 0;
 	private boolean isStart = true;
 	private static String tag = "socketOutputThread";

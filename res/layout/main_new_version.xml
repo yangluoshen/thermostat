@@ -310,7 +310,7 @@
 	            android:layout_toLeftOf="@+id/iv_up"
 	            android:layout_toRightOf="@+id/iv_down"
 	            android:max="40"
-	            android:progress="0"
+	            android:progress="20"
 	            android:progressDrawable="@null"
 	            android:thumb="@drawable/seekthumb" />
 
