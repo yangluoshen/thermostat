@@ -21,6 +21,16 @@
             android:textColor="@color/skyblue"
             android:text="HOME" />
 
+        <ImageView
+            android:id="@+id/room_auto_link_iv"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_alignParentRight="true"
+            android:layout_below="@+id/room_title_tv"
+            android:layout_marginRight="14dp"
+            android:layout_marginTop="14dp"
+            android:src="@drawable/search" />
+
     </RelativeLayout>
 
     <RelativeLayout

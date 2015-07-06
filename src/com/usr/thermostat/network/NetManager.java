@@ -20,7 +20,7 @@ public class NetManager
 	
 	private Context context;
 	
-	private Handler handler = null;
+//	private Handler handler = null;
 	
 	private NetManager()
 	{
@@ -42,19 +42,19 @@ public class NetManager
 	}
 	
 	/**
-	 * 判断是否有网络连接
+	 * 判断是否有网络连接,调用这个方法一定要注意hanlder
 	 * @return
 	 */
 	public boolean isNetworkConnected()
 	{
 		if (context == null)
 		{
-			if (handler != null)
-			{
-				Message msg = new Message();
-				msg.what = MainActivity.NETMANAGER_NOTIFY_ERROR;
-				handler.sendMessage(msg);
-			}
+//			if (handler != null)
+//			{
+//				Message msg = new Message();
+//				msg.what = MainActivity.NETMANAGER_NOTIFY_ERROR;
+//				handler.sendMessage(msg);
+//			}
 			
 			return false;
 		}
@@ -62,12 +62,12 @@ public class NetManager
 				.getSystemService(Context.CONNECTIVITY_SERVICE);
 		if (connectivity == null)
 		{
-			if (handler != null)
-			{
-				Message msg = new Message();
-				msg.what = MainActivity.NETMANAGER_NOTIFY_ERROR;
-				handler.sendMessage(msg);
-			}
+//			if (handler != null)
+//			{
+//				Message msg = new Message();
+//				msg.what = MainActivity.NETMANAGER_NOTIFY_ERROR;
+//				handler.sendMessage(msg);
+//			}
 			return false;
 		} 
 		else
@@ -79,24 +79,24 @@ public class NetManager
 				{
 					if (info[i].getState() == NetworkInfo.State.CONNECTED)
 					{
-						if (handler != null)
-						{
-							Message msg = new Message();
-							msg.what = MainActivity.NETMANAGER_NOTIFY_OK;
-							handler.sendMessage(msg);
-						}
+//						if (handler != null)
+//						{
+//							Message msg = new Message();
+//							msg.what = MainActivity.NETMANAGER_NOTIFY_OK;
+//							handler.sendMessage(msg);
+//						}
 						return true;
 					}
 				}
 			}
 		}
 		
-		if (handler != null)
-		{
-			Message msg = new Message();
-			msg.what = MainActivity.NETMANAGER_NOTIFY_ERROR;
-			handler.sendMessage(msg);
-		}
+//		if (handler != null)
+//		{
+//			Message msg = new Message();
+//			msg.what = MainActivity.NETMANAGER_NOTIFY_ERROR;
+//			handler.sendMessage(msg);
+//		}
 		return false;
 	}
 	/**
@@ -157,16 +157,16 @@ public class NetManager
 	{
 		s_m = null;
 		context = null;
-		handler = null;
+//		handler = null;
 	}
 
-	public Handler getHandler() {
-		return handler;
-	}
-
-	public void setHandler(Handler handler) {
-		this.handler = handler;
-	}
+//	public Handler getHandler() {
+//		return handler;
+//	}
+//
+//	public void setHandler(Handler handler) {
+//		this.handler = handler;
+//	}
 	
 	
 	

@@ -1,16 +1,15 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity"
+    android:orientation="vertical"
     android:background="@drawable/mainbg" >
 
     <RelativeLayout
-        android:id="@+id/relativeLayout1"
-        android:layout_width="fill_parent"
-        android:layout_height="40dp"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentTop="true"
+        android:id="@+id/main_layout1"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="2"
          >
 
         <TextView
@@ -19,9 +18,8 @@
             android:layout_height="wrap_content"
             android:layout_alignParentLeft="true"
             android:layout_alignParentTop="true"
-            android:text="18:00"
+            android:text="  "
             android:textSize="30sp"
-            android:visibility="gone"
             android:textColor="#000000" />
 
         <Spinner
@@ -36,21 +34,25 @@
     </RelativeLayout>
 
     <LinearLayout
-        android:id="@+id/linearLayout1"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_above="@+id/relativeLayout2"
+        android:id="@+id/main_layout2"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="8"
+        android:orientation="horizontal"
+        android:baselineAligned="false"
         >
 
         <LinearLayout
-            android:layout_width="214dp"
+            android:layout_width="0dp"
             android:layout_height="242dp"
             android:background="@drawable/contentbg"
+            android:layout_marginTop="30dp"
+            android:layout_weight="3"
             android:orientation="vertical" >
 
             <RelativeLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" 
+                android:layout_height="0dp" 
                 android:layout_weight="1"
                 >
 
@@ -67,8 +69,8 @@
 
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_weight="20" 
+                android:layout_height="0dp"
+                android:layout_weight="9" 
                 
                 android:orientation="vertical">
 
@@ -164,7 +166,7 @@
 
                     <ImageView
                         android:id="@+id/iv_cold"
-                        android:layout_width="30dp"
+                        android:layout_width="0dp"
                         android:layout_height="30dp"
                         android:layout_gravity="center_vertical"
                         android:layout_weight="1"
@@ -172,7 +174,7 @@
 
                     <ImageView
                         android:id="@+id/iv_warm"
-                        android:layout_width="30dp"
+                        android:layout_width="0dp"
                         android:layout_height="30dp"
                         android:layout_gravity="center_vertical"
                         android:layout_weight="1"
@@ -181,7 +183,7 @@
 
                     <ImageView
                         android:id="@+id/iv_ventilate"
-                        android:layout_width="30dp"
+                        android:layout_width="0dp"
                         android:layout_height="30dp"
                         android:layout_gravity="center_vertical"
                         android:layout_weight="1"
@@ -212,15 +214,15 @@
         </LinearLayout>
 
         <LinearLayout
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="7.47"
+            android:layout_weight="2"
             android:orientation="vertical" 
             android:background="@drawable/huxian">
 
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="0dp"
                 android:paddingLeft="10dp"
                 android:layout_weight="1"
                 android:paddingBottom="10dp" >
@@ -234,7 +236,7 @@
             </LinearLayout>
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="0dp"
                 android:paddingLeft="30dp"
                 android:layout_weight="1"
                 android:paddingBottom="10dp" >
@@ -249,7 +251,7 @@
             </LinearLayout>
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="0dp"
                 android:paddingLeft="40dp"
                 android:layout_weight="1"
                 android:paddingBottom="10dp" >
@@ -264,7 +266,7 @@
             </LinearLayout>
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="0dp"
                 android:paddingLeft="20dp"
                 android:layout_weight="1">
                 <ImageView
@@ -280,19 +282,16 @@
     </LinearLayout>
 
     <LinearLayout
-        android:id="@+id/relativeLayout2"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
+        android:id="@+id/main_layout3"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="2"
 		android:orientation="vertical"
-		android:paddingTop="20dp"
-        android:layout_above="@+id/bottom_buttons_layout" >
+		android:paddingTop="20dp" >
         
         <RelativeLayout
-            android:layout_width="fill_parent"
-            android:layout_height="50dp"
-            android:layout_alignParentLeft="true"
-            android:layout_centerVertical="true" >
+            android:layout_width="match_parent"
+            android:layout_height="50dp">
 
             <ImageView
                 android:id="@+id/iv_up"
@@ -305,14 +304,15 @@
 	        <SeekBar
 	            android:id="@+id/skb_temp"
 	            android:layout_width="match_parent"
-	            android:layout_height="60dp"
+	            android:layout_height="match_parent"
 	            android:layout_alignParentBottom="true"
 	            android:layout_toLeftOf="@+id/iv_up"
 	            android:layout_toRightOf="@+id/iv_down"
 	            android:max="40"
 	            android:progress="20"
 	            android:progressDrawable="@null"
-	            android:thumb="@drawable/seekthumb" />
+	            android:thumb="@drawable/seekthumb"
+	            android:thumbOffset="0dip" />
 
             <ImageView
                 android:id="@+id/iv_down"
@@ -326,7 +326,7 @@
 
         
         <LinearLayout
-            android:layout_width="fill_parent"
+            android:layout_width="match_parent"
             android:layout_height="6dp"
 
             android:background="@drawable/seekbarbody">
@@ -338,12 +338,11 @@
     </LinearLayout>
 
     <LinearLayout
-        android:id="@+id/bottom_buttons_layout"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-		android:paddingTop="30dp"
-        android:layout_centerHorizontal="true" 
+        android:id="@+id/main_layout4"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="3"
+        android:layout_gravity="center_vertical"
         android:paddingBottom="10dp">
 
         <ImageView
@@ -372,4 +371,4 @@
 
     </LinearLayout>
 
-</RelativeLayout>
+</LinearLayout>

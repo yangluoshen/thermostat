@@ -24,6 +24,7 @@ public class Constant {
 	public static final String INTENT_MODE_ADD = "add";
 	public static final String INTENT_MODE_MODIFY = "modify";
 	
-	
+	public static final int SOCKET_ERROR = 0;
+	public static final int SOCKET_OK = 1;
 	
 }

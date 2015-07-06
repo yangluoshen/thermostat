@@ -129,33 +129,33 @@ public class SocketOutputThread extends Thread
 				if (!sendMsgList.isEmpty()){
 
 					MsgEntity msg = sendMsgList.get(sendMsgList.size()-1);
-					Handler handler = msg.getHandler();
+//					Handler handler = msg.getHandler();
 					try
 					{
 						
 						sendMsg(msg.getBytes());
 						sendMsgList.remove(msg);
 						// 成功消息，通过hander回传
-						if (handler != null)
-						{
-							Message message =  new Message();
-							message.obj = msg.getBytes();
-							message.what = MainActivity.SEND_MESSAGE_SUCCESS;
-						   handler.sendMessage(message);
-						//	handler.sendEmptyMessage(1);
-						}
+//						if (handler != null)
+//						{
+//							Message message =  new Message();
+//							message.obj = msg.getBytes();
+//							message.what = MainActivity.SEND_MESSAGE_SUCCESS;
+//						   handler.sendMessage(message);
+//						//	handler.sendEmptyMessage(1);
+//						}
 						
 					} catch (Exception e)
 					{
 						e.printStackTrace();
 						// 错误消息，通过hander回传
-						if (handler != null)
-						{
-							Message message =  new Message();
-							message.obj = msg.getBytes();
-							message.what = MainActivity.SEND_MESSAGE_FAILED;
-						    handler.sendMessage(message);
-						}
+//						if (handler != null)
+//						{
+//							Message message =  new Message();
+//							message.obj = msg.getBytes();
+//							message.what = MainActivity.SEND_MESSAGE_FAILED;
+//						    handler.sendMessage(message);
+//						}
 					}
 					sendMsgList.clear();
 				}
@@ -176,19 +176,19 @@ public class SocketOutputThread extends Thread
 		}
 		
 	}
-	Handler mainHandler = new Handler(){
-
-		@Override
-		public void handleMessage(Message msg) {
-			// TODO Auto-generated method stub
-			super.handleMessage(msg);
-			if (msg.what == NOTIFY)
-			{
-				notifyThread();
-			}
-		}
-		
-	};
+//	Handler mainHandler = new Handler(){
+//
+//		@Override
+//		public void handleMessage(Message msg) {
+//			// TODO Auto-generated method stub
+//			super.handleMessage(msg);
+//			if (msg.what == NOTIFY)
+//			{
+//				notifyThread();
+//			}
+//		}
+//		
+//	};
 
 	
 	

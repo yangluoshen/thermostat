@@ -11,6 +11,8 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -20,6 +22,8 @@ import android.widget.ImageView;
 import android.widget.Toast;
 
 public class ConnectActivity extends Activity {
+//	public static final int SOCKET_ERROR = 0;
+//	public static final int CONNECT_OK = 1;
 //	EditText et_ip;
 //	EditText et_port;
 	EditText et_registID;
@@ -31,12 +35,15 @@ public class ConnectActivity extends Activity {
 	private String mode;
 	private RoomItemInfo roomItemInfo ;
 	private Context context;
+	
+	
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		// TODO Auto-generated method stub
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.connect_new_version);
+		
 		
 		context = getApplicationContext();
 		initView();
@@ -94,41 +101,11 @@ public class ConnectActivity extends Activity {
 				if ("".equals(registID)){
 					Toast.makeText(ConnectActivity.this, "ID should not be empty", Toast.LENGTH_SHORT).show();
 				}
-				else if (operation.Connect(CalculationUtils.calcRegistID(et_registID.getText().toString())) ){
-					NetManager.instance().release();
-	//				RoomDB idrecord = new RoomDB(ConnectActivity.this);
-	//				Object[] param = {et_registID.getText().toString()};
-	//				idrecord.setUserLastLogin(param);
-					
-					if (mode.equals(Constant.INTENT_MODE_ADD))
-					{
-						RoomDB roomdb = new RoomDB(context);
-						Object[] params = {registID,roomName};
-						int id = roomdb.addRecord(params);
-						
-						Intent _intent  = new Intent(ConnectActivity.this,MainActivity.class);
-						_intent.putExtra("id", id);
-						ConnectActivity.this.startActivity(_intent);
-						
-					}
-					else
-					{
-						RoomDB roomdb = new RoomDB(context);
-						Object[] params = {registID, roomName, roomItemInfo.getId()};
-						roomdb.updateRoomInfo(params);
-						
-						Intent _intent  = new Intent(ConnectActivity.this,MainActivity.class);
-						_intent.putExtra("id", roomItemInfo.getId());
-						ConnectActivity.this.startActivity(_intent);
-					}
-					
-					
-					
-					
-					finish();
-				}else {
-					Toast.makeText(ConnectActivity.this, "connect failed !", Toast.LENGTH_SHORT).show();
+				else 
+				{
+					operation.Connect(CalculationUtils.calcRegistID(et_registID.getText().toString()));
 				}
+				
 	//			ibtn_connect.setClickable(true);
 				
 	//			v.setClickable(false);
@@ -176,10 +153,56 @@ public class ConnectActivity extends Activity {
 		
 		super.onStart();
 		operation = Operations.GetOperation();
+		operation.setHandler(mainHanlder);
 	}
-	
-	
-	
-	
+	private Handler mainHanlder = new Handler()
+	{
+
+		@Override
+		public void handleMessage(Message msg) {
+			// TODO Auto-generated method stub
+//			super.handleMessage(msg);
+			if (msg.what == Constant.SOCKET_ERROR){
+				Toast.makeText(ConnectActivity.this, "connect failed !", Toast.LENGTH_SHORT).show();
+			}
+			if (msg.what == Constant.SOCKET_OK)
+			{
+				NetManager.instance().release();
+//				RoomDB idrecord = new RoomDB(ConnectActivity.this);
+//				Object[] param = {et_registID.getText().toString()};
+//				idrecord.setUserLastLogin(param);
+							
+				String roomName = et_roomName.getText().toString();
+				String registID = et_registID.getText().toString();
+				if (mode.equals(Constant.INTENT_MODE_ADD))
+				{
+					RoomDB roomdb = new RoomDB(context);
+					Object[] params = {registID,roomName};
+					int id = roomdb.addRecord(params);
+					GlobalData.Instance().setCurrentRoomID(id);
+					Intent _intent  = new Intent(ConnectActivity.this,MainActivity.class);
+//					_intent.putExtra("id", id);
+					ConnectActivity.this.startActivity(_intent);
+					
+				}
+				else
+				{
+					RoomDB roomdb = new RoomDB(context);
+					Object[] params = {registID, roomName, roomItemInfo.getId()};
+					roomdb.updateRoomInfo(params);
+					
+					GlobalData.Instance().setCurrentRoomID(roomItemInfo.getId());
+					
+					Intent _intent  = new Intent(ConnectActivity.this,MainActivity.class);
+//					_intent.putExtra("id", roomItemInfo.getId());
+					ConnectActivity.this.startActivity(_intent);
+				}
+				
+				finish();
+			}
+			
+		}
+		
+	};
 
 }

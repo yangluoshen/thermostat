@@ -6,4 +6,8 @@
     <string name="hello_world">Hello world!</string>
     <string name="default_time">88:88:88</string>
 
+    <string name="no_ssid">Not found this ssid</string>
+    <string name="error_pasd_length">Password length incorrect</string>
+    <string name="confing_end">Configuration has been completed, check the status of the module</string>
+    
 </resources>

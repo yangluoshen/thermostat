@@ -1,5 +1,6 @@
 package com.usr.thermostat;
 
+import java.util.LinkedList;
 import java.util.List;
 
 import com.usr.thermostat.Utils.CalculationUtils;
@@ -9,7 +10,9 @@ import com.usr.thermostat.network.NetManager;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.os.Handler;
 import android.provider.SyncStateContract.Constants;
 import android.text.NoCopySpan.Concrete;
 import android.view.LayoutInflater;
@@ -28,11 +31,14 @@ public class RoomListAdapter extends BaseAdapter {
 	private List<RoomItemInfo> list = null;
 	private ViewHolder holder;
 	private int currentPos;
+	private LinkedList<ImageView> imageviewList = new LinkedList<ImageView>();
+//	private Handler handler;
 	
 	public RoomListAdapter(Context ctx, List<RoomItemInfo> l)
 	{
 		this.context = ctx;
 		this.list = l;
+//		this.handler = handler;
 		
 	}
 
@@ -58,6 +64,7 @@ public class RoomListAdapter extends BaseAdapter {
 	public View getView(int position, View convertView, ViewGroup parent) {
 		// TODO Auto-generated method stub
 		currentPos = position;
+		
 		if (convertView == null)
 		{
 			holder = new ViewHolder();
@@ -65,6 +72,7 @@ public class RoomListAdapter extends BaseAdapter {
 			holder.tv_temp = (TextView) convertView.findViewById(R.id.room_temp_tv);
 			holder.rl_itemBg = (RelativeLayout) convertView.findViewById(R.id.room_item_bg_rl);
 			holder.iv_roomWind = (ImageView) convertView.findViewById(R.id.room_item_wind);
+			imageviewList.add(holder.iv_roomWind);
 			holder.tv_name = (TextView) convertView.findViewById(R.id.room_item_name);
 			convertView.setTag(holder);
 		}
@@ -193,6 +201,7 @@ public class RoomListAdapter extends BaseAdapter {
 					_bundle.putString("registid", list.get(pos).getRegistid());
 					_intent.putExtras(_bundle);
 					context.startActivity(_intent);
+//					releaseAllImageView();
 					return false;
 				}
 			};
@@ -207,20 +216,25 @@ public class RoomListAdapter extends BaseAdapter {
 					String registID = list.get(pos).getRegistid();
 					int int_registID = CalculationUtils.calcRegistID(registID);
 					
-					if (Operations.GetOperation().Connect(int_registID))
-					{
-						NetManager.instance().release();
-//						//跳转到mainactivity前的准备
-//						CommonUtils.readyIntentMain(int_registID);
-						
-						Intent _intent = new Intent(context, MainActivity.class);
-						_intent.putExtra("id", list.get(pos).getId());
-						_intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK); 
-						context.startActivity(_intent);
-					}
-					else {
-						Toast.makeText(context, "connect failed !", Toast.LENGTH_SHORT).show();
-					}
+					GlobalData.Instance().setCurrentRoomID(list.get(pos).getId());
+//					Operations.GetOperation().setHandler(handler);
+//					releaseAllImageView();
+					Operations.GetOperation().Connect(int_registID);
+					
+//					if ()
+//					{
+////						NetManager.instance().release();
+//////						//跳转到mainactivity前的准备
+//////						CommonUtils.readyIntentMain(int_registID);
+////						
+////						Intent _intent = new Intent(context, MainActivity.class);
+////						_intent.putExtra("id", list.get(pos).getId());
+////						_intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK); 
+////						context.startActivity(_intent);
+//					}
+//					else {
+//						Toast.makeText(context, "connect failed !", Toast.LENGTH_SHORT).show();
+//					}
 					
 					
 				}
@@ -233,9 +247,22 @@ public class RoomListAdapter extends BaseAdapter {
 			
 		}
 		
-		
-		
 		return convertView;
+	}
+	
+	void releaseImageView(ImageView imageview)
+	{
+		Drawable d = imageview.getDrawable();  
+		if (d != null) d.setCallback(null);  
+		imageview.setImageDrawable(null);  
+		imageview.setBackgroundDrawable(null);
+	}
+	void releaseAllImageView()
+	{
+		for (ImageView iv : imageviewList)
+		{
+			releaseImageView(iv);
+		}
 	}
 	
 	

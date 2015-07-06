@@ -80,7 +80,8 @@ public class SocketInputThread extends Thread
 					try
 					{
 						sleep(Const.SOCKET_SLEEP_SECOND * 1000);
-					} catch (InterruptedException e)
+					} 
+					catch (InterruptedException e)
 					{
 						// TODO Auto-generated catch block
 						e.printStackTrace();
@@ -202,21 +203,21 @@ public class SocketInputThread extends Thread
 		}
 	}
 	
-	Handler mainHandler = new Handler()
-	{
-
-		@Override
-		public void handleMessage(Message msg) {
-			// TODO Auto-generated method stub
-//			super.handleMessage(msg);
-			if (msg.what == ADD_DATA)
-			{
-//				DataBuffer = (byte[]) msg.obj;
-//				byte[] d = DataBuffer;
-//				int a = 1;
-			}
-		}
-		
-	};
+//	Handler mainHandler = new Handler()
+//	{
+//
+//		@Override
+//		public void handleMessage(Message msg) {
+//			// TODO Auto-generated method stub
+////			super.handleMessage(msg);
+//			if (msg.what == ADD_DATA)
+//			{
+////				DataBuffer = (byte[]) msg.obj;
+////				byte[] d = DataBuffer;
+////				int a = 1;
+//			}
+//		}
+//		
+//	};
 	
 }

@@ -8,6 +8,7 @@ import com.usr.thermostat.network.TCPClient;
 
 import android.content.Context;
 import android.os.Handler;
+import android.os.Message;
 import android.text.format.Time;
 
 public class Operations {
@@ -20,6 +21,9 @@ public class Operations {
 	public static final int SETSWITCHOFF = 4;
 	public static final int SETSWITCHON  = 5;
 	public static final int SETCONNECT   = 6;
+	
+	public static final int MSG_SEND_REGIST = 7;
+	public static final int MSG_SEND_DATAPACKAGE = 8;
 //	public static boolean isConnected = false;
 //	public boolean threadMarker = false;
 	
@@ -28,6 +32,7 @@ public class Operations {
 	private int serverPort = 25565;
 	private int registID;
 	private byte[] registData = new byte[4];
+	private byte[] initByte;
 	
 //	public Socket mSocket = null;
 //	public InetSocketAddress mISA = null;
@@ -113,34 +118,36 @@ public class Operations {
 		CalcCheckSum(dataPackage);
 		
 	}
-	public boolean Connect(int ID){
+	public void Connect(int ID){
+		
+		TCPClient.instance().closeTCPSocket();
+		registID = ID;
+		sendRegist(registID);
+		//send the init data
+//		initDataPackage();
 //		byte[] readBuffer = new byte[8];
-		try {
-			TCPClient.instance().closeTCPSocket();
-			registID = ID;
-			sendRegist(registID);
-			//send the init data
-			initDataPackage();
-			
-			TCPClient.instance().sendMsg(dataPackage);
-
-			
-		} catch (UnknownHostException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			return false;
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			return false;
-		} catch (Exception e)
-		{
-			e.printStackTrace();
-			return false;
-			
-		}
+//		try {
+//			
+//			
+////			TCPClient.instance().sendMsg(dataPackage);
+//
+//			
+//		} catch (UnknownHostException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//			return false;
+//		} catch (IOException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//			return false;
+//		} catch (Exception e)
+//		{
+//			e.printStackTrace();
+//			return false;
+//			
+//		}
 //		isConnected = true;
-		return true;
+//		return true;
 	}
 	public  void sendInitTime() {
 		// TODO Auto-generated method stub
@@ -159,14 +166,25 @@ public class Operations {
 			bytes[6] = (byte) time.weekDay;
 		}
 		
-		CalcCheckSum(bytes	);
-		try {
-//			mPrintWriter.write(bytes);
-			TCPClient.instance().sendMsg(bytes);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		CalcCheckSum(bytes);
+		initByte = bytes;
+		Thread initTimeThread = new Thread(new Runnable()
+		{
+
+			@Override
+			public void run() {
+				// TODO Auto-generated method stub
+				try {
+//					mPrintWriter.write(bytes);
+					TCPClient.instance().sendMsg(initByte);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+			
+		});
+		initTimeThread.start();
 		
 	}
 	/**
@@ -307,23 +325,28 @@ public class Operations {
 
 	void PrintWrite(int type){
 		dataPackage[6] = 0x01;
+		
+		Message msg = new Message();
+		msg.what = MSG_SEND_DATAPACKAGE;
+		mainHanlder.sendMessage(msg);
+		
+		
 //		if (type == SETSWITCHOFF)
 //		{
 //			dataPackage[6] = 0x00;
 //		}
 		
-		CalcCheckSum(dataPackage);
-		try {
-//			mPrintWriter.write(dataPackage);
-			if (handler != null)
-			{
-				SocketThreadManager.sharedInstance().sendMsg(dataPackage, handler);
-			}
-			
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+//		CalcCheckSum(dataPackage);
+//		try {
+////			mPrintWriter.write(dataPackage);
+////			if (handler != null)
+////			{
+////				SocketThreadManager.sharedInstance().sendMsg(dataPackage, handler);
+////			}
+//		} catch (Exception e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
 	}
 	
 	public Handler getHandler() {
@@ -360,13 +383,16 @@ public class Operations {
 		registData[1] = (byte) ((id>>16)%256);
 		registData[0] = (byte) ((id>>24)%256);
 		
-		try {
-//			mPrintWriter.write(data);
-			TCPClient.instance().sendMsg(registData);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		Message msg = new Message();
+		msg.what = MSG_SEND_REGIST;
+		mainHanlder.sendMessage(msg);
+//		try {
+////			mPrintWriter.write(data);
+//			TCPClient.instance().sendMsg(registData);
+//		} catch (IOException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
 		
 	}
 	public void releaseInstance()
@@ -379,5 +405,82 @@ public class Operations {
 		}
 		
 	}
+	
+	private Handler mainHanlder = new Handler ()
+	{
+
+		@Override
+		public void handleMessage(Message msg) {
+			// TODO Auto-generated method stub
+//			super.handleMessage(msg);
+			
+			if (msg.what == MSG_SEND_REGIST)
+			{
+				Thread sendRegistThread;
+				sendRegistThread = new Thread(registThread);
+				sendRegistThread.start();
+			}
+			
+			if (msg.what == MSG_SEND_DATAPACKAGE)
+			{
+				Thread sendDataThread = new Thread(dataThread);
+				sendDataThread.start();
+				
+			}
+			
+		}
+		
+	};
+	
+	/*
+	 * this thread start when register
+	 */
+	private Runnable registThread = new Runnable()
+	{
+
+		@Override
+		public void run() {
+			// TODO Auto-generated method stub
+			try {
+				TCPClient.instance().sendMsg(registData);
+				initDataPackage();
+				TCPClient.instance().sendMsg(dataPackage);
+				
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				Message msg = new Message();
+				msg.what = Constant.SOCKET_ERROR;
+				handler.sendMessage(msg);
+				return;
+			}
+			Message msg = new Message();
+			msg.what = Constant.SOCKET_OK;
+			handler.sendMessage(msg);
+		}
+		
+	};
+	/**
+	 * this thread called when operation
+	 */
+	private Runnable dataThread = new Runnable()
+	{
+
+		@Override
+		public void run() {
+			// TODO Auto-generated method stub
+			CalcCheckSum(dataPackage);
+			try
+			{
+				
+				SocketThreadManager.sharedInstance().sendMsg(dataPackage);
+				
+			}
+			catch(Exception e){
+				e.printStackTrace();
+			}
+		}
+		
+	};
 	
 }

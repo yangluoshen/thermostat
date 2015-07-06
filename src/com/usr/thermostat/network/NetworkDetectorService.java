@@ -80,7 +80,7 @@ public class NetworkDetectorService extends Service{
 		@Override
 		public void run()
 		{
-			if (isNetworkConnected(context) || isWifiConnected(context))
+			if ( isWifiConnected(context) || isNetworkConnected(context) )
 			{
 				isConnected = true;
 			}
@@ -103,12 +103,17 @@ public class NetworkDetectorService extends Service{
 			if (context != null)
 			{
 				ConnectivityManager mConnectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+				NetworkInfo networkInfo = mConnectivityManager.getActiveNetworkInfo();  
+	            if (networkInfo != null  
+	                    && networkInfo.getType() == ConnectivityManager.TYPE_MOBILE) {  
+	                return true;  
+	            }  
 //				NetworkInfo mNetworkInfo = mConnectivityManager.getActiveNetworkInfo();
 //				if (mNetworkInfo != null)
 //				{
 //					return mNetworkInfo.isAvailable();
 //				}
-				return mConnectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE).isConnectedOrConnecting();
+//				return mConnectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE).isConnectedOrConnecting();
 			}
 			return false;
 		}
@@ -122,17 +127,26 @@ public class NetworkDetectorService extends Service{
 			{
 				ConnectivityManager mConnectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
 //				NetworkInfo mWiFiNetworkInfo = mConnectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
-//				if (mWiFiNetworkInfo != null)
+				NetworkInfo mWiFiNetworkInfo = mConnectivityManager.getActiveNetworkInfo();  
+				if (mWiFiNetworkInfo != null  
+	                    && mWiFiNetworkInfo.getType() == ConnectivityManager.TYPE_WIFI) {  
+	                return true;  
+	            }  
+				
+				//				if (mWiFiNetworkInfo != null)
 //				{
 //					return mWiFiNetworkInfo.isAvailable();
 //				}
-				return mConnectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI).isConnectedOrConnecting();
+//				return mConnectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI).isConnectedOrConnecting();
 			}
 			return false;
 		}
 	}
-	
-	
-	
+	@Override  
+    public void onDestroy()  
+    {  
+        super.onDestroy();  
+        unregisterReceiver(mReceiver); // É¾³ý¹ã²¥  
+    }  
 
 }

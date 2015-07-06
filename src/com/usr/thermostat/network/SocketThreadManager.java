@@ -1,7 +1,5 @@
 package com.usr.thermostat.network;
 
-import android.os.Handler;
-
 
 public class SocketThreadManager
 {
@@ -64,6 +62,7 @@ public class SocketThreadManager
 			// TODO: handle exception
 		}
 		mInputThread.interrupt();
+		
 		mOutThread.setStart(false);
 		try
 		{
@@ -74,11 +73,12 @@ public class SocketThreadManager
 		}
 //		
 		mOutThread.interrupt();
+		
 		mInputThread = null;
 		mOutThread = null;
 	}
 	
-	public static void releaseInstance()
+	public void releaseInstance()
 	{
 		if (s_SocketManager != null)
 		{
@@ -87,13 +87,10 @@ public class SocketThreadManager
 		}
 	}
 	
-	public void sendMsg(byte [] buffer, Handler handler)
+	public void sendMsg(byte [] buffer)
 	{
-		MsgEntity entity = new MsgEntity(buffer, handler);
+		MsgEntity entity = new MsgEntity(buffer);
 		mOutThread.addMsgToSendList(entity);
 	}
 
-
-	
-	
 }
